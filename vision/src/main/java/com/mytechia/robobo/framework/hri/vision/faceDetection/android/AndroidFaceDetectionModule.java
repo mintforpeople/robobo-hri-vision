@@ -2,6 +2,8 @@ package com.mytechia.robobo.framework.hri.vision.faceDetection.android;
 
 import android.graphics.PointF;
 import android.media.FaceDetector;
+import android.util.Log;
+import android.util.StringBuilderPrinter;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
@@ -19,6 +21,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
 
     //region VAR
+    private String TAG = "FaceDetectionModule";
     private FaceDetector faceDetector;
     private FaceDetector.Face[] faces;
     float myEyesDistance;
@@ -58,6 +61,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     @Override
     public void onNewFrame(Frame frame) {
         faceDetector = new FaceDetector(frame.getBitmap().getWidth(),frame.getBitmap().getHeight(),1);
+        Log.d(TAG, "New Frame");
         int facenumber = faceDetector.findFaces(frame.getBitmap(),faces);
         if (facenumber>0){
             PointF facecoord = new PointF();

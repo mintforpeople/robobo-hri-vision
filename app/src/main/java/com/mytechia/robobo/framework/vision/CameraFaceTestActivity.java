@@ -1,16 +1,13 @@
 package com.mytechia.robobo.framework.vision;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.widget.ImageView;
@@ -23,18 +20,14 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.colorDetection.IColorDetectionModule;
-import com.mytechia.robobo.framework.hri.vision.colorDetection.IColorListener;
-
+import com.mytechia.robobo.framework.hri.vision.faceDetection.IFaceDetectionModule;
+import com.mytechia.robobo.framework.hri.vision.faceDetection.IFaceListener;
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
-import com.mytechia.robobo.framework.vision.R;
 
 import org.opencv.android.CameraBridgeViewBase;
 
-/**
- * Created by luis on 10/8/16.
- */
-public class ColorDetectActivity extends Activity implements ICameraListener, IColorListener {
-    private static final String TAG="MainActivity";
+public class CameraFaceTestActivity extends AppCompatActivity implements ICameraListener, IFaceListener{
+    private static final String TAG="CameraFaceTestActivity";
 
 
     private RoboboServiceHelper roboboHelper;
@@ -42,9 +35,9 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
 
 
     private ICameraModule camModule;
-    private IColorDetectionModule colorModule;
-
+    private IFaceDetectionModule faceModule;
     private CameraBridgeViewBase bridgeBase;
+
 
     private RelativeLayout rellayout = null;
     private TextView textView = null;
@@ -52,6 +45,7 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
     private ImageView imageView = null;
     private TextureView textureView = null;
     private Frame actualFrame ;
+
     private Frame lastFrame;
     private boolean paused = true;
     private long lastDetection = 0;
@@ -60,13 +54,14 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_robobo_custom_main);
-        this.textView = (TextView) findViewById(R.id.textView);
-        this.rellayout = (RelativeLayout) findViewById(R.id.rellayout);
-        this.bridgeBase = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
+        setContentView(R.layout.activity_camera_test);
 
-        // this.surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
-        this.imageView = (ImageView) findViewById(R.id.imageView);
+
+
+
+        //this.surfaceView = (SurfaceView) findViewById(R.id.testSurfaceView);
+        this.imageView = (ImageView) findViewById(R.id.testImageView) ;
+        this.bridgeBase = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
 
 //        this.textureView = (TextureView) findViewById(R.id.textureView);
         roboboHelper = new RoboboServiceHelper(this, new RoboboServiceHelper.Listener() {
@@ -104,13 +99,15 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
         try {
 
             this.camModule = this.roboboManager.getModuleInstance(ICameraModule.class);
-            this.colorModule = this.roboboManager.getModuleInstance(IColorDetectionModule.class);
+            this.faceModule = this.roboboManager.getModuleInstance(IFaceDetectionModule.class);
+
 
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
 
 
+        //camModule.passSurfaceView(surfaceView);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -125,89 +122,45 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
             }
         });
         camModule.suscribe(this);
-        colorModule.suscribe(this);
-        colorModule.startDetection();
+        //faceModule.suscribe(this);
 
-        //camModule.signalInit();
 
 
 
     }
-
-
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        //msgModule.sendMessage("TEST","lfllamas93@gmail.com");
-        return super.onTouchEvent(event);
-    }
-
-
-    @Override
-    protected void onDestroy() {
-
-
-        super.onDestroy();
-
-        //we unbind and (maybe) stop the Robobo service on exit
-        if (roboboHelper != null) {
-            roboboHelper.unbindRoboboService();
-        }
-
-    }
-
-
 
     @Override
     public void onNewFrame(final Frame frame) {
+
+
         lastFrame = frame;
-        //TODO CAMBIAR ESTO ROLLO LISTENERS
-
-
-
-
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    protected void onPause() {
-        paused = true;
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        paused = false;
-    }
-
-    @Override
-    public void onNewColor(final int colorrgb,final int nearest_color) {
-
-
-
-
-
-
-
-
-
-
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
 
-                imageView.setImageBitmap(lastFrame.getBitmap());
+                Log.d(TAG,"Frame!!!!!!!");
 
-                rellayout.setBackgroundColor(nearest_color);
+                imageView.setImageBitmap(frame.getBitmap());
 
             }
         });
 
+    }
 
+    @Override
+    public void onFaceDetected(final PointF faceCoords, float eyesDistance) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+
+                Canvas c = new Canvas(lastFrame.getBitmap().copy(Bitmap.Config.ARGB_8888,true));
+                Paint paint = new Paint();
+                paint.setColor(Color.RED);
+                c.drawCircle(faceCoords.x,faceCoords.y,50,paint);
+                imageView.draw(c);
+
+            }
+        });
     }
 }
