@@ -1,5 +1,9 @@
 package com.mytechia.robobo.framework.hri.vision.faceDetection.android;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PointF;
 import android.media.FaceDetector;
 import android.util.Log;
@@ -11,6 +15,8 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.faceDetection.AFaceDetectionModule;
+
+import org.opencv.core.Mat;
 
 /**
  * Created by luis on 24/7/16.
@@ -26,6 +32,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     private FaceDetector.Face[] faces;
     float myEyesDistance;
     int numberOfFaceDetected;
+    private boolean processing = false;
     private ICameraModule cameraModule;
     //endregion
 
@@ -57,19 +64,40 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
     //endregion
 
+    private Bitmap convert(Bitmap bitmap, Bitmap.Config config) {
+        Bitmap convertedBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), config);
+        Canvas canvas = new Canvas(convertedBitmap);
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        canvas.drawBitmap(bitmap, 0, 0, paint);
+        return convertedBitmap;
+    }
+
     //region ICameraListener Methods
     @Override
     public void onNewFrame(Frame frame) {
-        faceDetector = new FaceDetector(frame.getBitmap().getWidth(),frame.getBitmap().getHeight(),1);
-        Log.d(TAG, "New Frame");
-        int facenumber = faceDetector.findFaces(frame.getBitmap(),faces);
-        if (facenumber>0){
-            PointF facecoord = new PointF();
-            float eyesDistance = 0;
-            faces[0].getMidPoint(facecoord);
-            eyesDistance = faces[0].eyesDistance();
-            notifyFace(facecoord,eyesDistance);
+        if (!processing) {
+            processing = true;
+
+            Bitmap convertedBitmap = convert(frame.getBitmap(), Bitmap.Config.RGB_565);
+            faceDetector = new FaceDetector(convertedBitmap.getWidth(), convertedBitmap.getHeight(), 1);
+            //Log.d(TAG, "New Frame, resolution:"+convertedBitmap.getHeight()+"x"+convertedBitmap.getWidth());
+            int facenumber = faceDetector.findFaces(convertedBitmap, faces);
+            if (facenumber > 0) {
+                PointF facecoord = new PointF();
+                float eyesDistance = 0;
+                faces[0].getMidPoint(facecoord);
+                eyesDistance = faces[0].eyesDistance();
+                notifyFace(facecoord, eyesDistance);
+
+            }
+            processing = false;
         }
+    }
+
+    @Override
+    public void onNewMat(Mat mat) {
+
     }
     //endregion
 

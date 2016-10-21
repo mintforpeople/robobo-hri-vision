@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -24,6 +25,7 @@ import com.mytechia.robobo.framework.hri.vision.colorDetection.IColorDetectionMo
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.core.Mat;
 
 public class CameraTestActivity extends AppCompatActivity implements ICameraListener{
     private static final String TAG="CameraTestActivity";
@@ -133,9 +135,19 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
             @Override
             public void run() {
 
+                ViewGroup.LayoutParams params =imageView.getLayoutParams();
+                params.height = frame.getBitmap().getHeight();
+                params.width = frame.getBitmap().getWidth();
+
+                imageView.setLayoutParams(params);
                 imageView.setImageBitmap(frame.getBitmap());
 
             }
         });
+    }
+
+    @Override
+    public void onNewMat(Mat mat) {
+
     }
 }

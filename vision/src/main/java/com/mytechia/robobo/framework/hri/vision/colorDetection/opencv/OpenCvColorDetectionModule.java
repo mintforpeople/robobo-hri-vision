@@ -258,4 +258,9 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
             processFrame(frame.getBitmap());
         }
     }
+
+    @Override
+    public void onNewMat(Mat mat) {
+
+    }
 }

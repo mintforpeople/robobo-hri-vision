@@ -22,4 +22,6 @@ public interface ICameraModule extends IModule {
     public void passSurfaceView(SurfaceView view);
 
     public void passOCVthings(CameraBridgeViewBase bridgebase);
+
+    public void changeCamera();
 }

@@ -5,9 +5,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.widget.ImageView;
@@ -25,10 +29,16 @@ import com.mytechia.robobo.framework.hri.vision.faceDetection.IFaceListener;
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.core.Mat;
 
-public class CameraFaceTestActivity extends AppCompatActivity implements ICameraListener, IFaceListener{
+import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_BACK;
+import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
+
+public class CameraFaceTestActivity extends AppCompatActivity implements ICameraListener, IFaceListener, GestureDetector.OnGestureListener{
     private static final String TAG="CameraFaceTestActivity";
 
+
+    private GestureDetectorCompat mDetector;
 
     private RoboboServiceHelper roboboHelper;
     private RoboboManager roboboManager;
@@ -49,6 +59,17 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
     private Frame lastFrame;
     private boolean paused = true;
     private long lastDetection = 0;
+    private int index = CAMERA_ID_FRONT;
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.d(TAG,"TouchEvent");
+
+       this.mDetector.onTouchEvent(event);
+        return true;
+
+    }
+
 
 
     @Override
@@ -121,8 +142,9 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
 
             }
         });
+        mDetector = new GestureDetectorCompat(getApplicationContext(),this);
         camModule.suscribe(this);
-        //faceModule.suscribe(this);
+         faceModule.suscribe(this);
 
 
 
@@ -138,12 +160,17 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
             @Override
             public void run() {
 
-                Log.d(TAG,"Frame!!!!!!!");
+
 
                 imageView.setImageBitmap(frame.getBitmap());
 
             }
         });
+
+    }
+
+    @Override
+    public void onNewMat(Mat mat) {
 
     }
 
@@ -154,13 +181,51 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
             public void run() {
 
 
-                Canvas c = new Canvas(lastFrame.getBitmap().copy(Bitmap.Config.ARGB_8888,true));
+
+                Bitmap tempBitmap =lastFrame.getBitmap().copy(Bitmap.Config.ARGB_8888,true);
+                Canvas c = new Canvas(tempBitmap);
+
+
+
                 Paint paint = new Paint();
                 paint.setColor(Color.RED);
+                //imageView.setImageBitmap(lastFrame.getBitmap());
                 c.drawCircle(faceCoords.x,faceCoords.y,50,paint);
-                imageView.draw(c);
+                imageView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
 
             }
         });
+    }
+
+    @Override
+    public boolean onDown(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        camModule.changeCamera();
+
+        return false;
     }
 }

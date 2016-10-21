@@ -219,6 +219,11 @@ public class AndroidCameraModule extends ACameraModule {
 
     }
 
+    @Override
+    public void changeCamera() {
+        //TODO Implementarlo aqui
+    }
+
     //endregion
 
     //region Callbacks and Listeners

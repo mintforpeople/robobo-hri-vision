@@ -2,6 +2,8 @@ package com.mytechia.robobo.framework.hri.vision.basicCamera;
 
 import android.util.Log;
 
+import org.opencv.core.Mat;
+
 import java.util.HashSet;
 
 /**
@@ -16,6 +18,12 @@ public abstract class ACameraModule implements ICameraModule{
     protected void notifyFrame(Frame frame){
         for (ICameraListener listener:listeners){
                 listener.onNewFrame(frame);
+        }
+    }
+
+    protected void notifyMat(Mat mat){
+        for (ICameraListener listener:listeners){
+            listener.onNewMat(mat);
         }
     }
 

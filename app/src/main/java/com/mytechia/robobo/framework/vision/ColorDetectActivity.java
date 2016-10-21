@@ -29,6 +29,7 @@ import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 import com.mytechia.robobo.framework.vision.R;
 
 import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.core.Mat;
 
 /**
  * Created by luis on 10/8/16.
@@ -165,6 +166,11 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
 
 
 
+
+    }
+
+    @Override
+    public void onNewMat(Mat mat) {
 
     }
 
