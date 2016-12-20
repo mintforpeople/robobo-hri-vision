@@ -1,3 +1,24 @@
+/*******************************************************************************
+ *
+ *   Copyright 2016 Mytech Ingenieria Aplicada <http://www.mytechia.com>
+ *   Copyright 2016 Luis Llamas <luis.llamas@mytechia.com>
+ *
+ *   This file is part of Robobo HRI Modules.
+ *
+ *   Robobo HRI Modules is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Lesser General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   Robobo HRI Modules is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public License
+ *   along with Robobo HRI Modules.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
 package com.mytechia.robobo.framework.hri.vision.faceDetection.android;
 
 import android.graphics.Bitmap;
@@ -11,15 +32,16 @@ import android.util.StringBuilderPrinter;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
+import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.faceDetection.AFaceDetectionModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.core.Mat;
 
-/**
- * Created by luis on 24/7/16.
+/*
  * https://developers.google.com/android/reference/com/google/android/gms/vision/face/FaceDetector
  * todo mirar el setfocus
  */
@@ -39,10 +61,16 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     //region IModule methods
 
     @Override
-    public void startup(RoboboManager manager) throws InternalErrorException {
-        this.cameraModule = manager.getModuleInstance(ICameraModule.class);
+    public void startup(RoboboManager manager)  {
+        try {
+            this.cameraModule = manager.getModuleInstance(ICameraModule.class);
+            rcmodule = manager.getModuleInstance(IRemoteControlModule.class);
+        } catch (ModuleNotFoundException e) {
+            e.printStackTrace();
+        }
         cameraModule.suscribe(this);
         faces =  new FaceDetector.Face[5];
+
 
     }
 

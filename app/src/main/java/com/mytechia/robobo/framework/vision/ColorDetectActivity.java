@@ -192,28 +192,42 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
     }
 
     @Override
-    public void onNewColor(final int colorrgb,final int nearest_color) {
-
-
-
-
-
-
-
-
-
-
+    public void onNewColor(int colorrgb, final int nearest_color, int x, int y, int height, int width, final Bitmap borders) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
 
-                imageView.setImageBitmap(lastFrame.getBitmap());
+                imageView.setImageBitmap(borders);
 
                 rellayout.setBackgroundColor(nearest_color);
 
             }
         });
-
-
     }
+
+//    @Override
+//    public void onNewColor(final int colorrgb,final int nearest_color) {
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//                imageView.setImageBitmap(lastFrame.getBitmap());
+//
+//                rellayout.setBackgroundColor(nearest_color);
+//
+//            }
+//        });
+//
+//
+//    }
 }

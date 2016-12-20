@@ -19,15 +19,9 @@
  *   along with Robobo HRI Modules.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-package com.mytechia.robobo.framework.hri.vision.faceRecognition;
-
-import com.mytechia.robobo.framework.IModule;
-import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
+package com.mytechia.robobo.framework.hri.vision.colorDetection.javaCV;
 
 
 
-public interface IFaceRecognitionModule extends IModule {
-    public void train(Frame frame, int label);
-    public void identify(Frame frame);
+public class JavaCVColorDetectionModule {
 }

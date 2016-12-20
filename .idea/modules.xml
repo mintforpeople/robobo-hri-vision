@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/openCVLibrary310/openCVLibrary310.iml" filepath="$PROJECT_DIR$/openCVLibrary310/openCVLibrary310.iml" />
+      <module fileurl="file://$PROJECT_DIR$/remote-control/remote-control.iml" filepath="$PROJECT_DIR$/remote-control/remote-control.iml" />
       <module fileurl="file://$PROJECT_DIR$/robobo-hri-vision.iml" filepath="$PROJECT_DIR$/robobo-hri-vision.iml" />
       <module fileurl="file://$PROJECT_DIR$/vision/vision.iml" filepath="$PROJECT_DIR$/vision/vision.iml" />
     </modules>

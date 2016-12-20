@@ -1,3 +1,24 @@
+/*******************************************************************************
+ *
+ *   Copyright 2016 Mytech Ingenieria Aplicada <http://www.mytechia.com>
+ *   Copyright 2016 Luis Llamas <luis.llamas@mytechia.com>
+ *
+ *   This file is part of Robobo HRI Modules.
+ *
+ *   Robobo HRI Modules is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Lesser General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   Robobo HRI Modules is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public License
+ *   along with Robobo HRI Modules.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
 package com.mytechia.robobo.framework.hri.vision.colorDetection.opencv;
 
 import android.content.Context;
@@ -14,6 +35,7 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.colorDetection.AColorDetectionModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -32,8 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.CheckedOutputStream;
 
-/**
- * Created by luis on 9/8/16.
+/*
  * http://www.workwithcolor.com/orange-brown-color-hue-range-01.htm
  */
 public class OpenCvColorDetectionModule extends AColorDetectionModule implements ICameraListener {
@@ -42,6 +63,9 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
     private int cuentaframes=0;
     private boolean paused = true;
     private ICameraModule cameraModule;
+
+    private boolean rcpresent = false;
+
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
         @Override
         public void onManagerConnected(int status) {
@@ -70,7 +94,10 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
         }
 
         cameraModule = manager.getModuleInstance(ICameraModule.class);
+        rcmodule = manager.getModuleInstance(IRemoteControlModule.class);
         cameraModule.suscribe(this);
+
+
     }
 
     @Override
@@ -96,9 +123,11 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
 
         Bitmap bmp32 = bmp.copy(Bitmap.Config.ARGB_8888, true);
         Mat imageMat = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC3);
+        ;
         Mat hsvMat = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC3);
 
         Mat bwimage = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC1);
+        Imgproc.equalizeHist(bwimage,bwimage);
         Utils.bitmapToMat(bmp32, imageMat);
 
         Imgproc.cvtColor(imageMat, hsvMat, Imgproc.COLOR_RGB2HSV, 3);
@@ -130,7 +159,7 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
         //Log.d(TAG, "MAXAREA: " + maxArea);
 
 
-        if (maxArea > 1000) {
+        if (maxArea > 500) {
             MatOfPoint contour = contours.get(maxAreaIdx);
             Mat contourMat = Mat.zeros(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC1);
 
@@ -150,7 +179,9 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
             double means= 0;
             double meanv =0;
 
+
             double squaredsum = 0;
+            double squaredsumv = 0;
             double count = 0;
 
             for (int i = 0; i < contourMat.rows(); i++) {
@@ -158,25 +189,31 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
                     if (contourMat.get(i, j)[0] != 0) {
                         count = count + 1;
                         double pixel = mH.get(i, j)[0];
+                        double pixelv = mH.get(i, j)[0];
                         meansum = meansum + pixel;
                         meanv = meanv+mH.get(i, j)[0];
                         means = means+mS.get(i, j)[0];
                         squaredsum = squaredsum + Math.pow(pixel, 2);
+                        squaredsumv = squaredsumv + Math.pow(pixel, 2);
 
                     }
                 }
             }
 
-
+            //TODO: Cambiar rangos a rueda de color, sumar valor absoluto a menores de 0
             double mean = meansum / count;
             meanv = meanv/count;
             means = means/count;
             double meansquearedvalues = squaredsum / count;
+            double meansquearedvaluesv = squaredsumv / count;
 
             double variance = meansquearedvalues / (Math.pow(mean, 2));
+            double variancev = meansquearedvaluesv/ (Math.pow(meanv,2));
+            double variances = meansquearedvalues/ (Math.pow(meanv,2));
 
-            Log.d(TAG, "Variance: " + variance+ " Mean: "+mean);
-            if (variance < 1.02) {
+            Log.d(TAG, "Variance: " + variance+ " Mean: "+mean + " Variance v: " + variancev + " Mean v: " + meanv);
+            //1.02
+            if (variance < 1.03) {
 
 
 
@@ -191,52 +228,53 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
                 floatHsv[1] = (float)means;
                 floatHsv[2] = (float) meanv;
 
-                //Imgproc.drawContours(imageMat, contours, maxAreaIdx, new
-                //        Scalar(255));
+                Imgproc.drawContours(imageMat, contours, maxAreaIdx, new
+                        Scalar(255));
 
                 Utils.matToBitmap(imageMat, bmp);
 
                 mBlobColorHsv.val[0] = mean*2;
                 int colorrgb = Color.HSVToColor(floatHsv);
+                //TODO: Cambiar rangos a rueda de color, sumar valor absoluto a menores de 0
 
-                if ((mean > 173) && (mean <= 179)) {
+                mean = mean -8;
+                if (mean<0){
+                    mean = 171+Math.abs(mean);
+                }
+                if ((mean > 166) && (mean <= 179)) {
                     Log.d(TAG, "RED" + mean);
 //                    notifyColor(colorrgb, Color.RED, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.RED);
 
                 }
 
-                if ((mean > 0) && (mean <= 8)) {
-                    Log.d(TAG, "RED" + mean);
-//                    notifyColor(colorrgb, Color.RED, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
-                    notifyColor(colorrgb, Color.RED);
-                }
-                if ((mean > 9) && (mean <= 37)) {
+                if ((mean > 0) && (mean <= 29)) {
                     Log.d(TAG, "YELLOW" + mean);
 //                    notifyColor(colorrgb, Color.YELLOW, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.YELLOW);
                 }
-                if ((mean > 38) && (mean <= 74)) {
+                if ((mean > 30) && (mean <= 66)) {
                     Log.d(TAG, "GREEN" + mean);
 //                    notifyColor(colorrgb, Color.GREEN, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.GREEN);
                 }
-                if ((mean > 75) && (mean <= 104)) {
+                if ((mean > 67) && (mean <= 96)) {
                     Log.d(TAG, "CYAN" + mean);
 //                    notifyColor(colorrgb, Color.CYAN, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.CYAN);
 
                 }
-                if ((mean > 105) && (mean <= 149)) {
+                if ((mean > 97) && (mean <= 141)) {
                     Log.d(TAG, "BLUE" + mean);
 //                    notifyColor(colorrgb, Color.BLUE, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.BLUE);
                 }
-                if ((mean > 150) && (mean <= 172)) {
+                if ((mean > 142) && (mean <= 165)) {
                     Log.d(TAG, "MAGENTA" + mean);
 //                    notifyColor(colorrgb, Color.MAGENTA, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.MAGENTA);
                 }
+
 
             }
         }
