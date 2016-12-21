@@ -27,6 +27,9 @@ import org.opencv.core.Mat;
 
 import java.util.HashSet;
 
+/**
+ * Abstract class that manages listeners and status
+ */
 public abstract class ACameraModule implements ICameraModule{
     private HashSet<ICameraListener> listeners;
     public ACameraModule(){

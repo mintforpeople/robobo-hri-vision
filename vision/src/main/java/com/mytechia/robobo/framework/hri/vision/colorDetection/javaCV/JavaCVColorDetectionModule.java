@@ -22,6 +22,8 @@
 package com.mytechia.robobo.framework.hri.vision.colorDetection.javaCV;
 
 
-
+/**
+ * Implementation of the COlor detection module using the JavaCV library
+ */
 public class JavaCVColorDetectionModule {
 }

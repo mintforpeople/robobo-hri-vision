@@ -28,6 +28,8 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.mytechia:robobo-framework:0.3.5'
     compile 'com.mytechia:robobo-util:0.1.0'
+
     compile project(':vision')
     compile project(':openCVLibrary310')
+
 }

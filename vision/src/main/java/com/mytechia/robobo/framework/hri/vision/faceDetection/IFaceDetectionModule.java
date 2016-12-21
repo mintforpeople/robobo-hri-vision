@@ -24,9 +24,20 @@ package com.mytechia.robobo.framework.hri.vision.faceDetection;
 
 import com.mytechia.robobo.framework.IModule;
 
-
+/**
+ * Interface of the face detection module
+ */
 public interface IFaceDetectionModule extends IModule{
+    /**
+     * Suscribes a listener to the face detected notifications
+     * @param listener The listener to be added
+     */
     public void suscribe(IFaceListener listener);
+
+    /**
+     * Unsuscribes a listener from the face detected notifications
+     * @param listener The listener to be removed
+     */
     public void unsuscribe(IFaceListener listener);
 
 }

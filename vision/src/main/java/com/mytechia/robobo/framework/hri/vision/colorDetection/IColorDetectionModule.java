@@ -29,8 +29,25 @@ import com.mytechia.robobo.framework.IModule;
 
 public interface IColorDetectionModule extends IModule {
 
+    /**
+     * Suscribes a listener to the newcolor notifications
+     * @param listener The listener to be added
+     */
     void suscribe(IColorListener listener);
+
+    /**
+     * Unsuscribes a listener from the newcolor notifications
+     * @param listener The listener to be removed
+     */
     void unsuscribe(IColorListener listener);
+
+    /**
+     * Starts or resumes the color detection
+     */
     void startDetection();
+
+    /**
+     * Pauses the color detection algorithm
+     */
     void pauseDetection();
 }

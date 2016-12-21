@@ -37,7 +37,9 @@ import org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 import static org.bytedeco.javacpp.opencv_core.CV_8UC3;
 
-
+/**
+ * Implementation of the face recognition module using OpenCV
+ */
 public class OpenCvFaceRecognitionModule extends AFaceRecognitionModule {
 //region VAR
    private FaceRecognizer faceRecognizer = new BasicFaceRecognizer(null);

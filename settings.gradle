@@ -1,1 +1,1 @@
-include ':app', ':vision', ':openCVLibrary310', ':remote-control'
+include ':app', ':vision', ':openCVLibrary310'

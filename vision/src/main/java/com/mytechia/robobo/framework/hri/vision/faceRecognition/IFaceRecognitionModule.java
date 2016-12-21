@@ -26,7 +26,9 @@ import com.mytechia.robobo.framework.IModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 
 
-
+/**
+ * Interface of the face recognition module (NOT YET FUNCTIONAL)
+ */
 public interface IFaceRecognitionModule extends IModule {
     public void train(Frame frame, int label);
     public void identify(Frame frame);

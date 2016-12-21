@@ -30,17 +30,42 @@ import com.mytechia.robobo.framework.IModule;
 
 import org.opencv.android.CameraBridgeViewBase;
 
+/**
+ * Interface of the Robobo Basic Camera module
+ */
 public interface ICameraModule extends IModule {
 
+    /**
+     * Suscribes a listener to the frame notifications
+     * @param listener The listener to be added
+     */
     public void suscribe(ICameraListener listener);
 
+    /**
+     * Unsuscribes a listener from the frame notifications
+     * @param listener The listener to be removed
+     */
     public void unsuscribe(ICameraListener listener);
 
+    /**
+     * Starts the image capture
+     */
     public void signalInit();
 
+    /**
+     * Pass a surface view to draw the imahes into
+     * @param view The surfaceview
+     */
     public void passSurfaceView(SurfaceView view);
 
+    /**
+     * Pass the camerabridge for capturing images with opencv
+     * @param bridgebase the OpenCV CameraBridgeBase
+     */
     public void passOCVthings(CameraBridgeViewBase bridgebase);
 
+    /**
+     * Changes between front and back camera
+     */
     public void changeCamera();
 }

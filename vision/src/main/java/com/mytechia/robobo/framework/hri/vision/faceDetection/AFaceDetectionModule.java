@@ -32,6 +32,9 @@ import org.opencv.core.Mat;
 
 import java.util.HashSet;
 
+/**
+ * Abstract class that manages the listeners and the status
+ */
 public abstract class AFaceDetectionModule implements IFaceDetectionModule{
     private HashSet<IFaceListener> listeners;
     protected IRemoteControlModule rcmodule = null;
@@ -39,6 +42,11 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
         listeners = new HashSet<IFaceListener>();
     }
 
+    /**
+     * Notifies the listeners when a face is detected
+     * @param coords The coordinates of the center of the face
+     * @param eyesDistance The distance between eyes
+     */
     protected void notifyFace(PointF coords, float eyesDistance){
         for (IFaceListener listener:listeners){
             listener.onFaceDetected(coords,eyesDistance);

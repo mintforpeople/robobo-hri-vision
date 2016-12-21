@@ -54,10 +54,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.CheckedOutputStream;
 
-/*
- * http://www.workwithcolor.com/orange-brown-color-hue-range-01.htm
+
+/**
+ * Implementation of the color detection module using OpenCV
  */
 public class OpenCvColorDetectionModule extends AColorDetectionModule implements ICameraListener {
+    /*
+     * http://www.workwithcolor.com/orange-brown-color-hue-range-01.htm
+    */
+
     private String TAG ="OCVCOolormodule";
     private Context context;
     private int cuentaframes=0;

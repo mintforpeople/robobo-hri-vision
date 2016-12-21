@@ -24,7 +24,14 @@ package com.mytechia.robobo.framework.hri.vision.faceDetection;
 
 import android.graphics.PointF;
 
-
+/**
+ * Listener interface for the face detector
+ */
 public interface IFaceListener {
-    public void onFaceDetected(PointF faceCoords, float eyesDistance);
+    /**
+     * Called when a face is detected
+     * @param faceCoords The coordinates of the center of the face
+     * @param eyesDistance The distance between eyes
+     */
+    void onFaceDetected(PointF faceCoords, float eyesDistance);
 }

@@ -41,13 +41,15 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlM
 
 import org.opencv.core.Mat;
 
-/*
- * https://developers.google.com/android/reference/com/google/android/gms/vision/face/FaceDetector
- * todo mirar el setfocus
+/**
+ * Implementation of the face detection module using the android face detection API
  */
 public class AndroidFaceDetectionModule extends AFaceDetectionModule implements ICameraListener{
 
-
+    /*
+     * https://developers.google.com/android/reference/com/google/android/gms/vision/face/FaceDetector
+     * todo mirar el setfocus
+     */
     //region VAR
     private String TAG = "FaceDetectionModule";
     private FaceDetector faceDetector;

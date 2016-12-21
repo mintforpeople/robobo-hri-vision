@@ -25,9 +25,17 @@ package com.mytechia.robobo.framework.hri.vision.colorDetection;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
-
+/**
+ * Listener to receive new color notifications
+ */
 public interface IColorListener {
 //    void onNewColor(int colorrgb, int nearest_color, int x, int y, int height, int width, Bitmap borders);
+
+    /**
+     * Called when a new color is detected
+     * @param colorrgb The RGB code of the color detected
+     * @param nearest_color The nearest Android.Color from the detected color
+     */
       void onNewColor(int colorrgb, int nearest_color);
 
 }
