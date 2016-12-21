@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Vision</string>
+    <string name="service_name">VideoProcessingService</string>
+</resources>
