@@ -68,7 +68,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     private CameraBridgeViewBase mOpenCvCameraView;
     private Context context;
     private boolean notifyBitmap = true;
-    private boolean notifyMat = false;
+    private boolean notifyMat = true;
     private int index = CAMERA_ID_FRONT;
 
 

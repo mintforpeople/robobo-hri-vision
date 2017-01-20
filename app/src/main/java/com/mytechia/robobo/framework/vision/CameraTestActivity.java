@@ -136,8 +136,8 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
             public void run() {
 
                 ViewGroup.LayoutParams params =imageView.getLayoutParams();
-                params.height = frame.getBitmap().getHeight();
-                params.width = frame.getBitmap().getWidth();
+                params.height = frame.getHeight();
+                params.width = frame.getWidth();
 
                 imageView.setLayoutParams(params);
                 imageView.setImageBitmap(frame.getBitmap());

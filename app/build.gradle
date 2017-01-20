@@ -17,6 +17,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    lintOptions {
+        disable 'LongLogTag'
+    }
+
+
 }
 
 dependencies {
@@ -30,6 +35,6 @@ dependencies {
     compile 'com.mytechia:robobo-util:0.1.0'
 
     compile project(':vision')
-    compile project(':openCVLibrary310')
+
 
 }
