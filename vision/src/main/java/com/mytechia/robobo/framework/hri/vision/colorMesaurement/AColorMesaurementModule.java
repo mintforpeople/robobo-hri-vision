@@ -1,5 +1,8 @@
 package com.mytechia.robobo.framework.hri.vision.colorMesaurement;
 
+import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
+
 import java.util.HashSet;
 
 /**
@@ -9,7 +12,7 @@ import java.util.HashSet;
 public abstract class AColorMesaurementModule implements IColorMesaurementModule {
     private HashSet<IColorMesauredListener> listeners = new HashSet<>();
 
-
+    protected IRemoteControlModule rcmodule = null;
     @Override
     public void suscribe(IColorMesauredListener listener){
         listeners.add(listener);
@@ -23,5 +26,13 @@ public abstract class AColorMesaurementModule implements IColorMesaurementModule
         for (IColorMesauredListener l:listeners) {
             l.onColorMesaured(r,g,b);
         }
+
+        if (rcmodule!=null) {
+            Status status = new Status("MEASUREDCOLOR");
+            status.putContents("R",r+"");
+            status.putContents("G",g+"");
+            status.putContents("B",b+"");
+        }
+
     }
 }

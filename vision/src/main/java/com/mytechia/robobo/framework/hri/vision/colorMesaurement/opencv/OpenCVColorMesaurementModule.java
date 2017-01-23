@@ -83,7 +83,12 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
                 int saturation = (int) Math.round(pixel[1]);
                 int value = (int) Math.round(pixel[2]);
 
-                if ((value > 73) && (saturation > 55)){
+                if ((value > 120) && (saturation > 160)){
+                    Log.d(TAG,"Saturation:"+saturation);
+                    Log.d(TAG,"Value:"+value);
+                    Log.d(TAG,"Hue:"+hue);
+
+
                     hue = hue - 8;
                     count = count +1;
                     if (hue < 0) {
@@ -100,16 +105,18 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
     //                    Log.d(TAG, "YELLOW" + hue);
                         count = count -1;
                     }
-                    if ((hue > 30) && (hue <= 66)) {
+                    if ((hue > 30) && (hue <= 89)) {
     //                    Log.d(TAG, "GREEN" + hue);
                         g = g + 1;
                     }
-                    if ((hue > 67) && (hue <= 96)) {
-    //                    Log.d(TAG, "CYAN" + hue);
-                        b = b + 1;
-
-                    }
-                    if ((hue > 97) && (hue <= 141)) {
+//                    if ((hue > 67) && (hue <= 96)) {
+//    //                    Log.d(TAG, "CYAN" + hue);
+//
+//                        g = g + 1;
+//
+//
+//                    }
+                    if ((hue > 90) && (hue <= 141)) {
     //                    Log.d(TAG, "BLUE" + hue);
                         b = b + 1;
 
@@ -126,7 +133,8 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
 
         int sum = r+g+b;
         //sum = (hsvMat.cols()*hsvMat.rows())/8;
-        if(sum!=0) {
+        Log.d(TAG,"Count: "+count);
+        if((sum!=0)&&(count>3)) {
             r = Math.round(((float)r / (float)sum) * 100);
             g = Math.round(((float)g / (float)sum) * 100);
             b = Math.round(((float)b / (float)sum) * 100);
