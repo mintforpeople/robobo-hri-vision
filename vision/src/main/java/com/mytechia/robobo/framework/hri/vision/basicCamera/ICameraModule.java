@@ -23,6 +23,7 @@
 package com.mytechia.robobo.framework.hri.vision.basicCamera;
 
 import android.view.Surface;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
 
@@ -51,6 +52,11 @@ public interface ICameraModule extends IModule {
      * Starts the image capture
      */
     public void signalInit();
+
+    /**
+     * Starts the image capture
+     */
+    public void signalInit(SurfaceHolder sh);
 
     /**
      * Pass a surface view to draw the imahes into

@@ -35,7 +35,7 @@ public class FrameDetector extends Detector {
 
     public SparseArray detect(Frame frame) {
         sendFrame(frame);
-        System.out.println("FRAME");
+        //System.out.println("FRAME");
         return null;
     }
 

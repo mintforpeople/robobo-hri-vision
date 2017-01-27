@@ -29,6 +29,7 @@ import android.os.Looper;
 import android.renderscript.Script;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.ViewGroup;
@@ -167,6 +168,11 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             Log.d(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
+    }
+
+    @Override
+    public void signalInit(SurfaceHolder sh) {
+
     }
 
     @Override

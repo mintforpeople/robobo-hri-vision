@@ -22,9 +22,15 @@
 package com.mytechia.robobo.framework.hri.vision.basicCamera.googlevision;
 
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.google.android.gms.vision.Detector;
@@ -43,6 +49,9 @@ import com.google.android.gms.common.images.Size;
 import com.google.android.gms.vision.CameraSource;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class GoogleVisionCameraModule extends ACameraModule {
     private static final String TAG = "GoogleVisionCM";
@@ -51,10 +60,64 @@ public class GoogleVisionCameraModule extends ACameraModule {
 
     private CameraSource mCameraSource = null;
 
+    private Context context;
+
     @Override
     public void signalInit() {
 
+        try {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            mCameraSource.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        Timer timer = new Timer();
+//        timer.scheduleAtFixedRate(new TimerTask() {
+//            @Override
+//            public void run() {
+//                mCameraSource.takePicture(new CameraSource.ShutterCallback() {
+//                    @Override
+//                    public void onShutter() {
+//
+//                    }
+//                }, new CameraSource.PictureCallback() {
+//                    @Override
+//                    public void onPictureTaken(byte[] bytes) {
+//
+//                    }
+//                });
+//            }
+//
+//
+//        },330,1000);
+    }
 
+    @Override
+    public void signalInit(SurfaceHolder sh) {
+        try {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            mCameraSource.start(sh);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -74,7 +137,7 @@ public class GoogleVisionCameraModule extends ACameraModule {
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
-        Context context = manager.getApplicationContext();
+         context = manager.getApplicationContext();
 
 
 
@@ -85,13 +148,13 @@ public class GoogleVisionCameraModule extends ACameraModule {
                 .setAutoFocusEnabled(true)
                 .build();
 
-        try {
-            mCameraSource.start();
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            mCameraSource.start();
+//        } catch (SecurityException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override
@@ -110,6 +173,15 @@ public class GoogleVisionCameraModule extends ACameraModule {
     }
 
     protected void receiveFrame(Frame frame){
+
+
+//        byte[] imageBytes= new byte[frame.getGrayscaleImageData().remaining()];
+//        frame.getGrayscaleImageData().get(imageBytes);
+//        final Bitmap bmp=BitmapFactory.decodeStream();
+//        Bitmap bitmap = Bitmap.createBitmap(frame.getMetadata().getWidth(), frame.getMetadata().getHeight(), Bitmap.Config.);
+//        bitmap.copyPixelsFromBuffer(frame.getGrayscaleImageData());
+
+
         com.mytechia.robobo.framework.hri.vision.basicCamera.Frame f = new com.mytechia.robobo.framework.hri.vision.basicCamera.Frame();
         f.setBitmap(frame.getBitmap());
         f.setHeight(frame.getMetadata().getHeight());

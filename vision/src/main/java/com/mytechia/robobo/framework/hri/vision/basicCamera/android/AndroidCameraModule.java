@@ -44,6 +44,7 @@ import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Display;
 import android.view.Surface;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.WindowManager;
@@ -231,6 +232,11 @@ public class AndroidCameraModule extends ACameraModule {
 
     @Override
     public void signalInit() {
+
+    }
+
+    @Override
+    public void signalInit(SurfaceHolder sh) {
 
     }
 

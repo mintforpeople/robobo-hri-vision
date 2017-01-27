@@ -5,6 +5,8 @@ import android.graphics.Canvas;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
@@ -44,6 +46,7 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
     private TextView textView = null;
     private SurfaceView surfaceView = null;
     private ImageView imageView = null;
+
     private TextureView textureView = null;
     private Frame actualFrame ;
 
@@ -60,9 +63,16 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
 
 
 
-        //this.surfaceView = (SurfaceView) findViewById(R.id.testSurfaceView);
+        this.surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         this.imageView = (ImageView) findViewById(R.id.testImageView) ;
         this.bridgeBase = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
+        this.textureView = (TextureView) findViewById(R.id.textureView);
+        this.surfaceView.setVisibility(View.INVISIBLE);
+        this.imageView.setVisibility(View.INVISIBLE);
+        this.textureView.setVisibility(View.VISIBLE);
+
+
+
 
 //        this.textureView = (TextureView) findViewById(R.id.textureView);
         roboboHelper = new RoboboServiceHelper(this, new RoboboServiceHelper.Listener() {
@@ -106,22 +116,24 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
             e.printStackTrace();
         }
 
+        camModule.suscribe(this);
+        camModule.signalInit();
 
         //camModule.passSurfaceView(surfaceView);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
 
-                bridgeBase.setVisibility(SurfaceView.VISIBLE);
-                camModule.passOCVthings(bridgeBase);
+                //bridgeBase.setVisibility(SurfaceView.VISIBLE);
+                //camModule.passOCVthings(bridgeBase);
 
 
-                camModule.signalInit();
+
 
 
             }
         });
-        camModule.suscribe(this);
+
 
 
 
@@ -130,7 +142,7 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
     @Override
     public void onNewFrame(final Frame frame) {
 
-
+        Log.d(TAG, "Frame2");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
