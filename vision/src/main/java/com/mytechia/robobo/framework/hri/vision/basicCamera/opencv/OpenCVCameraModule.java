@@ -170,10 +170,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         }
     }
 
-    @Override
-    public void signalInit(SurfaceHolder sh) {
-
-    }
 
     @Override
     public void passSurfaceView(SurfaceView view) {

@@ -61,6 +61,31 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
         }
     }
 
+    protected void notifyFaceAppear(PointF coords, float eyesDistance){
+        for (IFaceListener listener:listeners){
+            listener.onFaceAppear(coords,eyesDistance);
+        }
+        if (rcmodule!=null) {
+            Status status = new Status("FOUNDFACE");
+            status.putContents("coordx",Math.round(coords.x)+"");
+            status.putContents("coordy",Math.round(coords.y)+"");
+            status.putContents("distance", Math.round(eyesDistance)+"");
+
+            rcmodule.postStatus(status);
+        }
+    }
+
+    protected void notifyFaceDisappear(){
+        for (IFaceListener listener:listeners){
+            listener.onFaceDissapear();
+        }
+        if (rcmodule!=null) {
+            Status status = new Status("LOSTFACE");
+
+            rcmodule.postStatus(status);
+        }
+    }
+
     public void suscribe(IFaceListener listener){
         Log.d("FD_module", "Suscribed:"+listener.toString());
         listeners.add(listener);

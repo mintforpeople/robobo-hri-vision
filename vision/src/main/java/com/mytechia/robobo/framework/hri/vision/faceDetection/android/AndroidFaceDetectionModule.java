@@ -52,12 +52,16 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
      */
     //region VAR
     private String TAG = "FaceDetectionModule";
+    private int LOST_THRESHOLD = 5;
     private FaceDetector faceDetector;
     private FaceDetector.Face[] faces;
     float myEyesDistance;
     int numberOfFaceDetected;
     private boolean processing = false;
     private ICameraModule cameraModule;
+    private int noDetectionCount = 0;
+    private boolean lostFace = true;
+
     //endregion
 
     //region IModule methods
@@ -87,7 +91,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
     @Override
     public String getModuleVersion() {
-        return "v0.1";
+        return "v2.3";
     }
 
 
@@ -114,14 +118,28 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
             //Log.d(TAG, "New Frame, resolution:"+convertedBitmap.getHeight()+"x"+convertedBitmap.getWidth());
             int facenumber = faceDetector.findFaces(convertedBitmap, faces);
             if (facenumber > 0) {
+
                 PointF facecoord = new PointF();
                 float eyesDistance = 0;
                 faces[0].getMidPoint(facecoord);
                 eyesDistance = faces[0].eyesDistance();
+                if (lostFace) {
+                    lostFace = false;
+                    notifyFaceAppear(facecoord, eyesDistance);
+                }
                 notifyFace(facecoord, eyesDistance);
+                noDetectionCount = 0;
+
+            }else{
+                noDetectionCount += 1;
+                if ((noDetectionCount>LOST_THRESHOLD)&&(!lostFace)){
+                    notifyFaceDisappear();
+                    lostFace = true;
+                }
 
             }
             processing = false;
+
         }
     }
 

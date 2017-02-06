@@ -34,4 +34,8 @@ public interface IFaceListener {
      * @param eyesDistance The distance between eyes
      */
     void onFaceDetected(PointF faceCoords, float eyesDistance);
+
+    void onFaceAppear(PointF faceCoords, float eyesDistance);
+
+    void onFaceDissapear();
 }

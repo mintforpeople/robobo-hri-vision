@@ -217,6 +217,17 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
     }
 
     @Override
+    public void onFaceAppear(PointF faceCoords, float eyesDistance) {
+        Log.d(TAG,"APPEARED FACE");
+
+    }
+
+    @Override
+    public void onFaceDissapear() {
+        Log.d(TAG,"LOST FACE");
+    }
+
+    @Override
     public boolean onDown(MotionEvent motionEvent) {
         return false;
     }

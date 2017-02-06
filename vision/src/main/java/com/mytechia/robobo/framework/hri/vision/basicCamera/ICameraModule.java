@@ -53,13 +53,10 @@ public interface ICameraModule extends IModule {
      */
     public void signalInit();
 
-    /**
-     * Starts the image capture
-     */
-    public void signalInit(SurfaceHolder sh);
+
 
     /**
-     * Pass a surface view to draw the imahes into
+     * Pass a surface view to draw the images into
      * @param view The surfaceview
      */
     public void passSurfaceView(SurfaceView view);

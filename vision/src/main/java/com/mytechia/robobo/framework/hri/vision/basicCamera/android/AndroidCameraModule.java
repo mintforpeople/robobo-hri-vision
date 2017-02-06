@@ -235,10 +235,6 @@ public class AndroidCameraModule extends ACameraModule {
 
     }
 
-    @Override
-    public void signalInit(SurfaceHolder sh) {
-
-    }
 
     @Override
     public void passSurfaceView(SurfaceView view) {
