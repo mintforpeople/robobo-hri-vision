@@ -29,6 +29,8 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.colorMesaurement.AColorMesaurementModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
+import com.mytechia.robobo.framework.remote_control.remoterob.IRemoteRobModule;
 
 import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
 import org.opencv.core.Core;
@@ -46,6 +48,7 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         cameraModule = manager.getModuleInstance(ICameraModule.class);
+        rcmodule = manager.getModuleInstance(IRemoteControlModule.class);
         cameraModule.suscribe(this);
 
     }
@@ -104,9 +107,9 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
                 int value = (int) Math.round(pixel[2]);
 
                 if ((value > 120) && (saturation > 160)){
-                    Log.d(TAG,"Saturation:"+saturation);
-                    Log.d(TAG,"Value:"+value);
-                    Log.d(TAG,"Hue:"+hue);
+//                    Log.d(TAG,"Saturation:"+saturation);
+//                    Log.d(TAG,"Value:"+value);
+//                    Log.d(TAG,"Hue:"+hue);
 
 
                     hue = hue - 8;
@@ -153,17 +156,17 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
 
         int sum = r+g+b;
         //sum = (hsvMat.cols()*hsvMat.rows())/8;
-        Log.d(TAG,"Count: "+count);
+//        Log.d(TAG,"Count: "+count);
         if((sum!=0)&&(count>3)) {
             r = Math.round(((float)r / (float)sum) * 100);
             g = Math.round(((float)g / (float)sum) * 100);
             b = Math.round(((float)b / (float)sum) * 100);
 
-            Log.d(TAG, "R: " + r + " G: " + g + " B: " + b+" Covered: "+(float)count/(float)pixels);
+//            Log.d(TAG, "R: " + r + " G: " + g + " B: " + b+" Covered: "+(float)count/(float)pixels);
             notifyColorMesaured(r, g, b);
         }
         else {
-            Log.d(TAG, "R: " + 0 + " G: " + 0 + " B: " + 0);
+//            Log.d(TAG, "R: " + 0 + " G: " + 0 + " B: " + 0);
             notifyColorMesaured(0, 0, 0);
 
         }
