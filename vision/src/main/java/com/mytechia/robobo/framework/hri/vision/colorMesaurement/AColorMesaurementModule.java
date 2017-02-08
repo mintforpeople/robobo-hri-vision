@@ -52,7 +52,7 @@ public abstract class AColorMesaurementModule implements IColorMesaurementModule
         }
 
         if (rcmodule!=null) {
-            Log.d(TAG, "Send MEASUREDCOLOR");
+
             Status status = new Status("MEASUREDCOLOR");
             status.putContents("R",r+"");
             status.putContents("G",g+"");
