@@ -48,7 +48,6 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
     /*
      * https://developers.google.com/android/reference/com/google/android/gms/vision/face/FaceDetector
-     * todo mirar el setfocus
      */
     //region VAR
     private String TAG = "FaceDetectionModule";
@@ -122,6 +121,8 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
                 PointF facecoord = new PointF();
                 float eyesDistance = 0;
                 faces[0].getMidPoint(facecoord);
+                facecoord.x=(facecoord.x/convertedBitmap.getWidth())*100;
+                facecoord.y=(facecoord.y/convertedBitmap.getHeight())*100;
                 eyesDistance = faces[0].eyesDistance();
                 if (lostFace) {
                     lostFace = false;
