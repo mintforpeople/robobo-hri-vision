@@ -55,17 +55,17 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
 
     @Override
     public void shutdown() throws InternalErrorException {
-
+        cameraModule.unsuscribe(this);
     }
 
     @Override
     public String getModuleInfo() {
-        return null;
+        return "Color Measurement Module";
     }
 
     @Override
     public String getModuleVersion() {
-        return null;
+        return "0.1";
     }
 
     @Override

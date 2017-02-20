@@ -63,7 +63,7 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
      * http://www.workwithcolor.com/orange-brown-color-hue-range-01.htm
     */
 
-    private String TAG ="OCVCOolormodule";
+    private String TAG ="OCVColormodule";
     private Context context;
     private int cuentaframes=0;
     private boolean paused = true;
@@ -107,7 +107,7 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
 
     @Override
     public void shutdown() throws InternalErrorException {
-
+        cameraModule.unsuscribe(this);
     }
 
     @Override
@@ -205,7 +205,6 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
                 }
             }
 
-            //TODO: Cambiar rangos a rueda de color, sumar valor absoluto a menores de 0
             double mean = meansum / count;
             meanv = meanv/count;
             means = means/count;
@@ -240,7 +239,6 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
 
                 mBlobColorHsv.val[0] = mean*2;
                 int colorrgb = Color.HSVToColor(floatHsv);
-                //TODO: Cambiar rangos a rueda de color, sumar valor absoluto a menores de 0
 
                 mean = mean -8;
                 if (mean<0){

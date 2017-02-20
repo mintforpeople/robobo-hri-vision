@@ -81,6 +81,8 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
     @Override
     public void shutdown() throws InternalErrorException {
+        cameraModule.unsuscribe(this);
+
     }
 
     @Override
@@ -113,6 +115,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
             processing = true;
 
             Bitmap convertedBitmap = convert(frame.getBitmap(), Bitmap.Config.RGB_565);
+            //TODO Crear el detector solo una vez
             faceDetector = new FaceDetector(convertedBitmap.getWidth(), convertedBitmap.getHeight(), 1);
             //Log.d(TAG, "New Frame, resolution:"+convertedBitmap.getHeight()+"x"+convertedBitmap.getWidth());
             int facenumber = faceDetector.findFaces(convertedBitmap, faces);
