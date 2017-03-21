@@ -45,6 +45,10 @@ import org.opencv.imgproc.Imgproc;
 public class OpenCVColorMesaurementModule extends AColorMesaurementModule implements ICameraListener {
     private ICameraModule cameraModule;
     private String TAG = "OCVColorMesaurement";
+    private int lastr = 0;
+    private int lastg = 0;
+    private int lastb = 0;
+
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         cameraModule = manager.getModuleInstance(ICameraModule.class);
@@ -163,11 +167,21 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
             b = Math.round(((float)b / (float)sum) * 100);
 
 //            Log.d(TAG, "R: " + r + " G: " + g + " B: " + b+" Covered: "+(float)count/(float)pixels);
-            notifyColorMesaured(r, g, b);
+            if ((lastb!=b)||(lastg!=g)||(lastr!=r)) {
+                notifyColorMesaured(r, g, b);
+                lastb = b;
+                lastg = g;
+                lastr = r;
+            }
         }
         else {
 //            Log.d(TAG, "R: " + 0 + " G: " + 0 + " B: " + 0);
-            notifyColorMesaured(0, 0, 0);
+            if ((lastb!=b)||(lastg!=g)||(lastr!=r)) {
+                notifyColorMesaured(0, 0, 0);
+                lastb = 0;
+                lastg = 0;
+                lastr = 0;
+            }
 
         }
         mat.release();

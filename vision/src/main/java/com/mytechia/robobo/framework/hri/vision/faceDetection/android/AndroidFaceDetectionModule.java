@@ -126,6 +126,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
                 faces[0].getMidPoint(facecoord);
                 facecoord.x=(facecoord.x/convertedBitmap.getWidth())*100;
                 facecoord.y=(facecoord.y/convertedBitmap.getHeight())*100;
+
                 eyesDistance = faces[0].eyesDistance();
                 if (lostFace) {
                     lostFace = false;
