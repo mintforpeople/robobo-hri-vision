@@ -23,6 +23,8 @@ package com.mytechia.robobo.framework.hri.vision.basicCamera;
 
 import android.util.Log;
 
+import com.mytechia.robobo.framework.RoboboManager;
+
 import org.opencv.core.Mat;
 
 import java.util.HashSet;
@@ -35,7 +37,7 @@ public abstract class ACameraModule implements ICameraModule{
     public ACameraModule(){
         listeners = new HashSet<ICameraListener>();
     }
-
+    protected RoboboManager m;
     protected void notifyFrame(Frame frame){
         for (ICameraListener listener:listeners){
                 listener.onNewFrame(frame);
@@ -49,7 +51,7 @@ public abstract class ACameraModule implements ICameraModule{
     }
 
     public void suscribe(ICameraListener listener){
-        Log.d("Cam_module", "Suscribed:"+listener.toString());
+        m.log("Cam_module", "Suscribed:"+listener.toString());
         listeners.add(listener);
     }
     public void unsuscribe(ICameraListener listener){

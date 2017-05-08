@@ -50,6 +50,7 @@ import android.view.TextureView;
 import android.view.WindowManager;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
+import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ACameraModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
@@ -141,6 +142,7 @@ public class AndroidCameraModule extends ACameraModule {
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         this.context = manager.getApplicationContext();
+        m = manager;
 
         Properties properties = new Properties();
         AssetManager assetManager = manager.getApplicationContext().getAssets();
@@ -198,16 +200,16 @@ public class AndroidCameraModule extends ACameraModule {
 
 
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            Log.e(LOGGER, "Permission camera not granted");
+            m.log(LogLvl.ERROR, LOGGER, "Permission camera not granted");
             return;
         }
 
         try {
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
-                Log.e(LOGGER, "Time out waiting to lock camera opening.");
+                m.log(LogLvl.ERROR, LOGGER, "Time out waiting to lock camera opening.");
             }
         } catch (InterruptedException e) {
-            Log.e(LOGGER, "Time out waiting to lock camera opening.");
+            m.log(LogLvl.ERROR, LOGGER, "Time out waiting to lock camera opening.");
             return;
         }
 
@@ -224,7 +226,7 @@ public class AndroidCameraModule extends ACameraModule {
 
             mCameraManager.openCamera(cameraId, new CameraDeviceStateCallback(mCameraManager), mBackgroundHandler);
         } catch (CameraAccessException ex) {
-            Log.e(LOGGER, "Error open camera", ex);
+            m.log(LogLvl.ERROR, LOGGER, "Error open camera"+ ex.getMessage());
         }
 
 
@@ -277,7 +279,7 @@ public class AndroidCameraModule extends ACameraModule {
             try {
                 characteristics= mCameraManager.getCameraCharacteristics(cameraId);
             } catch (CameraAccessException ex) {
-                Log.e(LOGGER, "Error camera access exception", ex);
+                m.log(LogLvl.ERROR, LOGGER, "Error camera access exception"+ ex.getMessage());
             }
 
             StreamConfigurationMap configs= characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
@@ -318,7 +320,7 @@ public class AndroidCameraModule extends ACameraModule {
             try {
                 cameraDevice.createCaptureSession(surfaces, new CaptureSessionStateCallback(), mBackgroundHandler);
             } catch (CameraAccessException ex) {
-                Log.e(LOGGER, "Error create camera capture session", ex);
+                m.log(LogLvl.ERROR, LOGGER, "Error create camera capture session"+ ex.getMessage());
             }
 
 
@@ -329,14 +331,14 @@ public class AndroidCameraModule extends ACameraModule {
             mCameraOpenCloseLock.release();
             cameraDevice.close();
             cameraDevice = null;
-            Log.w(LOGGER, "Disconnected camera[id="+camera.getId()+"]");
+            m.log(LogLvl.WARNING, LOGGER, "Disconnected camera[id="+camera.getId()+"]");
         }
 
         @Override
         public void onError(CameraDevice camera, int error) {
             mCameraOpenCloseLock.release();
             cameraDevice=null;
-            Log.e(LOGGER, "Error openning camera[id="+camera.getId()+"], error="+error);
+            m.log(LogLvl.ERROR, LOGGER, "Error openning camera[id="+camera.getId()+"], error="+error);
         }
 
     }
@@ -359,7 +361,7 @@ public class AndroidCameraModule extends ACameraModule {
             try {
                 captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             } catch (CameraAccessException ex) {
-                Log.e(LOGGER, "Error create capture request", ex);
+                m.log(LogLvl.ERROR, LOGGER, "Error create capture request"+ ex.getMessage());
                 return;
             }
 
@@ -384,7 +386,7 @@ public class AndroidCameraModule extends ACameraModule {
                 session.setRepeatingRequest(captureRequest, new CameraCaptureSessionCaptureCallback(), mBackgroundHandler);
 
             } catch (CameraAccessException ex) {
-                Log.e(LOGGER, "Error create capture request", ex);
+                m.log(LogLvl.ERROR, LOGGER, "Error create capture request"+ ex.getMessage());
                 return;
             }
 
@@ -393,7 +395,7 @@ public class AndroidCameraModule extends ACameraModule {
 
         @Override
         public void onConfigureFailed(CameraCaptureSession session) {
-            Log.e(LOGGER, "Error configuration camera capture session");
+            m.log(LogLvl.ERROR, LOGGER, "Error configuration camera capture session");
         }
 
 
@@ -476,7 +478,7 @@ public class AndroidCameraModule extends ACameraModule {
 
     private void stopBackgroundThread() {
 
-        Log.d(LOGGER, "Stopping background thread");
+        m.log(LOGGER, "Stopping background thread");
 
         if(mBackgroundThread==null){
             return;
@@ -488,7 +490,7 @@ public class AndroidCameraModule extends ACameraModule {
             mBackgroundThread = null;
             mBackgroundHandler = null;
         } catch (InterruptedException e) {
-            Log.w(LOGGER, e);
+            m.log(LogLvl.WARNING, LOGGER, e.getMessage());
         }
 
 
@@ -570,7 +572,7 @@ public class AndroidCameraModule extends ACameraModule {
 
     private void closeCamera() {
 
-        Log.d(LOGGER, "Closing camera");
+        m.log(LOGGER, "Closing camera");
 
         try {
             mCameraOpenCloseLock.acquire();
@@ -591,7 +593,7 @@ public class AndroidCameraModule extends ACameraModule {
                 try {
                     stream.close();
                 } catch (IOException e) {
-                    Log.w(LOGGER, e);
+                    m.log(LogLvl.WARNING, LOGGER, e.getMessage());
                 }
             }
 

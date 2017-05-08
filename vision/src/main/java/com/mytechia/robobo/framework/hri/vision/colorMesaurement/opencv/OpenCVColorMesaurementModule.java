@@ -24,15 +24,15 @@ package com.mytechia.robobo.framework.hri.vision.colorMesaurement.opencv;
 import android.util.Log;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
+
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.colorMesaurement.AColorMesaurementModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
-import com.mytechia.robobo.framework.remote_control.remoterob.IRemoteRobModule;
 
-import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -69,7 +69,7 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
 
     @Override
     public String getModuleVersion() {
-        return "0.1";
+        return "0.3.0";
     }
 
     @Override
@@ -95,6 +95,7 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
 
         Mat hsvMat = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC3);
         Imgproc.cvtColor(mat, hsvMat, Imgproc.COLOR_RGB2HSV, 3);
+
 
 
 

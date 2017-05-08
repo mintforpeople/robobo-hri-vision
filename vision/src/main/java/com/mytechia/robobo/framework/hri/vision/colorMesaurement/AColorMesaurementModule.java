@@ -24,6 +24,7 @@ package com.mytechia.robobo.framework.hri.vision.colorMesaurement;
 
 import android.util.Log;
 
+import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 
@@ -35,6 +36,7 @@ import java.util.HashSet;
 public abstract class AColorMesaurementModule implements IColorMesaurementModule {
     private HashSet<IColorMesauredListener> listeners = new HashSet<>();
     private String TAG = "AColorMeasurement";
+    protected RoboboManager m;
 
     protected IRemoteControlModule rcmodule = null;
     @Override

@@ -92,7 +92,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
     @Override
     public String getModuleVersion() {
-        return "v2.3";
+        return "0.3.0";
     }
 
 

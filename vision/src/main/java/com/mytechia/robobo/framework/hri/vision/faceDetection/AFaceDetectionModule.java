@@ -25,6 +25,7 @@ import android.graphics.PointF;
 import android.util.Log;
 
 import com.mytechia.robobo.framework.IModule;
+import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 
@@ -38,6 +39,8 @@ import java.util.HashSet;
 public abstract class AFaceDetectionModule implements IFaceDetectionModule{
     private HashSet<IFaceListener> listeners;
     protected IRemoteControlModule rcmodule = null;
+    protected RoboboManager m;
+
     public AFaceDetectionModule(){
         listeners = new HashSet<IFaceListener>();
     }
@@ -87,7 +90,7 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
     }
 
     public void suscribe(IFaceListener listener){
-        Log.d("FD_module", "Suscribed:"+listener.toString());
+        m.log("FD_module", "Suscribed:"+listener.toString());
         listeners.add(listener);
     }
     public void unsuscribe(IFaceListener listener){

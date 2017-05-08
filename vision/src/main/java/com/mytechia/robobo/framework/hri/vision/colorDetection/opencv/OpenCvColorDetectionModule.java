@@ -30,6 +30,7 @@ import android.util.Log;
 
 import com.mytechia.commons.framework.exception.ConfigurationException;
 import com.mytechia.commons.framework.exception.InternalErrorException;
+import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
@@ -77,7 +78,7 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    Log.i(TAG, "OpenCV loaded successfully");
+                    m.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
 
                 } break;
                 default:
@@ -90,11 +91,12 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         context = manager.getApplicationContext();
+        m = manager;
         if (!OpenCVLoader.initDebug()) {
-            Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            m.log(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, context, mLoaderCallback);
         } else {
-            Log.d(TAG, "OpenCV library found inside package. Using it!");
+            m.log(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
 
@@ -112,12 +114,12 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
 
     @Override
     public String getModuleInfo() {
-        return null;
+        return "OpenCv Color detection module";
     }
 
     @Override
     public String getModuleVersion() {
-        return null;
+        return "0.3.0";
     }
 
     private void processFrame(Bitmap bmp) {
@@ -143,6 +145,7 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         Imgproc.Canny(bwimage, bwimage, 75, 100);
 
+        //TODO Cambiar RETR_LIST por  RETR_EXTERNAL y probarlo
         Imgproc.findContours(bwimage, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
         bwimage.release();
 
@@ -161,18 +164,17 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
             }
         }
 
-        //Log.d(TAG, "MAXAREA: " + maxArea);
 
 
         if (maxArea > 500) {
-            MatOfPoint contour = contours.get(maxAreaIdx);
+            //MatOfPoint contour = contours.get(maxAreaIdx);
             Mat contourMat = Mat.zeros(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC1);
 
 
             Imgproc.drawContours(contourMat, contours, maxAreaIdx, new Scalar(1), -1);
 
 
-            Rect boundingRect = Imgproc.boundingRect(contour);
+            //Rect boundingRect = Imgproc.boundingRect(contour);
 
             List<Mat> lHsv = new ArrayList<Mat>(3);
             Core.split(hsvMat, lHsv);
@@ -215,7 +217,7 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
             double variancev = meansquearedvaluesv/ (Math.pow(meanv,2));
             double variances = meansquearedvalues/ (Math.pow(meanv,2));
 
-            Log.d(TAG, "Variance: " + variance+ " Mean: "+mean + " Variance v: " + variancev + " Mean v: " + meanv);
+            m.log(LogLvl.TRACE, TAG, "Variance: " + variance+ " Mean: "+mean + " Variance v: " + variancev + " Mean v: " + meanv);
             //1.02
             if (variance < 1.03) {
 
@@ -245,35 +247,35 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
                     mean = 171+Math.abs(mean);
                 }
                 if ((mean > 166) && (mean <= 179)) {
-                    Log.d(TAG, "RED" + mean);
+                    m.log(LogLvl.TRACE, TAG, "RED" + mean);
 //                    notifyColor(colorrgb, Color.RED, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.RED);
 
                 }
 
                 if ((mean > 0) && (mean <= 29)) {
-                    Log.d(TAG, "YELLOW" + mean);
+                    m.log(LogLvl.TRACE, TAG, "YELLOW" + mean);
 //                    notifyColor(colorrgb, Color.YELLOW, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.YELLOW);
                 }
                 if ((mean > 30) && (mean <= 66)) {
-                    Log.d(TAG, "GREEN" + mean);
+                    m.log(LogLvl.TRACE, TAG, "GREEN" + mean);
 //                    notifyColor(colorrgb, Color.GREEN, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.GREEN);
                 }
                 if ((mean > 67) && (mean <= 96)) {
-                    Log.d(TAG, "CYAN" + mean);
+                    m.log(LogLvl.TRACE, TAG, "CYAN" + mean);
 //                    notifyColor(colorrgb, Color.CYAN, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.CYAN);
 
                 }
                 if ((mean > 97) && (mean <= 141)) {
-                    Log.d(TAG, "BLUE" + mean);
+                    m.log(LogLvl.TRACE, TAG, "BLUE" + mean);
 //                    notifyColor(colorrgb, Color.BLUE, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.BLUE);
                 }
                 if ((mean > 142) && (mean <= 165)) {
-                    Log.d(TAG, "MAGENTA" + mean);
+                    m.log(LogLvl.TRACE, TAG, "MAGENTA" + mean);
 //                    notifyColor(colorrgb, Color.MAGENTA, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
                     notifyColor(colorrgb, Color.MAGENTA);
                 }

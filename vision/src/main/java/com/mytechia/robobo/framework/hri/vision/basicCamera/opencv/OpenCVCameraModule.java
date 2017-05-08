@@ -36,6 +36,7 @@ import android.view.ViewGroup;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.IModule;
+import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ACameraModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
@@ -82,7 +83,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    Log.i(TAG, "OpenCV loaded successfully");
+                    m.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
                     mOpenCvCameraView.enableView();
                 } break;
                 default:
@@ -162,10 +163,10 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
 
         if (!OpenCVLoader.initDebug()) {
-            Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            m.log(LogLvl.WARNING, TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, context, mLoaderCallback);
         } else {
-            Log.d(TAG, "OpenCV library found inside package. Using it!");
+            m.log(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
     }
@@ -197,7 +198,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
                 index = CAMERA_ID_BACK;
                 break;
         }
-        Log.d(TAG,"New camera index: "+index);
+        m.log(TAG,"New camera index: "+index);
         mOpenCvCameraView.disableView();
         mOpenCvCameraView.setCameraIndex(index);
         mOpenCvCameraView.enableView();
@@ -211,6 +212,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         Bitmap bmp;
         Mat mat = inputFrame.rgba();
 
+
         //Giramos la imagen para evitar que salga torcida
         Core.flip(mat.t(),mat,1);
         bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
@@ -221,6 +223,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         frame.setHeight(bmp.getHeight());
         frame.setWidth(bmp.getWidth());
         frame.setBitmap(bmp);
+        //TODO devolver byte[] para artoolkit???
         notifyFrame(frame);
 
         if (notifyMat){
@@ -235,14 +238,14 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public void onCameraViewStarted(int width, int height) {
 
-        Log.d(TAG,"Camera view started, resolution: "+height+"x"+width);
+        m.log(TAG,"Camera view started, resolution: "+height+"x"+width);
 
 
     }
 
     @Override
     public void onCameraViewStopped() {
-        Log.d(TAG,"Camera view stopped");
+        m.log(TAG,"Camera view stopped");
     }
 
     //endregion
