@@ -100,7 +100,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     //region IModule methods
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
-
+        m =  manager;
         context = manager.getApplicationContext();
         Looper.prepare();
 

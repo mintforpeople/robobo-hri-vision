@@ -51,6 +51,7 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
+        m = manager;
         cameraModule = manager.getModuleInstance(ICameraModule.class);
         rcmodule = manager.getModuleInstance(IRemoteControlModule.class);
         cameraModule.suscribe(this);

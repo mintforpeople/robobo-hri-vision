@@ -67,6 +67,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
     @Override
     public void startup(RoboboManager manager)  {
+        m = manager;
         try {
             this.cameraModule = manager.getModuleInstance(ICameraModule.class);
             rcmodule = manager.getModuleInstance(IRemoteControlModule.class);
