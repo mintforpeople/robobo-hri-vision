@@ -130,7 +130,7 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
 
         Bitmap bmp32 = bmp.copy(Bitmap.Config.ARGB_8888, true);
         Mat imageMat = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC3);
-        ;
+
         Mat hsvMat = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC3);
 
         Mat bwimage = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC1);

@@ -1,7 +1,7 @@
 /*******************************************************************************
  *
- *   Copyright 2016 Mytech Ingenieria Aplicada <http://www.mytechia.com>
- *   Copyright 2016 Luis Llamas <luis.llamas@mytechia.com>
+ *   Copyright 2017 Mytech Ingenieria Aplicada <http://www.mytechia.com>
+ *   Copyright 2017 Luis Llamas <luis.llamas@mytechia.com>
  *
  *   This file is part of Robobo HRI Modules.
  *
@@ -19,42 +19,32 @@
  *   along with Robobo HRI Modules.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-package com.mytechia.robobo.framework.hri.vision.basicCamera;
-
-import android.util.Log;
+package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
 import com.mytechia.robobo.framework.RoboboManager;
 
-import org.opencv.core.Mat;
-
 import java.util.HashSet;
 
-/**
- * Abstract class that manages listeners and status
- */
-public abstract class ACameraModule implements ICameraModule{
-    private HashSet<ICameraListener> listeners ;
-    public ACameraModule(){
-        listeners = new HashSet<ICameraListener>();
+public abstract class ABlobTrackingModule implements IBlobTrackingModule {
+    private HashSet<IBlobListener> listeners;
+
+    public ABlobTrackingModule(){
+        listeners = new HashSet<IBlobListener>();
     }
     protected RoboboManager m;
-    protected void notifyFrame(Frame frame){
-        for (ICameraListener listener:listeners){
-                listener.onNewFrame(frame);
+
+    protected void notifyTrackingBall(Blobcolor blobcolor, int x, int y, int size){
+        for (IBlobListener listener:listeners){
+            listener.onTrackingBall(blobcolor, x, y,size);
         }
     }
 
-    protected void notifyMat(Mat mat){
-        for (ICameraListener listener:listeners){
-            listener.onNewMat(mat);
-        }
-    }
 
-    public void suscribe(ICameraListener listener){
-        m.log("Cam_module", "Suscribed:"+listener.toString());
+    public void suscribe(IBlobListener listener){
+        m.log("Ball_module", "Suscribed:"+listener.toString());
         listeners.add(listener);
     }
-    public void unsuscribe(ICameraListener listener){
+    public void unsuscribe(IBlobListener listener){
         listeners.remove(listener);
     }
 }
