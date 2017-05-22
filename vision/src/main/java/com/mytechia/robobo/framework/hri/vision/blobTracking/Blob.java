@@ -22,13 +22,15 @@ import org.opencv.core.Point;
  * along with Robobo Remote Control Module.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 public class Blob {
+    private Blobcolor color;
     private int x;
     private int y;
     private int size;
     private boolean isBall;
     private boolean isSquare;
 
-    public Blob(Point coords, int size, boolean isBall, boolean isSquare) {
+    public Blob(Blobcolor color, Point coords, int size, boolean isBall, boolean isSquare) {
+        this.color = color;
         this.isBall = isBall;
         this.isSquare = isSquare;
         this.size = size;
@@ -54,5 +56,17 @@ public class Blob {
 
     public int getY() {
         return y;
+    }
+
+    public Blobcolor getColor() {
+        return color;
+    }
+
+    public void setSquare(boolean square) {
+        isSquare = square;
+    }
+
+    public void setBall(boolean ball) {
+        isBall = ball;
     }
 }

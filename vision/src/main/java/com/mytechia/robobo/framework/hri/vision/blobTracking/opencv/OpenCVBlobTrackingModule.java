@@ -22,8 +22,10 @@
 package com.mytechia.robobo.framework.hri.vision.blobTracking.opencv;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
+import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.ABlobTrackingModule;
+import com.mytechia.robobo.framework.hri.vision.blobTracking.Blob;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
@@ -45,6 +47,10 @@ import java.util.List;
 //https://github.com/badlogic/opencv-fun/blob/master/src/pool/utils/BallDetector.java
 public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICameraListener {
     private ICameraModule cameraModule;
+    private boolean processing =false;
+    private boolean dR =false;
+    private boolean dG =true;
+    private boolean dB =false;
     @Override
     public void onNewFrame(Frame frame) {
         
@@ -52,36 +58,156 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     @Override
     public void onNewMat(Mat mat) {
-
+    if (!processing) {
         Mat hsvFrame = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC3);
         Imgproc.cvtColor(mat, hsvFrame, Imgproc.COLOR_BGR2HSV);
-        Imgproc.blur(hsvFrame,hsvFrame, new Size(11,11));
-        Mat mask= new Mat(mat.rows(), mat.cols(), CvType.CV_32F);
+        Imgproc.blur(hsvFrame, hsvFrame, new Size(11, 11));
 
-        Core.inRange(hsvFrame, Blobcolor.getLowRange(Blobcolor.RED ), Blobcolor.getHighRange(Blobcolor.RED),mask);
-        Imgproc.erode(mask,mask,Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE,new Size(11,11)));
-        Imgproc.dilate(mask,mask,Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE,new Size(11,11)));
-        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-        Imgproc.findContours(mask,contours,new Mat(),Imgproc.RETR_EXTERNAL,Imgproc.CHAIN_APPROX_SIMPLE);
+        if (dR) {
+            Mat maskred = new Mat(mat.rows(), mat.cols(), CvType.CV_32F);
 
-        if (contours.size()>0){
-            int maxarea = 0;
-            MatOfPoint maxcontour = null;
-            for (MatOfPoint c:contours){
-                if (Imgproc.contourArea(c)> maxarea){
-                    maxcontour = c;
+            Core.inRange(hsvFrame, Blobcolor.getLowRange(Blobcolor.RED), Blobcolor.getHighRange(Blobcolor.RED), maskred);
+            //Clean mask and find contours
+            Imgproc.erode(maskred, maskred, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
+            Imgproc.dilate(maskred, maskred, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
+            List<MatOfPoint> contoursred = new ArrayList<MatOfPoint>();
+            Imgproc.findContours(maskred, contoursred, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+            if (contoursred.size() > 0) {
+                double maxarea = 0;
+                MatOfPoint maxcontour = null;
+                for (MatOfPoint c : contoursred) {
+                    if (Imgproc.contourArea(c) > maxarea) {
+                        maxcontour = c;
+                        maxarea = Imgproc.contourArea(c);
+                    }
                 }
+                MatOfPoint2f maxcontourf = new MatOfPoint2f(maxcontour.toArray());
+                float[] radius = new float[1];
+                Point center = new Point();
+                Imgproc.minEnclosingCircle(maxcontourf, center, radius);
+                double circularity = (double) Imgproc.contourArea(maxcontour) / (Math.PI * radius[0] * radius[0]);
+                if (radius[0] > 10) {
+                    Blob b = null;
+                    if (circularity > (double) 0.70) {
+                        b = new Blob(Blobcolor.RED, center, (int) radius[0], true, false);
+                    } else {
+                        b = new Blob(Blobcolor.RED, center, (int) radius[0], false, false);
+
+                    }
+
+                    this.notifyTrackingBlob(b);
+                }
+
             }
-            MatOfPoint2f maxcontourf = new MatOfPoint2f( maxcontour.toArray() );
-            float[] radius = new float[1];
-            Point center = new Point();
-            Imgproc.minEnclosingCircle(maxcontourf,center,radius);
-            if (radius[0]>10){
-                this.notifyTrackingBall(Blobcolor.GREEN,(int)center.x, (int)center.y, (int)radius[0]);
+        }
+        if (dG) {
+            Mat maskgreen = new Mat(mat.rows(), mat.cols(), CvType.CV_32F);
+
+            Core.inRange(hsvFrame, Blobcolor.getLowRange(Blobcolor.GREEN), Blobcolor.getHighRange(Blobcolor.GREEN), maskgreen);
+            Imgproc.erode(maskgreen, maskgreen, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
+            Imgproc.dilate(maskgreen, maskgreen, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
+            List<MatOfPoint> contoursgreen = new ArrayList<MatOfPoint>();
+            Imgproc.findContours(maskgreen, contoursgreen, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+            if (contoursgreen.size() > 0) {
+                double maxarea = 0;
+                MatOfPoint maxcontour = null;
+                for (MatOfPoint c : contoursgreen) {
+                    if (Imgproc.contourArea(c) > maxarea) {
+                        maxcontour = c;
+                        maxarea = Imgproc.contourArea(c);
+                    }
+                }
+                MatOfPoint2f maxcontourf = new MatOfPoint2f(maxcontour.toArray());
+                float[] radius = new float[1];
+                Point center = new Point();
+                Imgproc.minEnclosingCircle(maxcontourf, center, radius);
+                double circularity = (double) Imgproc.contourArea(maxcontour)/(Math.PI*radius[0]*radius[0]);
+                if (radius[0] > 10) {
+                    Blob b = null;
+                    if ( circularity > (double) 0.70){
+                        b = new Blob(Blobcolor.GREEN, center, (int)radius[0],true,false);
+                    }else {
+                        b = new Blob(Blobcolor.GREEN, center, (int)radius[0],false,false);
+
+                    }
+
+                    this.notifyTrackingBlob(b);                }
+
+            }
+        }
+        if (dB) {
+            Mat maskblue = new Mat(mat.rows(), mat.cols(), CvType.CV_32F);
+
+            Core.inRange(hsvFrame, Blobcolor.getLowRange(Blobcolor.BLUE), Blobcolor.getHighRange(Blobcolor.BLUE), maskblue);
+            //Clean mask and find contours
+            Imgproc.erode(maskblue, maskblue, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(21, 21)));
+            Imgproc.dilate(maskblue, maskblue, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(21, 21)));
+            List<MatOfPoint> contoursblue = new ArrayList<MatOfPoint>();
+            Imgproc.findContours(maskblue, contoursblue, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+            if (contoursblue.size() > 0) {
+                double maxarea = 0;
+                MatOfPoint maxcontour = null;
+                for (MatOfPoint c : contoursblue) {
+                    if (Imgproc.contourArea(c) > maxarea) {
+                        maxcontour = c;
+                        maxarea = Imgproc.contourArea(c);
+                    }
+                }
+                MatOfPoint2f maxcontourf = new MatOfPoint2f(maxcontour.toArray());
+                float[] radius = new float[1];
+                Point center = new Point();
+                Imgproc.minEnclosingCircle(maxcontourf, center, radius);
+                double circularity = (double) Imgproc.contourArea(maxcontour) / (Math.PI * radius[0] * radius[0]);
+                if (radius[0] > 10) {
+                    Blob b = null;
+                    if (circularity > (double) 0.70) {
+                        b = new Blob(Blobcolor.BLUE, center, (int) radius[0], true, false);
+                    } else {
+                        b = new Blob(Blobcolor.BLUE, center, (int) radius[0], false, false);
+
+                    }
+
+                    this.notifyTrackingBlob(b);
+
+
+                }
             }
         }
 
+        //Get mask image for each color
+
+        //Clean mask and find contours
+
+
+
+
+
+//        Imgproc.GaussianBlur(maskgreen, maskgreen, new Size(9, 9), 2, 2);
+//        Core.MinMaxLocResult minmax = Core.minMaxLoc(maskgreen);
+//        m.log(LogLvl.WARNING, "ColorBlob", "Min: " + minmax.minVal + " Max: " + minmax.maxVal);
+//        Mat circles = new Mat();
+//
+//        Imgproc.HoughCircles(maskgreen, circles, Imgproc.HOUGH_GRADIENT, 1, 1, 10, 20, 0, 0);
+//        if (circles.cols() > 0)
+//            for (int x = 0; x < circles.cols(); x++) {
+//                double vCircle[] = circles.get(0, x);
+//
+//                if (vCircle == null)
+//                    break;
+//
+//                Point pt = new Point(Math.round(vCircle[0]), Math.round(vCircle[1]));
+//                int radius = (int) Math.round(vCircle[2]);
+//                notifyTrackingBlob(Blobcolor.GREEN, (int) pt.x, (int) pt.y, radius);
+//            }
     }
+
+
+
+    }
+
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
@@ -103,5 +229,12 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public String getModuleVersion() {
         return "v0.1";
+    }
+
+    @Override
+    public void configureDetection(boolean detectRed, boolean detectBlue, boolean detectGreen) {
+        dR = detectRed;
+        dB = detectBlue;
+        dG = detectGreen;
     }
 }

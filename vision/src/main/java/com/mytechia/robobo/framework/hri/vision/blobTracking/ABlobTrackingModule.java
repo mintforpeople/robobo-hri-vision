@@ -33,15 +33,15 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     }
     protected RoboboManager m;
 
-    protected void notifyTrackingBall(Blobcolor blobcolor, int x, int y, int size){
+    protected void notifyTrackingBlob(Blob blob){
         for (IBlobListener listener:listeners){
-            listener.onTrackingBall(blobcolor, x, y,size);
+            listener.onTrackingBlob(blob);
         }
     }
 
 
     public void suscribe(IBlobListener listener){
-        m.log("Ball_module", "Suscribed:"+listener.toString());
+        m.log("Blob_module", "Suscribed:"+listener.toString());
         listeners.add(listener);
     }
     public void unsuscribe(IBlobListener listener){

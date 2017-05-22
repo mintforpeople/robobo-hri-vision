@@ -38,7 +38,7 @@ import android.widget.TextView;
 
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
-import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
+import com.mytechia.robobo.framework.hri.vision.blobTracking.Blob;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.IBlobListener;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.IBlobTrackingModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
@@ -48,6 +48,8 @@ import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Mat;
+
+import java.sql.SQLOutput;
 
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
@@ -226,7 +228,10 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
     }
 
     @Override
-    public void onTrackingBall(Blobcolor color, final int x, final int y, final int size) {
+    public void onTrackingBlob(final Blob blob) {
+        final int x = blob.getX();
+        final int y = blob.getY();
+        final int size = blob.getSize();
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -239,7 +244,13 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
 
 
                 Paint paint = new Paint();
-                paint.setColor(Color.RED);
+                System.out.println(blob.isBall());
+                if (blob.isBall()) {
+                    paint.setColor(Color.GREEN);
+                }else {
+                    paint.setColor(Color.RED);
+
+                }
                 //imageView.setImageBitmap(lastFrame.getBitmap());
                 c.drawCircle(x,y,size,paint);
                 imageView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));

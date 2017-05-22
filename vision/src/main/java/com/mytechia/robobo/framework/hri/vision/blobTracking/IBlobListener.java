@@ -20,6 +20,6 @@ package com.mytechia.robobo.framework.hri.vision.blobTracking;
  * along with Robobo Remote Control Module.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 public interface IBlobListener {
-    public void onTrackingBall(Blobcolor color, int x, int y, int size);
+    public void onTrackingBlob(Blob blob);
 
 }
