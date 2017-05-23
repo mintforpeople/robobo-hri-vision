@@ -39,6 +39,7 @@ import android.widget.TextView;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blob;
+import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.IBlobListener;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.IBlobTrackingModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
@@ -145,7 +146,7 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
-
+        ballTrackingModule.configureDetection(true,true,true);
 
         //camModule.passSurfaceView(surfaceView);
         runOnUiThread(new Runnable() {
@@ -163,6 +164,7 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
         });
         mDetector = new GestureDetectorCompat(getApplicationContext(),this);
         camModule.suscribe(this);
+        camModule.setFps(10);
         ballTrackingModule.suscribe(this);
 
 
@@ -193,6 +195,17 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
 
     }
 
+    @Override
+    public void onDebugFrame(final Frame frame,final String frameId) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                imageView.setImageDrawable(new BitmapDrawable(getResources(), frame.getBitmap()));
+
+            }
+        });
+    }
 
 
     @Override
@@ -244,15 +257,29 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
 
 
                 Paint paint = new Paint();
-                System.out.println(blob.isBall());
                 if (blob.isBall()) {
                     paint.setColor(Color.GREEN);
                 }else {
-                    paint.setColor(Color.RED);
+                    if (blob.isSquare()) {
+                        paint.setColor(Color.BLUE);}
+                    else {
+                        paint.setColor(Color.RED);
+                    }
 
                 }
                 //imageView.setImageBitmap(lastFrame.getBitmap());
                 c.drawCircle(x,y,size,paint);
+                paint.setColor(Color.BLACK);
+                c.drawCircle(x,y,size-2,paint);
+                if (blob.getColor()== Blobcolor.BLUE){
+                    paint.setColor(Color.BLUE);
+                }if (blob.getColor()== Blobcolor.RED){
+                    paint.setColor(Color.RED);
+                }if (blob.getColor()== Blobcolor.GREEN){
+                    paint.setColor(Color.GREEN);
+                }
+                c.drawCircle(x,y,size-5,paint);
+                paint.setColor(Color.BLACK);
                 imageView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
 
             }

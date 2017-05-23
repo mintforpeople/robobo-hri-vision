@@ -71,4 +71,11 @@ public interface ICameraModule extends IModule {
      * Changes between front and back camera
      */
     public void changeCamera();
+    public void debugFrame(Frame frame, String frameId);
+
+    /**
+     * Sets the FPS for the frame notifications
+     * @param fps
+     */
+    public void setFps(int fps);
 }

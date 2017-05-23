@@ -306,4 +306,8 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
     public void onNewMat(Mat mat) {
 
     }
+    @Override
+    public void onDebugFrame(Frame frame, String frameId) {
+
+    }
 }

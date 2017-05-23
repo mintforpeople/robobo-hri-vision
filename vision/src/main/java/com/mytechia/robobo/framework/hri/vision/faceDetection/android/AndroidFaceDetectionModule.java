@@ -155,5 +155,8 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     }
     //endregion
 
+    @Override
+    public void onDebugFrame(Frame frame, String frameId) {
 
+    }
 }

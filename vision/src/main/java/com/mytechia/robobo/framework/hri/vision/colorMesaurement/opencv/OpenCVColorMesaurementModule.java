@@ -192,8 +192,10 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
 
     }
 
+    @Override
+    public void onDebugFrame(Frame frame, String frameId) {
 
-
+    }
 
 
 }

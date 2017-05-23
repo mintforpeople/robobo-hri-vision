@@ -43,6 +43,11 @@ public abstract class ACameraModule implements ICameraModule{
                 listener.onNewFrame(frame);
         }
     }
+    protected void notifyDebugFrame(Frame frame, String id){
+        for (ICameraListener listener:listeners){
+                listener.onDebugFrame(frame, id);
+        }
+    }
 
     protected void notifyMat(Mat mat){
         for (ICameraListener listener:listeners){

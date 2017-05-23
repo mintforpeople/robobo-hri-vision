@@ -162,4 +162,9 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
     public void onNewMat(Mat mat) {
 
     }
+
+    @Override
+    public void onDebugFrame(Frame frame, String frameId) {
+
+    }
 }

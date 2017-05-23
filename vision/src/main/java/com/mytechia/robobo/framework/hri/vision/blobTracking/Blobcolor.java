@@ -27,9 +27,10 @@ import org.opencv.core.Scalar;
  */
 public enum Blobcolor {
 
-    GREEN(29, 86, 6, 64, 255, 255),
-    BLUE(50, 50, 110, 255, 255, 130),
-    RED(30,150,50,255,255,180);
+//    GREEN(29, 86, 6, 64, 255, 255),
+    GREEN(29, 75, 6, 77, 255, 255),
+    BLUE(0,80,40,20,255,150),
+    RED(100,150,100,179,255,200);
 
     public int hmin;
     public int smin;

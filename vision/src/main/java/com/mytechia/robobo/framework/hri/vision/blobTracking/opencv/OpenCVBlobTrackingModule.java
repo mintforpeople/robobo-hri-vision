@@ -37,6 +37,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
@@ -48,9 +49,9 @@ import java.util.List;
 public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICameraListener {
     private ICameraModule cameraModule;
     private boolean processing =false;
-    private boolean dR =false;
-    private boolean dG =true;
-    private boolean dB =false;
+    private boolean dR =true;
+    private boolean dG = false;
+    private boolean dB = false;
     @Override
     public void onNewFrame(Frame frame) {
         
@@ -67,6 +68,8 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
             Mat maskred = new Mat(mat.rows(), mat.cols(), CvType.CV_32F);
 
             Core.inRange(hsvFrame, Blobcolor.getLowRange(Blobcolor.RED), Blobcolor.getHighRange(Blobcolor.RED), maskred);
+//            cameraModule.debugFrame(new Frame(maskred),"RED");
+
             //Clean mask and find contours
             Imgproc.erode(maskred, maskred, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
             Imgproc.dilate(maskred, maskred, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
@@ -86,13 +89,21 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 float[] radius = new float[1];
                 Point center = new Point();
                 Imgproc.minEnclosingCircle(maxcontourf, center, radius);
-                double circularity = (double) Imgproc.contourArea(maxcontour) / (Math.PI * radius[0] * radius[0]);
+                double circularity =  Imgproc.contourArea(maxcontour)/(Math.PI*radius[0]*radius[0]);
                 if (radius[0] > 10) {
                     Blob b = null;
-                    if (circularity > (double) 0.70) {
-                        b = new Blob(Blobcolor.RED, center, (int) radius[0], true, false);
-                    } else {
-                        b = new Blob(Blobcolor.RED, center, (int) radius[0], false, false);
+                    if ( circularity >  0.70){
+                        b = new Blob(Blobcolor.RED, center, (int)radius[0],true,false);
+                    }else {
+                        RotatedRect rrect = Imgproc.minAreaRect(maxcontourf);
+                        double quadrangularity = Imgproc.contourArea(maxcontour)/rrect.size.area();
+                        if (quadrangularity > 0.75) {
+
+                            b = new Blob(Blobcolor.RED, center, (int) radius[0], false, true);
+                        }
+                        else {
+                            b = new Blob(Blobcolor.RED, center, (int)radius[0],false,false);
+                        }
 
                     }
 
@@ -105,8 +116,11 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
             Mat maskgreen = new Mat(mat.rows(), mat.cols(), CvType.CV_32F);
 
             Core.inRange(hsvFrame, Blobcolor.getLowRange(Blobcolor.GREEN), Blobcolor.getHighRange(Blobcolor.GREEN), maskgreen);
+//            cameraModule.debugFrame(new Frame(maskgreen),"GREEN");
+
             Imgproc.erode(maskgreen, maskgreen, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
             Imgproc.dilate(maskgreen, maskgreen, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
+
             List<MatOfPoint> contoursgreen = new ArrayList<MatOfPoint>();
             Imgproc.findContours(maskgreen, contoursgreen, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
@@ -123,17 +137,25 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 float[] radius = new float[1];
                 Point center = new Point();
                 Imgproc.minEnclosingCircle(maxcontourf, center, radius);
-                double circularity = (double) Imgproc.contourArea(maxcontour)/(Math.PI*radius[0]*radius[0]);
+                double circularity =  Imgproc.contourArea(maxcontour)/(Math.PI*radius[0]*radius[0]);
                 if (radius[0] > 10) {
                     Blob b = null;
-                    if ( circularity > (double) 0.70){
+                    if ( circularity >  0.70){
                         b = new Blob(Blobcolor.GREEN, center, (int)radius[0],true,false);
                     }else {
-                        b = new Blob(Blobcolor.GREEN, center, (int)radius[0],false,false);
+                        RotatedRect rrect = Imgproc.minAreaRect(maxcontourf);
+                        double quadrangularity = Imgproc.contourArea(maxcontour)/rrect.size.area();
+                        if (quadrangularity > 0.75) {
+                            b = new Blob(Blobcolor.GREEN, center, (int) radius[0], false, true);
+                        }
+                        else {
+                            b = new Blob(Blobcolor.GREEN, center, (int)radius[0],false,false);
+                        }
 
                     }
 
-                    this.notifyTrackingBlob(b);                }
+                    this.notifyTrackingBlob(b);
+                }
 
             }
         }
@@ -141,12 +163,13 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
             Mat maskblue = new Mat(mat.rows(), mat.cols(), CvType.CV_32F);
 
             Core.inRange(hsvFrame, Blobcolor.getLowRange(Blobcolor.BLUE), Blobcolor.getHighRange(Blobcolor.BLUE), maskblue);
+//            cameraModule.debugFrame(new Frame(maskblue),"BLUE");
+
             //Clean mask and find contours
-            Imgproc.erode(maskblue, maskblue, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(21, 21)));
-            Imgproc.dilate(maskblue, maskblue, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(21, 21)));
+            Imgproc.erode(maskblue, maskblue, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
+            Imgproc.dilate(maskblue, maskblue, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
             List<MatOfPoint> contoursblue = new ArrayList<MatOfPoint>();
             Imgproc.findContours(maskblue, contoursblue, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-
             if (contoursblue.size() > 0) {
                 double maxarea = 0;
                 MatOfPoint maxcontour = null;
@@ -160,13 +183,22 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 float[] radius = new float[1];
                 Point center = new Point();
                 Imgproc.minEnclosingCircle(maxcontourf, center, radius);
-                double circularity = (double) Imgproc.contourArea(maxcontour) / (Math.PI * radius[0] * radius[0]);
+
+                double circularity =  Imgproc.contourArea(maxcontour)/(Math.PI*radius[0]*radius[0]);
                 if (radius[0] > 10) {
                     Blob b = null;
-                    if (circularity > (double) 0.70) {
-                        b = new Blob(Blobcolor.BLUE, center, (int) radius[0], true, false);
-                    } else {
-                        b = new Blob(Blobcolor.BLUE, center, (int) radius[0], false, false);
+                    if ( circularity >  0.70){
+                        b = new Blob(Blobcolor.BLUE, center, (int)radius[0],true,false);
+                    }else {
+                        RotatedRect rrect = Imgproc.minAreaRect(maxcontourf);
+                        double quadrangularity = Imgproc.contourArea(maxcontour)/rrect.size.area();
+
+                        if (quadrangularity > 0.75) {
+                            b = new Blob(Blobcolor.BLUE, center, (int) radius[0], false, true);
+                        }
+                        else {
+                            b = new Blob(Blobcolor.BLUE, center, (int)radius[0],false,false);
+                        }
 
                     }
 
@@ -205,6 +237,11 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     }
 
 
+
+    }
+
+    @Override
+    public void onDebugFrame(Frame frame, String frameId) {
 
     }
 

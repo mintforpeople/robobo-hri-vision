@@ -77,6 +77,9 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     private int resolution_height = 640;
     private int resolution_width = 480;
 
+    private long lastFrameTime = 0;
+    private long deltaTimeThreshold = 17;
+
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
         @Override
         public void onManagerConnected(int status) {
@@ -162,6 +165,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
 
 
+
         if (!OpenCVLoader.initDebug()) {
             m.log(LogLvl.WARNING, TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, context, mLoaderCallback);
@@ -180,10 +184,11 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public void passOCVthings(CameraBridgeViewBase bridgebase) {
         mOpenCvCameraView = bridgebase;
-        ViewGroup.LayoutParams params=bridgebase.getLayoutParams();
+        ViewGroup.LayoutParams params = bridgebase.getLayoutParams();
         params.height = resolution_height;
         params.width = resolution_width;
         bridgebase.setLayoutParams(params);
+
     }
 
     @Override
@@ -203,34 +208,50 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         mOpenCvCameraView.setCameraIndex(index);
         mOpenCvCameraView.enableView();
     }
+
+    @Override
+    public void debugFrame(Frame frame, String frameId) {
+        notifyDebugFrame(frame, frameId);
+    }
+
+    @Override
+    public void setFps(int fps) {
+        deltaTimeThreshold = 1000/fps;
+    }
     //endregion
 
     //region ICameraListener methods
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        long millis = System.currentTimeMillis();
+        if (millis-lastFrameTime>=deltaTimeThreshold) {
+           // m.log("CameraModule",millis-lastFrameTime+"");
 
-        Bitmap bmp;
-        Mat mat = inputFrame.rgba();
+            lastFrameTime = millis;
+            Bitmap bmp;
+            Mat mat = inputFrame.rgba();
 
 
-        //Giramos la imagen para evitar que salga torcida
-        Core.flip(mat.t(),mat,1);
-        bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+            //Giramos la imagen para evitar que salga torcida
+            Core.flip(mat.t(), mat, 1);
+            bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
 
-        //Conversión de la matriz a bitmap
-        Utils.matToBitmap(mat, bmp);
-        Frame frame = new Frame();
-        frame.setHeight(bmp.getHeight());
-        frame.setWidth(bmp.getWidth());
-        frame.setBitmap(bmp);
-        //TODO devolver byte[] para artoolkit???
-        notifyFrame(frame);
+            //Conversión de la matriz a bitmap
+//        Utils.matToBitmap(mat, bmp);
+//        Frame frame = new Frame();
+//        frame.setHeight(bmp.getHeight());
+//        frame.setWidth(bmp.getWidth());
+//        frame.setBitmap(bmp);
 
-        if (notifyMat){
-            notifyMat(mat);
+            //TODO devolver byte[] para artoolkit???
+            notifyFrame(new Frame(mat));
+
+            if (notifyMat) {
+                notifyMat(mat);
+            }
         }
-
         return null;
+
     }
     //endregion
 

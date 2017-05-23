@@ -175,6 +175,11 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
     }
 
     @Override
+    public void onDebugFrame(Frame frame, String frameId) {
+
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
     }

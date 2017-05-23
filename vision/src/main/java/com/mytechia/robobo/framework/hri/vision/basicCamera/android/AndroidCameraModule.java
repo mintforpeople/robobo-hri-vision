@@ -607,6 +607,15 @@ public class AndroidCameraModule extends ACameraModule {
     }
     //endregion
 
+    @Override
+    public void debugFrame(Frame frame, String frameId) {
+        notifyDebugFrame(frame, frameId);
+    }
+
+    @Override
+    public void setFps(int fps) {
+
+    }
 
 
 }

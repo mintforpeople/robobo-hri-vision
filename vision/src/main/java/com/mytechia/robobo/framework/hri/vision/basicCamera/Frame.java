@@ -24,12 +24,28 @@ package com.mytechia.robobo.framework.hri.vision.basicCamera;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+
 public class Frame {
     private int width;
     private int height;
     private String frameId;
     private int seqNum;
     private Bitmap bitmap;
+
+    public Frame(){
+
+    }
+    public Frame(Mat mat){
+        Bitmap bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(mat, bmp);
+
+        height = bmp.getHeight();
+        width = bmp.getWidth();
+        bitmap = bmp;
+
+    }
 
     public int getSeqNum() {
         return seqNum;
