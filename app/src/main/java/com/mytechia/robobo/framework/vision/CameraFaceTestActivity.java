@@ -154,6 +154,7 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
 
                 bridgeBase.setVisibility(SurfaceView.VISIBLE);
                 camModule.passOCVthings(bridgeBase);
+                faceModule.startDetection();
 
 
                 camModule.signalInit();
@@ -163,7 +164,7 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
         });
         mDetector = new GestureDetectorCompat(getApplicationContext(),this);
         camModule.suscribe(this);
-         faceModule.suscribe(this);
+        faceModule.suscribe(this);
 
 
 

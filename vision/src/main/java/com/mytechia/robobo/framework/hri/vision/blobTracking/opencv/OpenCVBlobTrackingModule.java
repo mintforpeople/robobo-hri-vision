@@ -30,6 +30,7 @@ import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -52,6 +53,9 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     private boolean dR =true;
     private boolean dG = false;
     private boolean dB = false;
+    private int noDetectionCount;
+    private boolean blobDissapear;
+    public int LOST_THRESHOLD = 5;
     @Override
     public void onNewFrame(Frame frame) {
         
@@ -60,6 +64,8 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void onNewMat(Mat mat) {
     if (!processing) {
+        processing = true;
+        int detections = 0;
         Mat hsvFrame = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC3);
         Imgproc.cvtColor(mat, hsvFrame, Imgproc.COLOR_BGR2HSV);
         Imgproc.blur(hsvFrame, hsvFrame, new Size(11, 11));
@@ -89,20 +95,24 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 float[] radius = new float[1];
                 Point center = new Point();
                 Imgproc.minEnclosingCircle(maxcontourf, center, radius);
-                double circularity =  Imgproc.contourArea(maxcontour)/(Math.PI*radius[0]*radius[0]);
+                double area = Imgproc.contourArea(maxcontour);
+
+                double circularity =  area/(Math.PI*radius[0]*radius[0]);
                 if (radius[0] > 10) {
+                    detections = detections +1;
+
                     Blob b = null;
                     if ( circularity >  0.70){
                         b = new Blob(Blobcolor.RED, center, (int)radius[0],true,false);
                     }else {
                         RotatedRect rrect = Imgproc.minAreaRect(maxcontourf);
-                        double quadrangularity = Imgproc.contourArea(maxcontour)/rrect.size.area();
+                        double quadrangularity = area/rrect.size.area();
                         if (quadrangularity > 0.75) {
 
-                            b = new Blob(Blobcolor.RED, center, (int) radius[0], false, true);
+                            b = new Blob(Blobcolor.RED, center, (int) area, false, true);
                         }
                         else {
-                            b = new Blob(Blobcolor.RED, center, (int)radius[0],false,false);
+                            b = new Blob(Blobcolor.RED, center, (int)area,false,false);
                         }
 
                     }
@@ -116,10 +126,10 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
             Mat maskgreen = new Mat(mat.rows(), mat.cols(), CvType.CV_32F);
 
             Core.inRange(hsvFrame, Blobcolor.getLowRange(Blobcolor.GREEN), Blobcolor.getHighRange(Blobcolor.GREEN), maskgreen);
-//            cameraModule.debugFrame(new Frame(maskgreen),"GREEN");
 
-            Imgproc.erode(maskgreen, maskgreen, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
-            Imgproc.dilate(maskgreen, maskgreen, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
+            Imgproc.erode(maskgreen, maskgreen, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(7, 7)));
+            Imgproc.dilate(maskgreen, maskgreen, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(7, 7)));
+ //           cameraModule.debugFrame(new Frame(maskgreen),"GREEN");
 
             List<MatOfPoint> contoursgreen = new ArrayList<MatOfPoint>();
             Imgproc.findContours(maskgreen, contoursgreen, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -137,19 +147,24 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 float[] radius = new float[1];
                 Point center = new Point();
                 Imgproc.minEnclosingCircle(maxcontourf, center, radius);
-                double circularity =  Imgproc.contourArea(maxcontour)/(Math.PI*radius[0]*radius[0]);
+                double area = Imgproc.contourArea(maxcontour);
+
+                double circularity =  area/(Math.PI*radius[0]*radius[0]);
                 if (radius[0] > 10) {
+                    detections = detections +1;
+
                     Blob b = null;
                     if ( circularity >  0.70){
-                        b = new Blob(Blobcolor.GREEN, center, (int)radius[0],true,false);
+                        b = new Blob(Blobcolor.GREEN, center,  (int) area,true,false);
                     }else {
                         RotatedRect rrect = Imgproc.minAreaRect(maxcontourf);
-                        double quadrangularity = Imgproc.contourArea(maxcontour)/rrect.size.area();
+                        double quadrangularity = area/rrect.size.area();
                         if (quadrangularity > 0.75) {
-                            b = new Blob(Blobcolor.GREEN, center, (int) radius[0], false, true);
+
+                            b = new Blob(Blobcolor.GREEN, center, (int) area, false, true);
                         }
                         else {
-                            b = new Blob(Blobcolor.GREEN, center, (int)radius[0],false,false);
+                            b = new Blob(Blobcolor.GREEN, center, (int)area,false,false);
                         }
 
                     }
@@ -183,57 +198,42 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 float[] radius = new float[1];
                 Point center = new Point();
                 Imgproc.minEnclosingCircle(maxcontourf, center, radius);
+                double area = Imgproc.contourArea(maxcontour);
 
-                double circularity =  Imgproc.contourArea(maxcontour)/(Math.PI*radius[0]*radius[0]);
+                double circularity =  area/(Math.PI*radius[0]*radius[0]);
                 if (radius[0] > 10) {
+                    detections = detections +1;
                     Blob b = null;
                     if ( circularity >  0.70){
                         b = new Blob(Blobcolor.BLUE, center, (int)radius[0],true,false);
                     }else {
                         RotatedRect rrect = Imgproc.minAreaRect(maxcontourf);
-                        double quadrangularity = Imgproc.contourArea(maxcontour)/rrect.size.area();
-
+                        double quadrangularity = area/rrect.size.area();
                         if (quadrangularity > 0.75) {
-                            b = new Blob(Blobcolor.BLUE, center, (int) radius[0], false, true);
+
+                            b = new Blob(Blobcolor.BLUE, center, (int) area, false, true);
                         }
                         else {
-                            b = new Blob(Blobcolor.BLUE, center, (int)radius[0],false,false);
+                            b = new Blob(Blobcolor.BLUE, center, (int)area,false,false);
                         }
 
                     }
 
                     this.notifyTrackingBlob(b);
-
-
                 }
             }
         }
-
-        //Get mask image for each color
-
-        //Clean mask and find contours
-
-
-
-
-
-//        Imgproc.GaussianBlur(maskgreen, maskgreen, new Size(9, 9), 2, 2);
-//        Core.MinMaxLocResult minmax = Core.minMaxLoc(maskgreen);
-//        m.log(LogLvl.WARNING, "ColorBlob", "Min: " + minmax.minVal + " Max: " + minmax.maxVal);
-//        Mat circles = new Mat();
-//
-//        Imgproc.HoughCircles(maskgreen, circles, Imgproc.HOUGH_GRADIENT, 1, 1, 10, 20, 0, 0);
-//        if (circles.cols() > 0)
-//            for (int x = 0; x < circles.cols(); x++) {
-//                double vCircle[] = circles.get(0, x);
-//
-//                if (vCircle == null)
-//                    break;
-//
-//                Point pt = new Point(Math.round(vCircle[0]), Math.round(vCircle[1]));
-//                int radius = (int) Math.round(vCircle[2]);
-//                notifyTrackingBlob(Blobcolor.GREEN, (int) pt.x, (int) pt.y, radius);
-//            }
+        if (detections == 0) {
+            noDetectionCount += 1;
+            if ((noDetectionCount > LOST_THRESHOLD) && (!blobDissapear)) {
+                notifyBlobDissapear();
+                blobDissapear = true;
+            }
+        }else {
+            noDetectionCount = 0;
+            blobDissapear = false;
+        }
+        processing = false;
     }
 
 
@@ -250,6 +250,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     public void startup(RoboboManager manager) throws InternalErrorException {
         m = manager;
         cameraModule = m.getModuleInstance(ICameraModule.class);
+        rcmodule = m.getModuleInstance(IRemoteControlModule.class);
         cameraModule.suscribe(this);
     }
 
@@ -273,5 +274,10 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
         dR = detectRed;
         dB = detectBlue;
         dG = detectGreen;
+    }
+
+    @Override
+    public void setThreshold(int th) {
+        LOST_THRESHOLD = th;
     }
 }

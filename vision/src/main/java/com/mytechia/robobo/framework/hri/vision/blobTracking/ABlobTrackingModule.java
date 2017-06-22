@@ -22,6 +22,8 @@
 package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
 import com.mytechia.robobo.framework.RoboboManager;
+import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 
 import java.util.HashSet;
 
@@ -32,10 +34,49 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
         listeners = new HashSet<IBlobListener>();
     }
     protected RoboboManager m;
+    protected IRemoteControlModule rcmodule = null;
+
 
     protected void notifyTrackingBlob(Blob blob){
         for (IBlobListener listener:listeners){
             listener.onTrackingBlob(blob);
+        }
+
+        if (rcmodule!=null) {
+
+            Status status = new Status("COLORBLOB");
+            status.putContents("posx",blob.getX()+"");
+            status.putContents("posy",blob.getY()+"");
+            status.putContents("size",blob.getSize()+"");
+            status.putContents("color",colorToString(blob.getColor()));
+            rcmodule.postStatus(status);
+        }
+    }
+    protected void notifyBlobDissapear(){
+        for (IBlobListener listener:listeners){
+            listener.onBlobDisappear();
+        }
+        if (rcmodule!=null) {
+
+            Status status = new Status("COLORBLOB");
+            status.putContents("posx","0");
+            status.putContents("posy","0");
+            status.putContents("size","0");
+            status.putContents("color","0");
+            rcmodule.postStatus(status);
+        }
+    }
+
+    private String colorToString(Blobcolor blobcolor){
+        switch (blobcolor){
+            case BLUE:
+                return "blue";
+            case RED:
+                return "red";
+            case GREEN:
+                return  "green";
+            default:
+                return "custom";
         }
     }
 

@@ -21,5 +21,6 @@ package com.mytechia.robobo.framework.hri.vision.blobTracking;
  ******************************************************************************/
 public interface IBlobListener {
     public void onTrackingBlob(Blob blob);
+    public void onBlobDisappear();
 
 }

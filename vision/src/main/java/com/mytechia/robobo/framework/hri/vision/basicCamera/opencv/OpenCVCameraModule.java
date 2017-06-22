@@ -173,6 +173,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             m.log(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
+
     }
 
 
@@ -233,7 +234,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
 
             //Giramos la imagen para evitar que salga torcida
-            Core.flip(mat.t(), mat, 1);
+            //Core.flip(mat.t(), mat, 1);
             bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
 
             //Conversión de la matriz a bitmap

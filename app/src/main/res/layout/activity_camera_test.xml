@@ -43,7 +43,7 @@
         android:layout_height="match_parent"
         android:rotation="0">
 
-        <org.opencv.android.JavaCameraView
+        <org.opencv.android.MyPortraitCameraView
             android:visibility="invisible"
             android:id="@+id/HelloOpenCvView"
             opencv:show_fps="true"

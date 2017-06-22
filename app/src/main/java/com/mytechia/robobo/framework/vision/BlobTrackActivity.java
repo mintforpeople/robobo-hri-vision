@@ -19,12 +19,16 @@
  ******************************************************************************/
 package com.mytechia.robobo.framework.vision;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -36,6 +40,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blob;
@@ -98,7 +103,24 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
         setContentView(R.layout.activity_camera_test);
 
 
-
+//Request permissions
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED)||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED)||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED)||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED))
+        {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA,
+                            Manifest.permission.RECORD_AUDIO,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                    },
+                    4);
+        }
 
         //this.surfaceView = (SurfaceView) findViewById(R.id.testSurfaceView);
         this.imageView = (ImageView) findViewById(R.id.testImageView) ;
@@ -146,6 +168,7 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
+//        ballTrackingModule.configureDetection(true,false, false);
         ballTrackingModule.configureDetection(true,true,true);
 
         //camModule.passSurfaceView(surfaceView);
@@ -164,8 +187,9 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
         });
         mDetector = new GestureDetectorCompat(getApplicationContext(),this);
         camModule.suscribe(this);
-        camModule.setFps(10);
+        camModule.setFps(40);
         ballTrackingModule.suscribe(this);
+        ballTrackingModule.configureDetection(false,false, true);
 
 
 
@@ -244,7 +268,8 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
     public void onTrackingBlob(final Blob blob) {
         final int x = blob.getX();
         final int y = blob.getY();
-        final int size = blob.getSize();
+//        final int size = blob.getSize();
+        final int size = 15;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -284,5 +309,10 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
 
             }
         });
+    }
+
+    @Override
+    public void onBlobDisappear() {
+        roboboManager.log(LogLvl.WARNING, "BLOBTRACK", "DISSAPEAR");
     }
 }

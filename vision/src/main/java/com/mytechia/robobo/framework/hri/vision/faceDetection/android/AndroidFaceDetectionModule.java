@@ -60,6 +60,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     private ICameraModule cameraModule;
     private int noDetectionCount = 0;
     private boolean lostFace = true;
+    private boolean active = false;
 
     //endregion
 
@@ -112,40 +113,42 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     //region ICameraListener Methods
     @Override
     public void onNewFrame(Frame frame) {
-        if (!processing) {
-            processing = true;
+        if (active) {
+            if (!processing) {
+                processing = true;
 
-            Bitmap convertedBitmap = convert(frame.getBitmap(), Bitmap.Config.RGB_565);
-            //TODO Crear el detector solo una vez
-            faceDetector = new FaceDetector(convertedBitmap.getWidth(), convertedBitmap.getHeight(), 1);
-            //Log.d(TAG, "New Frame, resolution:"+convertedBitmap.getHeight()+"x"+convertedBitmap.getWidth());
-            int facenumber = faceDetector.findFaces(convertedBitmap, faces);
-            if (facenumber > 0) {
+                Bitmap convertedBitmap = convert(frame.getBitmap(), Bitmap.Config.RGB_565);
+                //TODO Crear el detector solo una vez
+                faceDetector = new FaceDetector(convertedBitmap.getWidth(), convertedBitmap.getHeight(), 1);
+                //Log.d(TAG, "New Frame, resolution:"+convertedBitmap.getHeight()+"x"+convertedBitmap.getWidth());
+                int facenumber = faceDetector.findFaces(convertedBitmap, faces);
+                if (facenumber > 0) {
 
-                PointF facecoord = new PointF();
-                float eyesDistance = 0;
-                faces[0].getMidPoint(facecoord);
-                facecoord.x=(facecoord.x/convertedBitmap.getWidth())*100;
-                facecoord.y=(facecoord.y/convertedBitmap.getHeight())*100;
+                    PointF facecoord = new PointF();
+                    float eyesDistance = 0;
+                    faces[0].getMidPoint(facecoord);
+                    facecoord.x = (facecoord.x / convertedBitmap.getWidth()) * 100;
+                    facecoord.y = (facecoord.y / convertedBitmap.getHeight()) * 100;
 
-                eyesDistance = faces[0].eyesDistance();
-                if (lostFace) {
-                    lostFace = false;
-                    notifyFaceAppear(facecoord, eyesDistance);
+                    eyesDistance = faces[0].eyesDistance();
+                    if (lostFace) {
+                        lostFace = false;
+                        notifyFaceAppear(facecoord, eyesDistance);
+                    }
+                    notifyFace(facecoord, eyesDistance);
+                    noDetectionCount = 0;
+
+                } else {
+                    noDetectionCount += 1;
+                    if ((noDetectionCount > LOST_THRESHOLD) && (!lostFace)) {
+                        notifyFaceDisappear();
+                        lostFace = true;
+                    }
+
                 }
-                notifyFace(facecoord, eyesDistance);
-                noDetectionCount = 0;
-
-            }else{
-                noDetectionCount += 1;
-                if ((noDetectionCount>LOST_THRESHOLD)&&(!lostFace)){
-                    notifyFaceDisappear();
-                    lostFace = true;
-                }
+                processing = false;
 
             }
-            processing = false;
-
         }
     }
 
@@ -158,5 +161,15 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     @Override
     public void onDebugFrame(Frame frame, String frameId) {
 
+    }
+
+    @Override
+    public void startDetection() {
+        active = true;
+    }
+
+    @Override
+    public void pauseDetection() {
+        active = false;
     }
 }

@@ -28,5 +28,7 @@ public interface IBlobTrackingModule extends IModule{
     public void configureDetection(boolean detectRed, boolean detectBlue, boolean detectGreen);
     public void suscribe(IBlobListener listener);
     public void unsuscribe(IBlobListener listener);
+    public void setThreshold( int th);
+
 
 }
