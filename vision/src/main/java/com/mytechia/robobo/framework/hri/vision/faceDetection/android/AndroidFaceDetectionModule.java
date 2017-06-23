@@ -61,6 +61,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     private int noDetectionCount = 0;
     private boolean lostFace = true;
     private boolean active = false;
+    private boolean firstFrame = true;
 
     //endregion
 
@@ -113,6 +114,10 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     //region ICameraListener Methods
     @Override
     public void onNewFrame(Frame frame) {
+        if (firstFrame){
+            resolutionX = frame.getWidth();
+            resolutionY = frame.getHeight();
+        }
         if (active) {
             if (!processing) {
                 processing = true;
@@ -127,8 +132,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
                     PointF facecoord = new PointF();
                     float eyesDistance = 0;
                     faces[0].getMidPoint(facecoord);
-                    facecoord.x = (facecoord.x / convertedBitmap.getWidth()) * 100;
-                    facecoord.y = (facecoord.y / convertedBitmap.getHeight()) * 100;
+
 
                     eyesDistance = faces[0].eyesDistance();
                     if (lostFace) {

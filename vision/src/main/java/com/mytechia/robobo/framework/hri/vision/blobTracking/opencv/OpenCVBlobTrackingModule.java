@@ -47,17 +47,24 @@ import java.util.List;
 
 //http://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
 //https://github.com/badlogic/opencv-fun/blob/master/src/pool/utils/BallDetector.java
+
 public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICameraListener {
+
     private ICameraModule cameraModule;
     private boolean processing =false;
     private boolean dR =true;
     private boolean dG = false;
     private boolean dB = false;
+    private boolean firstFrame = true;
     private int noDetectionCount;
     private boolean blobDissapear;
     public int LOST_THRESHOLD = 5;
     @Override
     public void onNewFrame(Frame frame) {
+        if (firstFrame){
+            resolutionX = frame.getWidth();
+            resolutionY = frame.getHeight();
+        }
         
     }
 

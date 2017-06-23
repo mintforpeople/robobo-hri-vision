@@ -71,8 +71,19 @@ public interface ICameraModule extends IModule {
      * Changes between front and back camera
      */
     public void changeCamera();
+
+    /**
+     * Returns frames for debugging
+     * @param frame The frame
+     * @param frameId Tag of the frame
+     */
     public void debugFrame(Frame frame, String frameId);
 
+    /**
+     * To show the frame in the opencv view
+     * @param set True to activate the option, false instead (default false)
+     */
+    public void showFrameInView(boolean set);
     /**
      * Sets the FPS for the frame notifications
      * @param fps

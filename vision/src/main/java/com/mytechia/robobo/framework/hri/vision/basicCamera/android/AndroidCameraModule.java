@@ -613,6 +613,11 @@ public class AndroidCameraModule extends ACameraModule {
     }
 
     @Override
+    public void showFrameInView(boolean set) {
+
+    }
+
+    @Override
     public void setFps(int fps) {
 
     }

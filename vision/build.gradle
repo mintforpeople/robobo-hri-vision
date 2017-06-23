@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 10
-        versionName "0.3.1.8-SNAPSHOT"
+        versionCode 11
+        versionName "0.3.1"
     }
     buildTypes {
         release {
@@ -39,7 +39,7 @@ dependencies {
     compile 'org.jboss.netty:netty:3.2.10.Final'
     compile files('libs/robobo_msgs-0.1.0.jar')
     compile 'com.mytechia:robobo-remote-control-module:0.3.0'
-    compile 'com.mytechia:opencv:3.1.0-r2-my-SNAPSHOT'
+    compile 'com.mytechia:opencv:3.1.0-r2-my'
     //    compile project(':openCVLibrary310')
     //compile project(':openCVLibrary310')
 

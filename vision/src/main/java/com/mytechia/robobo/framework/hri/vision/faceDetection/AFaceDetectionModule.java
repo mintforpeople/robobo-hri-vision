@@ -38,6 +38,8 @@ import java.util.HashSet;
  */
 public abstract class AFaceDetectionModule implements IFaceDetectionModule{
     private HashSet<IFaceListener> listeners;
+    protected float resolutionX = 1;
+    protected float resolutionY = 1;
     protected IRemoteControlModule rcmodule = null;
     protected RoboboManager m;
 
@@ -56,8 +58,8 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
         }
         if (rcmodule!=null) {
             Status status = new Status("NEWFACE");
-            status.putContents("coordx",Math.round(coords.x)+"");
-            status.putContents("coordy",Math.round(coords.y)+"");
+            status.putContents("coordx",Math.round((coords.x/resolutionX)*100)+"");
+            status.putContents("coordy",Math.round((coords.y/resolutionY)*100)+"");
             status.putContents("distance", Math.round(eyesDistance)+"");
 
             rcmodule.postStatus(status);
@@ -70,8 +72,8 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
         }
         if (rcmodule!=null) {
             Status status = new Status("FOUNDFACE");
-            status.putContents("coordx",Math.round(coords.x)+"");
-            status.putContents("coordy",Math.round(coords.y)+"");
+            status.putContents("coordx",Math.round(coords.x/resolutionX)*100+"");
+            status.putContents("coordy",Math.round(coords.y/resolutionY)*100+"");
             status.putContents("distance", Math.round(eyesDistance)+"");
 
             rcmodule.postStatus(status);

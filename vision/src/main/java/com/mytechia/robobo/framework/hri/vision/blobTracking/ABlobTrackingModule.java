@@ -29,7 +29,8 @@ import java.util.HashSet;
 
 public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     private HashSet<IBlobListener> listeners;
-
+    protected float resolutionX = 1;
+    protected float resolutionY = 1;
     public ABlobTrackingModule(){
         listeners = new HashSet<IBlobListener>();
     }
@@ -45,8 +46,8 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
         if (rcmodule!=null) {
 
             Status status = new Status("COLORBLOB");
-            status.putContents("posx",blob.getX()+"");
-            status.putContents("posy",blob.getY()+"");
+            status.putContents("posx",(Math.round(((float)blob.getX()/resolutionX)*100))+"");
+            status.putContents("posy",(Math.round(((float)blob.getY()/resolutionY)*100))+"");
             status.putContents("size",blob.getSize()+"");
             status.putContents("color",colorToString(blob.getColor()));
             rcmodule.postStatus(status);

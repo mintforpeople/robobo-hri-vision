@@ -72,6 +72,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     private boolean notifyBitmap = true;
     private boolean notifyMat = true;
     private int index = CAMERA_ID_FRONT;
+    private boolean showImgInView = false;
 
 
     private int resolution_height = 640;
@@ -216,6 +217,11 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     }
 
     @Override
+    public void showFrameInView(boolean set) {
+        showImgInView = set;
+    }
+
+    @Override
     public void setFps(int fps) {
         deltaTimeThreshold = 1000/fps;
     }
@@ -251,7 +257,12 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
                 notifyMat(mat);
             }
         }
-        return null;
+
+        if (showImgInView){
+            return inputFrame.rgba();
+        }else {
+            return null;
+        }
 
     }
     //endregion
