@@ -55,6 +55,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     private boolean dR =true;
     private boolean dG = false;
     private boolean dB = false;
+    private boolean dC = false;
     private boolean firstFrame = true;
     private int noDetectionCount;
     private boolean blobDissapear;
@@ -230,8 +231,59 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 }
             }
         }
+
+        if (dC) {
+            Mat maskblue = new Mat(mat.rows(), mat.cols(), CvType.CV_32F);
+
+            Core.inRange(hsvFrame, Blobcolor.getLowRange(Blobcolor.CUSTOM), Blobcolor.getHighRange(Blobcolor.CUSTOM), maskblue);
+//            cameraModule.debugFrame(new Frame(maskblue),"BLUE");
+
+            //Clean mask and find contours
+            Imgproc.erode(maskblue, maskblue, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
+            Imgproc.dilate(maskblue, maskblue, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, new Size(11, 11)));
+            List<MatOfPoint> contoursblue = new ArrayList<MatOfPoint>();
+            Imgproc.findContours(maskblue, contoursblue, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+            if (contoursblue.size() > 0) {
+                double maxarea = 0;
+                MatOfPoint maxcontour = null;
+                for (MatOfPoint c : contoursblue) {
+                    if (Imgproc.contourArea(c) > maxarea) {
+                        maxcontour = c;
+                        maxarea = Imgproc.contourArea(c);
+                    }
+                }
+                MatOfPoint2f maxcontourf = new MatOfPoint2f(maxcontour.toArray());
+                float[] radius = new float[1];
+                Point center = new Point();
+                Imgproc.minEnclosingCircle(maxcontourf, center, radius);
+                double area = Imgproc.contourArea(maxcontour);
+
+                double circularity =  area/(Math.PI*radius[0]*radius[0]);
+                if (radius[0] > 10) {
+                    detections = detections +1;
+                    Blob b = null;
+                    if ( circularity >  0.70){
+                        b = new Blob(Blobcolor.BLUE, center, (int)radius[0],true,false);
+                    }else {
+                        RotatedRect rrect = Imgproc.minAreaRect(maxcontourf);
+                        double quadrangularity = area/rrect.size.area();
+                        if (quadrangularity > 0.75) {
+
+                            b = new Blob(Blobcolor.CUSTOM, center, (int) area, false, true);
+                        }
+                        else {
+                            b = new Blob(Blobcolor.CUSTOM, center, (int)area,false,false);
+                        }
+
+                    }
+
+                    this.notifyTrackingBlob(b);
+                }
+            }
+        }
         if (detections == 0) {
             noDetectionCount += 1;
+            //TODO Hacerlo por color individual
             if ((noDetectionCount > LOST_THRESHOLD) && (!blobDissapear)) {
                 notifyBlobDissapear();
                 blobDissapear = true;
@@ -277,10 +329,11 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     }
 
     @Override
-    public void configureDetection(boolean detectRed, boolean detectBlue, boolean detectGreen) {
+    public void configureDetection(boolean detectRed, boolean detectGreen, boolean detectBlue, boolean detectCustom) {
         dR = detectRed;
         dB = detectBlue;
         dG = detectGreen;
+        dC = detectCustom;
     }
 
     @Override

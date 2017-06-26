@@ -169,7 +169,7 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
             e.printStackTrace();
         }
 //        ballTrackingModule.configureDetection(true,false, false);
-        ballTrackingModule.configureDetection(true,true,true);
+        ballTrackingModule.configureDetection(true,true,true, false);
 
         //camModule.passSurfaceView(surfaceView);
         runOnUiThread(new Runnable() {
@@ -189,7 +189,7 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
         camModule.suscribe(this);
         camModule.setFps(40);
         ballTrackingModule.suscribe(this);
-        ballTrackingModule.configureDetection(false,false, true);
+        ballTrackingModule.configureDetection(false,true, false, false);
 
 
 
