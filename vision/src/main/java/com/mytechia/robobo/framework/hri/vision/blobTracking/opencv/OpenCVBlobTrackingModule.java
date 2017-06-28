@@ -57,8 +57,14 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     private boolean dB = false;
     private boolean dC = false;
     private boolean firstFrame = true;
-    private int noDetectionCount;
-    private boolean blobDissapear;
+    private int noDetectionCountR;
+    private int noDetectionCountG;
+    private int noDetectionCountB;
+    private int noDetectionCountC;
+    private boolean blobDissapearR;
+    private boolean blobDissapearG;
+    private boolean blobDissapearB;
+    private boolean blobDissapearC;
     public int LOST_THRESHOLD = 5;
     @Override
     public void onNewFrame(Frame frame) {
@@ -74,6 +80,10 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     if (!processing) {
         processing = true;
         int detections = 0;
+        int detectionsR = 0;
+        int detectionsG = 0;
+        int detectionsB = 0;
+        int detectionsC = 0;
         Mat hsvFrame = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC3);
         Imgproc.cvtColor(mat, hsvFrame, Imgproc.COLOR_BGR2HSV);
         Imgproc.blur(hsvFrame, hsvFrame, new Size(11, 11));
@@ -107,7 +117,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
                 double circularity =  area/(Math.PI*radius[0]*radius[0]);
                 if (radius[0] > 10) {
-                    detections = detections +1;
+                    detectionsR = detectionsR +1;
 
                     Blob b = null;
                     if ( circularity >  0.70){
@@ -159,7 +169,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
                 double circularity =  area/(Math.PI*radius[0]*radius[0]);
                 if (radius[0] > 10) {
-                    detections = detections +1;
+                    detectionsG = detectionsG +1;
 
                     Blob b = null;
                     if ( circularity >  0.70){
@@ -210,7 +220,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
                 double circularity =  area/(Math.PI*radius[0]*radius[0]);
                 if (radius[0] > 10) {
-                    detections = detections +1;
+                    detectionsB = detectionsB +1;
                     Blob b = null;
                     if ( circularity >  0.70){
                         b = new Blob(Blobcolor.BLUE, center, (int)radius[0],true,false);
@@ -260,7 +270,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
                 double circularity =  area/(Math.PI*radius[0]*radius[0]);
                 if (radius[0] > 10) {
-                    detections = detections +1;
+                    detectionsC = detectionsC +1;
                     Blob b = null;
                     if ( circularity >  0.70){
                         b = new Blob(Blobcolor.BLUE, center, (int)radius[0],true,false);
@@ -281,16 +291,45 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 }
             }
         }
-        if (detections == 0) {
-            noDetectionCount += 1;
-            //TODO Hacerlo por color individual
-            if ((noDetectionCount > LOST_THRESHOLD) && (!blobDissapear)) {
-                notifyBlobDissapear();
-                blobDissapear = true;
+        if (detectionsR == 0) {
+            noDetectionCountR += 1;
+            if ((noDetectionCountR > LOST_THRESHOLD) && (!blobDissapearR)) {
+                notifyBlobDissapear(Blobcolor.RED);
+                blobDissapearR = true;
             }
         }else {
-            noDetectionCount = 0;
-            blobDissapear = false;
+            noDetectionCountR = 0;
+            blobDissapearR = false;
+        }
+        if (detectionsG == 0) {
+            noDetectionCountG += 1;
+            if ((noDetectionCountG > LOST_THRESHOLD) && (!blobDissapearG)) {
+                notifyBlobDissapear(Blobcolor.GREEN);
+                blobDissapearG = true;
+            }
+        }else {
+            noDetectionCountG = 0;
+            blobDissapearG = false;
+        }
+        if (detectionsB == 0) {
+            noDetectionCountB += 1;
+            if ((noDetectionCountB > LOST_THRESHOLD) && (!blobDissapearB)) {
+                notifyBlobDissapear(Blobcolor.BLUE);
+                blobDissapearB = true;
+            }
+        }else {
+            noDetectionCountB = 0;
+            blobDissapearB = false;
+        }
+        if (detectionsC == 0) {
+            noDetectionCountC += 1;
+            if ((noDetectionCountC > LOST_THRESHOLD) && (!blobDissapearC)) {
+                notifyBlobDissapear(Blobcolor.CUSTOM);
+                blobDissapearC = true;
+            }
+        }else {
+            noDetectionCountC = 0;
+            blobDissapearC = false;
         }
         processing = false;
     }

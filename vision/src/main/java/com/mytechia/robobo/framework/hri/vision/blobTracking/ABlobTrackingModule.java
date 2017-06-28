@@ -21,6 +21,7 @@
  ******************************************************************************/
 package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
+import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
@@ -53,17 +54,16 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
             rcmodule.postStatus(status);
         }
     }
-    protected void notifyBlobDissapear(){
+    protected void notifyBlobDissapear(Blobcolor c){
         for (IBlobListener listener:listeners){
-            listener.onBlobDisappear();
+            listener.onBlobDisappear(c);
         }
         if (rcmodule!=null) {
-
             Status status = new Status("COLORBLOB");
             status.putContents("posx","0");
             status.putContents("posy","0");
             status.putContents("size","0");
-            status.putContents("color","0");
+            status.putContents("color",c.name());
             rcmodule.postStatus(status);
         }
     }

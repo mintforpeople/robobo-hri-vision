@@ -2,13 +2,13 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion '25.0.0'
 
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 23
         versionCode 12
-        versionName "0.3.2-SAMSUNG-SNAPSHOT"
+        versionName "0.3.2.1-SAMSUNG-SNAPSHOT"
     }
     buildTypes {
         release {

@@ -189,7 +189,7 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
         camModule.suscribe(this);
         camModule.setFps(40);
         ballTrackingModule.suscribe(this);
-        ballTrackingModule.configureDetection(false,true, false, false);
+        ballTrackingModule.configureDetection(true,true, true, true);
 
 
 
@@ -312,7 +312,7 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
     }
 
     @Override
-    public void onBlobDisappear() {
-        roboboManager.log(LogLvl.WARNING, "BLOBTRACK", "DISSAPEAR");
+    public void onBlobDisappear(Blobcolor c) {
+        roboboManager.log(LogLvl.WARNING, "BLOBTRACK", "DISSAPEAR "+c.name());
     }
 }
