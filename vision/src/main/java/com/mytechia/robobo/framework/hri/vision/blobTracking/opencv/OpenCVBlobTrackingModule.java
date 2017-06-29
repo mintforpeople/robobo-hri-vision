@@ -30,6 +30,8 @@ import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
+import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.core.Core;
@@ -350,6 +352,15 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
         cameraModule = m.getModuleInstance(ICameraModule.class);
         rcmodule = m.getModuleInstance(IRemoteControlModule.class);
         cameraModule.suscribe(this);
+        rcmodule.registerCommand("CONFIGUREBLOB", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                configureDetection(Boolean.parseBoolean(c.getParameters().get("red")),
+                        Boolean.parseBoolean(c.getParameters().get("green")),
+                        Boolean.parseBoolean(c.getParameters().get("blue")),
+                        Boolean.parseBoolean(c.getParameters().get("custom")));
+            }
+        });
     }
 
     @Override

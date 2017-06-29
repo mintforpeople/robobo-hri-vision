@@ -63,7 +63,7 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
             status.putContents("posx","0");
             status.putContents("posy","0");
             status.putContents("size","0");
-            status.putContents("color",c.name());
+            status.putContents("color",c.name().toLowerCase());
             rcmodule.postStatus(status);
         }
     }
