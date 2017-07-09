@@ -51,7 +51,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
      */
     //region VAR
     private String TAG = "FaceDetectionModule";
-    private int LOST_THRESHOLD = 5;
+    private int LOST_THRESHOLD = 3;
     private FaceDetector faceDetector;
     private FaceDetector.Face[] faces;
     float myEyesDistance;
