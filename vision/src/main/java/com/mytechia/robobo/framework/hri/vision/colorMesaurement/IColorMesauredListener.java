@@ -1,7 +1,7 @@
 /*******************************************************************************
  *
- *   Copyright 2016 Mytech Ingenieria Aplicada <http://www.mytechia.com>
- *   Copyright 2016 Luis Llamas <luis.llamas@mytechia.com>
+ *   Copyright 2017 Mytech Ingenieria Aplicada <http://www.mytechia.com>
+ *   Copyright 2017 Luis Llamas <luis.llamas@mytechia.com>
  *
  *   This file is part of Robobo HRI Modules.
  *
@@ -19,23 +19,18 @@
  *   along with Robobo HRI Modules.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+package com.mytechia.robobo.framework.hri.vision.colorMesaurement;
 
-package com.mytechia.robobo.framework.hri.vision.faceDetection;
-
-import android.graphics.PointF;
 
 /**
- * Listener interface for the face detector
+ * Color mesaurement listener interface
  */
-public interface IFaceListener {
+public interface IColorMesauredListener {
     /**
-     * Called when a face is detected
-     * @param faceCoords The coordinates of the center of the face
-     * @param eyesDistance The distance between eyes
+     * Called when a color is measured
+     * @param r Red channel
+     * @param g Green channel
+     * @param b Blue channel
      */
-    void onFaceDetected(PointF faceCoords, float eyesDistance);
-
-    void onFaceAppear(PointF faceCoords, float eyesDistance);
-
-    void onFaceDissapear();
+    void onColorMesaured(int r, int g, int b);
 }

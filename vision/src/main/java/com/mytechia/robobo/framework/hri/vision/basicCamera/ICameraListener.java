@@ -39,4 +39,11 @@ public interface ICameraListener {
      * @param mat The frame
      */
     void onNewMat(Mat mat);
+
+    /**
+     * Used for debuging the vision modules
+     * @param frame Frame
+     * @param frameId Tag of the frame
+     */
+    void onDebugFrame(Frame frame, String frameId);
 }

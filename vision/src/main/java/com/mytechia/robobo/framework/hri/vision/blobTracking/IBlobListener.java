@@ -1,7 +1,7 @@
 /*******************************************************************************
  *
- *   Copyright 2016 Mytech Ingenieria Aplicada <http://www.mytechia.com>
- *   Copyright 2016 Luis Llamas <luis.llamas@mytechia.com>
+ *   Copyright 2017 Mytech Ingenieria Aplicada <http://www.mytechia.com>
+ *   Copyright 2017 Luis Llamas <luis.llamas@mytechia.com>
  *
  *   This file is part of Robobo HRI Modules.
  *
@@ -19,23 +19,10 @@
  *   along with Robobo HRI Modules.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
-package com.mytechia.robobo.framework.hri.vision.faceDetection;
+public interface IBlobListener {
+    public void onTrackingBlob(Blob blob);
+    public void onBlobDisappear(Blobcolor c);
 
-import android.graphics.PointF;
-
-/**
- * Listener interface for the face detector
- */
-public interface IFaceListener {
-    /**
-     * Called when a face is detected
-     * @param faceCoords The coordinates of the center of the face
-     * @param eyesDistance The distance between eyes
-     */
-    void onFaceDetected(PointF faceCoords, float eyesDistance);
-
-    void onFaceAppear(PointF faceCoords, float eyesDistance);
-
-    void onFaceDissapear();
 }

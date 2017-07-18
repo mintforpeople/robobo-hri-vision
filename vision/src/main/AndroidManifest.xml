@@ -7,10 +7,6 @@
 
     </application>
 
-    <service
-        android:name="VideoProcessingService"
-        android:label="@string/service_name"
-        >
-    </service>
+
 
 </manifest>

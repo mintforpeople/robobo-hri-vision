@@ -175,6 +175,11 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
     }
 
     @Override
+    public void onDebugFrame(Frame frame, String frameId) {
+
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
     }
@@ -191,13 +196,15 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
         paused = false;
     }
 
+
+
     @Override
-    public void onNewColor(int colorrgb, final int nearest_color, int x, int y, int height, int width, final Bitmap borders) {
+    public void onNewColor(int colorrgb,final int nearest_color) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
 
-                imageView.setImageBitmap(borders);
+
 
                 rellayout.setBackgroundColor(nearest_color);
 

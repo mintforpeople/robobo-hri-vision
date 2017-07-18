@@ -48,22 +48,28 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
     /*
      * https://developers.google.com/android/reference/com/google/android/gms/vision/face/FaceDetector
-     * todo mirar el setfocus
      */
     //region VAR
     private String TAG = "FaceDetectionModule";
+    private int LOST_THRESHOLD = 3;
     private FaceDetector faceDetector;
     private FaceDetector.Face[] faces;
     float myEyesDistance;
     int numberOfFaceDetected;
     private boolean processing = false;
     private ICameraModule cameraModule;
+    private int noDetectionCount = 0;
+    private boolean lostFace = true;
+    private boolean active = false;
+    private boolean firstFrame = true;
+
     //endregion
 
     //region IModule methods
 
     @Override
     public void startup(RoboboManager manager)  {
+        m = manager;
         try {
             this.cameraModule = manager.getModuleInstance(ICameraModule.class);
             rcmodule = manager.getModuleInstance(IRemoteControlModule.class);
@@ -78,6 +84,8 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
     @Override
     public void shutdown() throws InternalErrorException {
+        cameraModule.unsuscribe(this);
+
     }
 
     @Override
@@ -87,7 +95,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
     @Override
     public String getModuleVersion() {
-        return "v0.1";
+        return "0.3.0";
     }
 
 
@@ -106,22 +114,47 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     //region ICameraListener Methods
     @Override
     public void onNewFrame(Frame frame) {
-        if (!processing) {
-            processing = true;
+        if (firstFrame){
+            resolutionX = frame.getWidth();
+            resolutionY = frame.getHeight();
+            faceDetector = new FaceDetector((int)resolutionX,(int) resolutionY, 1);
+            firstFrame = false;
 
-            Bitmap convertedBitmap = convert(frame.getBitmap(), Bitmap.Config.RGB_565);
-            faceDetector = new FaceDetector(convertedBitmap.getWidth(), convertedBitmap.getHeight(), 1);
-            //Log.d(TAG, "New Frame, resolution:"+convertedBitmap.getHeight()+"x"+convertedBitmap.getWidth());
-            int facenumber = faceDetector.findFaces(convertedBitmap, faces);
-            if (facenumber > 0) {
-                PointF facecoord = new PointF();
-                float eyesDistance = 0;
-                faces[0].getMidPoint(facecoord);
-                eyesDistance = faces[0].eyesDistance();
-                notifyFace(facecoord, eyesDistance);
+        }
+        if (active) {
+            if (!processing) {
+                processing = true;
+
+                Bitmap convertedBitmap = convert(frame.getBitmap(), Bitmap.Config.RGB_565);
+                //TODO Crear el detector solo una vez
+                //Log.d(TAG, "New Frame, resolution:"+convertedBitmap.getHeight()+"x"+convertedBitmap.getWidth());
+                int facenumber = faceDetector.findFaces(convertedBitmap, faces);
+                if (facenumber > 0) {
+
+                    PointF facecoord = new PointF();
+                    float eyesDistance = 0;
+                    faces[0].getMidPoint(facecoord);
+
+
+                    eyesDistance = faces[0].eyesDistance();
+                    if (lostFace) {
+                        lostFace = false;
+                        notifyFaceAppear(facecoord, eyesDistance);
+                    }
+                    notifyFace(facecoord, eyesDistance);
+                    noDetectionCount = 0;
+
+                } else {
+                    noDetectionCount += 1;
+                    if ((noDetectionCount > LOST_THRESHOLD) && (!lostFace)) {
+                        notifyFaceDisappear();
+                        lostFace = true;
+                    }
+
+                }
+                processing = false;
 
             }
-            processing = false;
         }
     }
 
@@ -131,5 +164,23 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     }
     //endregion
 
+    @Override
+    public void onDebugFrame(Frame frame, String frameId) {
 
+    }
+
+    @Override
+    public void startDetection() {
+        active = true;
+    }
+
+    @Override
+    public void pauseDetection() {
+        active = false;
+    }
+
+    @Override
+    public void setLostThreshold(int threshold) {
+        LOST_THRESHOLD = threshold;
+    }
 }

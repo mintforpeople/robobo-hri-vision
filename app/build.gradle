@@ -2,14 +2,15 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.3"
+    buildToolsVersion '25.0.0'
     defaultConfig {
         applicationId "com.mytechia.robobo.framework.vision"
         minSdkVersion 21
         targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled  true
     }
     buildTypes {
         release {
@@ -17,6 +18,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    lintOptions {
+        disable 'LongLogTag'
+        disable 'InvalidPackage'
+    }
+
+
 }
 
 dependencies {
@@ -26,10 +33,10 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
-    compile 'com.mytechia:robobo-framework:0.3.5'
+    compile 'com.mytechia:robobo-framework:1.0.0'
     compile 'com.mytechia:robobo-util:0.1.0'
 
     compile project(':vision')
-    compile project(':openCVLibrary310')
+
 
 }

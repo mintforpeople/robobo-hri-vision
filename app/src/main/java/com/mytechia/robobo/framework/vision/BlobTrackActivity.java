@@ -19,13 +19,16 @@
  ******************************************************************************/
 package com.mytechia.robobo.framework.vision;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -37,23 +40,26 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
+import com.mytechia.robobo.framework.hri.vision.blobTracking.Blob;
+import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
+import com.mytechia.robobo.framework.hri.vision.blobTracking.IBlobListener;
+import com.mytechia.robobo.framework.hri.vision.blobTracking.IBlobTrackingModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
-import com.mytechia.robobo.framework.hri.vision.colorDetection.IColorDetectionModule;
-import com.mytechia.robobo.framework.hri.vision.faceDetection.IFaceDetectionModule;
-import com.mytechia.robobo.framework.hri.vision.faceDetection.IFaceListener;
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Mat;
 
-import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_BACK;
+import java.sql.SQLOutput;
+
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
-public class CameraFaceTestActivity extends AppCompatActivity implements ICameraListener, IFaceListener, GestureDetector.OnGestureListener{
+public class BlobTrackActivity extends AppCompatActivity implements ICameraListener, IBlobListener, GestureDetector.OnGestureListener{
     private static final String TAG="CameraFaceTestActivity";
 
 
@@ -64,7 +70,7 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
 
 
     private ICameraModule camModule;
-    private IFaceDetectionModule faceModule;
+    private IBlobTrackingModule ballTrackingModule;
     private CameraBridgeViewBase bridgeBase;
 
 
@@ -84,7 +90,7 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
     public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG,"TouchEvent");
 
-       this.mDetector.onTouchEvent(event);
+        this.mDetector.onTouchEvent(event);
         return true;
 
     }
@@ -97,7 +103,24 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
         setContentView(R.layout.activity_camera_test);
 
 
-
+//Request permissions
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED)||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED)||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED)||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED))
+        {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA,
+                            Manifest.permission.RECORD_AUDIO,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                    },
+                    4);
+        }
 
         //this.surfaceView = (SurfaceView) findViewById(R.id.testSurfaceView);
         this.imageView = (ImageView) findViewById(R.id.testImageView) ;
@@ -139,13 +162,14 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
         try {
 
             this.camModule = this.roboboManager.getModuleInstance(ICameraModule.class);
-            this.faceModule = this.roboboManager.getModuleInstance(IFaceDetectionModule.class);
+            this.ballTrackingModule = this.roboboManager.getModuleInstance(IBlobTrackingModule.class);
 
 
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
-
+//        ballTrackingModule.configureDetection(true,false, false);
+        ballTrackingModule.configureDetection(true,true,true, false);
 
         //camModule.passSurfaceView(surfaceView);
         runOnUiThread(new Runnable() {
@@ -154,7 +178,6 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
 
                 bridgeBase.setVisibility(SurfaceView.VISIBLE);
                 camModule.passOCVthings(bridgeBase);
-                faceModule.startDetection();
 
 
                 camModule.signalInit();
@@ -164,7 +187,9 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
         });
         mDetector = new GestureDetectorCompat(getApplicationContext(),this);
         camModule.suscribe(this);
-        faceModule.suscribe(this);
+        camModule.setFps(40);
+        ballTrackingModule.suscribe(this);
+        ballTrackingModule.configureDetection(true,true, true, true);
 
 
 
@@ -176,16 +201,16 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
 
 
         lastFrame = frame;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-
-
-                imageView.setImageBitmap(frame.getBitmap());
-
-            }
-        });
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//
+//
+//                imageView.setImageBitmap(frame.getBitmap());
+//
+//            }
+//        });
 
     }
 
@@ -195,43 +220,17 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
     }
 
     @Override
-    public void onDebugFrame(Frame frame, String frameId) {
-
-    }
-
-    @Override
-    public void onFaceDetected(final PointF faceCoords, float eyesDistance) {
+    public void onDebugFrame(final Frame frame,final String frameId) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
 
-
-
-                Bitmap tempBitmap =lastFrame.getBitmap().copy(Bitmap.Config.ARGB_8888,true);
-                Canvas c = new Canvas(tempBitmap);
-
-
-
-                Paint paint = new Paint();
-                paint.setColor(Color.RED);
-                //imageView.setImageBitmap(lastFrame.getBitmap());
-                c.drawCircle(faceCoords.x,faceCoords.y,50,paint);
-                imageView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
+                imageView.setImageDrawable(new BitmapDrawable(getResources(), frame.getBitmap()));
 
             }
         });
     }
 
-    @Override
-    public void onFaceAppear(PointF faceCoords, float eyesDistance) {
-        Log.d(TAG,"APPEARED FACE");
-
-    }
-
-    @Override
-    public void onFaceDissapear() {
-        Log.d(TAG,"LOST FACE");
-    }
 
     @Override
     public boolean onDown(MotionEvent motionEvent) {
@@ -263,5 +262,57 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
         camModule.changeCamera();
 
         return false;
+    }
+
+    @Override
+    public void onTrackingBlob(final Blob blob) {
+        final int x = blob.getX();
+        final int y = blob.getY();
+//        final int size = blob.getSize();
+        final int size = 15;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+
+
+                Bitmap tempBitmap =lastFrame.getBitmap().copy(Bitmap.Config.ARGB_8888,true);
+                Canvas c = new Canvas(tempBitmap);
+
+
+
+                Paint paint = new Paint();
+                if (blob.isBall()) {
+                    paint.setColor(Color.GREEN);
+                }else {
+                    if (blob.isSquare()) {
+                        paint.setColor(Color.BLUE);}
+                    else {
+                        paint.setColor(Color.RED);
+                    }
+
+                }
+                //imageView.setImageBitmap(lastFrame.getBitmap());
+                c.drawCircle(x,y,size,paint);
+                paint.setColor(Color.BLACK);
+                c.drawCircle(x,y,size-2,paint);
+                if (blob.getColor()== Blobcolor.BLUE){
+                    paint.setColor(Color.BLUE);
+                }if (blob.getColor()== Blobcolor.RED){
+                    paint.setColor(Color.RED);
+                }if (blob.getColor()== Blobcolor.GREEN){
+                    paint.setColor(Color.GREEN);
+                }
+                c.drawCircle(x,y,size-5,paint);
+                paint.setColor(Color.BLACK);
+                imageView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
+
+            }
+        });
+    }
+
+    @Override
+    public void onBlobDisappear(Blobcolor c) {
+        roboboManager.log(LogLvl.WARNING, "BLOBTRACK", "DISSAPEAR "+c.name());
     }
 }

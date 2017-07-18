@@ -25,6 +25,7 @@ import android.graphics.PointF;
 import android.util.Log;
 
 import com.mytechia.robobo.framework.IModule;
+import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 
@@ -37,7 +38,11 @@ import java.util.HashSet;
  */
 public abstract class AFaceDetectionModule implements IFaceDetectionModule{
     private HashSet<IFaceListener> listeners;
+    protected float resolutionX = 1;
+    protected float resolutionY = 1;
     protected IRemoteControlModule rcmodule = null;
+    protected RoboboManager m;
+
     public AFaceDetectionModule(){
         listeners = new HashSet<IFaceListener>();
     }
@@ -53,16 +58,41 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
         }
         if (rcmodule!=null) {
             Status status = new Status("NEWFACE");
-            status.putContents("coordx",Math.round(coords.x)+"");
-            status.putContents("coordy",Math.round(coords.y)+"");
+            status.putContents("coordx",Math.round((coords.x/resolutionX)*100)+"");
+            status.putContents("coordy",Math.round((coords.y/resolutionY)*100)+"");
             status.putContents("distance", Math.round(eyesDistance)+"");
 
             rcmodule.postStatus(status);
         }
     }
 
+    protected void notifyFaceAppear(PointF coords, float eyesDistance){
+        for (IFaceListener listener:listeners){
+            listener.onFaceAppear(coords,eyesDistance);
+        }
+        if (rcmodule!=null) {
+            Status status = new Status("FOUNDFACE");
+            status.putContents("coordx",Math.round(coords.x/resolutionX)*100+"");
+            status.putContents("coordy",Math.round(coords.y/resolutionY)*100+"");
+            status.putContents("distance", Math.round(eyesDistance)+"");
+
+            rcmodule.postStatus(status);
+        }
+    }
+
+    protected void notifyFaceDisappear(){
+        for (IFaceListener listener:listeners){
+            listener.onFaceDissapear();
+        }
+        if (rcmodule!=null) {
+            Status status = new Status("LOSTFACE");
+
+            rcmodule.postStatus(status);
+        }
+    }
+
     public void suscribe(IFaceListener listener){
-        Log.d("FD_module", "Suscribed:"+listener.toString());
+        m.log("FD_module", "Suscribed:"+listener.toString());
         listeners.add(listener);
     }
     public void unsuscribe(IFaceListener listener){

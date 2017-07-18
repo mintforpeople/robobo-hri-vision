@@ -25,6 +25,7 @@ package com.mytechia.robobo.framework.hri.vision.colorDetection;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
+import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 
@@ -36,6 +37,7 @@ import java.util.HashSet;
 public abstract class AColorDetectionModule implements IColorDetectionModule {
     private HashSet<IColorListener> listeners = new HashSet<IColorListener>();
     protected IRemoteControlModule rcmodule = null;
+    protected RoboboManager m;
 
     @Override
     public void suscribe(IColorListener listener) {

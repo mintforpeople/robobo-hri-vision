@@ -12,22 +12,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.mytechia.robobo.framework.vision.CameraTestActivity">
 
-    <TextView
-        android:text="TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView2" />
-
-    <TextureView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textureView" />
-
-    <SurfaceView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/surfaceView" />
-
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -43,7 +27,7 @@
         android:layout_height="match_parent"
         android:rotation="0">
 
-        <org.opencv.android.MyPortraitCameraView
+        <org.opencv.android.JavaCameraView
             android:visibility="invisible"
             android:id="@+id/HelloOpenCvView"
             opencv:show_fps="true"

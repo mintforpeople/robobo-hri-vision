@@ -23,6 +23,7 @@
 package com.mytechia.robobo.framework.hri.vision.basicCamera;
 
 import android.view.Surface;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
 
@@ -52,8 +53,10 @@ public interface ICameraModule extends IModule {
      */
     public void signalInit();
 
+
+
     /**
-     * Pass a surface view to draw the imahes into
+     * Pass a surface view to draw the images into
      * @param view The surfaceview
      */
     public void passSurfaceView(SurfaceView view);
@@ -68,4 +71,22 @@ public interface ICameraModule extends IModule {
      * Changes between front and back camera
      */
     public void changeCamera();
+
+    /**
+     * Returns frames for debugging
+     * @param frame The frame
+     * @param frameId Tag of the frame
+     */
+    public void debugFrame(Frame frame, String frameId);
+
+    /**
+     * To show the frame in the opencv view
+     * @param set True to activate the option, false instead (default false)
+     */
+    public void showFrameInView(boolean set);
+    /**
+     * Sets the FPS for the frame notifications
+     * @param fps
+     */
+    public void setFps(int fps);
 }
