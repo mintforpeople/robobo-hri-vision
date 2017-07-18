@@ -153,9 +153,13 @@ public class AndroidCameraModule extends ACameraModule {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        resolution_height = Integer.parseInt(properties.getProperty("resolution_height"));
-        resolution_width = Integer.parseInt(properties.getProperty("resolution_width"));
-
+        try {
+            resolution_height = Integer.parseInt(properties.getProperty("resolution_height"));
+            resolution_width = Integer.parseInt(properties.getProperty("resolution_width"));
+        }
+        catch (NumberFormatException e){
+            m.log(LogLvl.WARNING,"AndroidCamera","Properties not defined, using defaults");
+        }
 
 
 //        Bundle roboboOptions = roboboFramework.getOptions();

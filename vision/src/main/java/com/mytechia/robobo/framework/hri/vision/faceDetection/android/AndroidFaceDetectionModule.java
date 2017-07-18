@@ -117,6 +117,9 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
         if (firstFrame){
             resolutionX = frame.getWidth();
             resolutionY = frame.getHeight();
+            faceDetector = new FaceDetector((int)resolutionX,(int) resolutionY, 1);
+            firstFrame = false;
+
         }
         if (active) {
             if (!processing) {
@@ -124,7 +127,6 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
                 Bitmap convertedBitmap = convert(frame.getBitmap(), Bitmap.Config.RGB_565);
                 //TODO Crear el detector solo una vez
-                faceDetector = new FaceDetector(convertedBitmap.getWidth(), convertedBitmap.getHeight(), 1);
                 //Log.d(TAG, "New Frame, resolution:"+convertedBitmap.getHeight()+"x"+convertedBitmap.getWidth());
                 int facenumber = faceDetector.findFaces(convertedBitmap, faces);
                 if (facenumber > 0) {
@@ -175,5 +177,10 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     @Override
     public void pauseDetection() {
         active = false;
+    }
+
+    @Override
+    public void setLostThreshold(int threshold) {
+        LOST_THRESHOLD = threshold;
     }
 }

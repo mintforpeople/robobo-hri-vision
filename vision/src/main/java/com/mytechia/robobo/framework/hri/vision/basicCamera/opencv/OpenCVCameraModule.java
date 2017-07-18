@@ -117,8 +117,13 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         } catch (IOException e) {
             e.printStackTrace();
         }
-        resolution_height = Integer.parseInt(properties.getProperty("resolution_height"));
-        resolution_width = Integer.parseInt(properties.getProperty("resolution_width"));
+        try {
+            resolution_height = Integer.parseInt(properties.getProperty("resolution_height"));
+            resolution_width = Integer.parseInt(properties.getProperty("resolution_width"));
+        }
+        catch (NumberFormatException e){
+            m.log(LogLvl.WARNING,TAG,"Properties not defined, using defaults");
+        }
 
 
 

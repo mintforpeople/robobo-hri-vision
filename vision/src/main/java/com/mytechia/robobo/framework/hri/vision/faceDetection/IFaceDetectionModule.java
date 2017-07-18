@@ -42,4 +42,7 @@ public interface IFaceDetectionModule extends IModule{
 
     public void startDetection();
     public void pauseDetection();
+
+    public void setLostThreshold(int threshold);
+
 }
