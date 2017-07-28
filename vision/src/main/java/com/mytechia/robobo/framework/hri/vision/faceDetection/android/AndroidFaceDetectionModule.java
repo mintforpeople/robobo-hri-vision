@@ -31,12 +31,14 @@ import android.util.Log;
 import android.util.StringBuilderPrinter;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
+import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.faceDetection.AFaceDetectionModule;
+import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.core.Mat;
@@ -64,6 +66,8 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     private boolean firstFrame = true;
 
     //endregion
+
+    private FrameCounter fps = new FrameCounter();
 
     //region IModule methods
 
@@ -122,37 +126,54 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
         }
         if (active) {
+
+            final Frame finalFrame = frame;
             if (!processing) {
-                processing = true;
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
 
-                Bitmap convertedBitmap = convert(frame.getBitmap(), Bitmap.Config.RGB_565);
-                //TODO Crear el detector solo una vez
-                //Log.d(TAG, "New Frame, resolution:"+convertedBitmap.getHeight()+"x"+convertedBitmap.getWidth());
-                int facenumber = faceDetector.findFaces(convertedBitmap, faces);
-                if (facenumber > 0) {
+                        processing = true;
 
-                    PointF facecoord = new PointF();
-                    float eyesDistance = 0;
-                    faces[0].getMidPoint(facecoord);
+                        Bitmap convertedBitmap = convert(finalFrame.getBitmap(), Bitmap.Config.RGB_565);
+                        //TODO Crear el detector solo una vez
+                        //Log.d(TAG, "New Frame, resolution:"+convertedBitmap.getHeight()+"x"+convertedBitmap.getWidth());
+                        int facenumber = faceDetector.findFaces(convertedBitmap, faces);
+                        if (facenumber > 0) {
+
+                            PointF facecoord = new PointF();
+                            float eyesDistance = 0;
+                            faces[0].getMidPoint(facecoord);
 
 
-                    eyesDistance = faces[0].eyesDistance();
-                    if (lostFace) {
-                        lostFace = false;
-                        notifyFaceAppear(facecoord, eyesDistance);
+                            eyesDistance = faces[0].eyesDistance();
+                            if (lostFace) {
+                                lostFace = false;
+                                notifyFaceAppear(facecoord, eyesDistance);
+                            }
+                            notifyFace(facecoord, eyesDistance);
+                            noDetectionCount = 0;
+
+                        } else {
+                            noDetectionCount += 1;
+                            if ((noDetectionCount > LOST_THRESHOLD) && (!lostFace)) {
+                                notifyFaceDisappear();
+                                lostFace = true;
+                            }
+
+                        }
+                        processing = false;
+
+                        fps.newFrame();
+
+                        if (fps.getElapsedTime() % 10 == 0) {
+                            m.log(LogLvl.TRACE, "FACE", "FPS = " + fps.getFPS());
+                        }
+
+
                     }
-                    notifyFace(facecoord, eyesDistance);
-                    noDetectionCount = 0;
-
-                } else {
-                    noDetectionCount += 1;
-                    if ((noDetectionCount > LOST_THRESHOLD) && (!lostFace)) {
-                        notifyFaceDisappear();
-                        lostFace = true;
-                    }
-
-                }
-                processing = false;
+                });
+                t.start();
 
             }
         }

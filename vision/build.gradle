@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 12
-        versionName "0.3.2-SAMSUNG"
+        versionCode 20
+        versionName "0.3.10-SAMSUNG-SNAPSHOT"
     }
     buildTypes {
         release {

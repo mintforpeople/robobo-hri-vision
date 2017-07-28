@@ -40,6 +40,7 @@ import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ACameraModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
+import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
 
 
 import org.opencv.android.OpenCVLoader;
@@ -80,6 +81,9 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
     private long lastFrameTime = 0;
     private long deltaTimeThreshold = 17;
+
+    private FrameCounter fps = new FrameCounter();
+
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
         @Override
@@ -261,6 +265,13 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             if (notifyMat) {
                 notifyMat(mat);
             }
+
+            fps.newFrame();
+
+            if (fps.getElapsedTime() % 10 == 0) {
+                m.log(LogLvl.TRACE, "CAMERA", "FPS = " + fps.getFPS());
+            }
+
         }
 
         if (showImgInView){
