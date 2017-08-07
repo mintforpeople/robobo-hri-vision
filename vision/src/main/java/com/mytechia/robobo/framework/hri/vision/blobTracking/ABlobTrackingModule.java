@@ -21,7 +21,6 @@
  ******************************************************************************/
 package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
-import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;

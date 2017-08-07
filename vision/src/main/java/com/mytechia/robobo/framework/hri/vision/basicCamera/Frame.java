@@ -25,7 +25,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import org.opencv.android.Utils;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.imgcodecs.Imgcodecs;
 
 public class Frame {
     private int width;
@@ -39,6 +42,7 @@ public class Frame {
     }
     public Frame(Mat mat){
         Bitmap bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+
         Utils.matToBitmap(mat, bmp);
 
         height = bmp.getHeight();
