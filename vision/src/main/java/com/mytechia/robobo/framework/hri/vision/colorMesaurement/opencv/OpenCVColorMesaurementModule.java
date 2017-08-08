@@ -186,7 +186,7 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
             }
 
         }
-        mat.release();
+
         hsvMat.release();
 
 
