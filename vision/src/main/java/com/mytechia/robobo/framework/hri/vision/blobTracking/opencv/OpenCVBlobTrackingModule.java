@@ -28,53 +28,91 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.ABlobTrackingModule;
-import com.mytechia.robobo.framework.hri.vision.blobTracking.Blob;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
-import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Point;
-import org.opencv.core.RotatedRect;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 
 //http://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
 //https://github.com/badlogic/opencv-fun/blob/master/src/pool/utils/BallDetector.java
 
 public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICameraListener {
 
+    private static final int POOL_SIZE=4;
+
     private ICameraModule cameraModule;
-    private boolean processing = false;
-    private boolean dR = true;
-    private boolean dG = false;
-    private boolean dB = false;
-    private boolean dC = false;
+
     private boolean firstFrame = true;
-    private int noDetectionCountR;
-    private int noDetectionCountG;
-    private int noDetectionCountB;
-    private int noDetectionCountC;
-    private boolean blobDissapearR;
-    private boolean blobDissapearG;
-    private boolean blobDissapearB;
-    private boolean blobDissapearC;
-    public int LOST_THRESHOLD = 5;
+
+    private List<BlockTracker> blockTrackings= new ArrayList<>();
+
+    private final Object lockBlockTrackings= new Object();
+
+    private ExecutorService threadPool = Executors.newFixedThreadPool(POOL_SIZE);
+
+    private final Object lockWorkers = new Object();
+
+    //Para evitar la creacion de muchos objetos
+    private LinkedList<BlockTrackerWorker> workersPool= new LinkedList<>();
 
 
-    private FrameCounter fps = new FrameCounter();
+
+    public OpenCVBlobTrackingModule(){
+
+        for (int i = 0; i <POOL_SIZE; i++) {
+            workersPool.add(new BlockTrackerWorker(this));
+        }
+
+    }
+
+
+    void returnToWorkersPool(BlockTrackerWorker blockTrackingWorker){
+
+        if(blockTrackingWorker==null){
+            return;
+        }
+
+        synchronized (lockWorkers) {
+
+            if (!this.workersPool.contains(blockTrackingWorker)) {
+                this.workersPool.add(blockTrackingWorker);
+            }
+        }
+    }
+
+
+    BlockTrackerWorker popWorkerFromPool(){
+
+        synchronized (lockWorkers) {
+
+            if(workersPool.isEmpty()){
+                return null;
+            }
+
+            BlockTrackerWorker blockTrackingWorker=workersPool.pop();
+
+            return blockTrackingWorker;
+        }
+
+    }
 
     @Override
     public void onNewFrame(Frame frame) {
+
         if (firstFrame) {
             resolutionX = frame.getWidth();
             resolutionY = frame.getHeight();
@@ -84,142 +122,38 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     @Override
     public void onNewMat(Mat mat) {
-        if (!processing) {
-            processing = true;
 
-            int detectionsR = 0;
-            int detectionsG = 0;
-            int detectionsB = 0;
-            int detectionsC = 0;
-
-            Mat hsvFrame = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC3);
-            Imgproc.cvtColor(mat, hsvFrame, Imgproc.COLOR_BGR2HSV);
-            Imgproc.blur(hsvFrame, hsvFrame, new Size(11, 11));
-
-            if (dR) {
-                detectionsR = configureTrackingBlob(mat, detectionsR, hsvFrame, new Size(11, 11), Blobcolor.RED);
-
-                if (detectionsR == 0) {
-                    noDetectionCountR += 1;
-                    if ((noDetectionCountR > LOST_THRESHOLD) && (!blobDissapearR)) {
-                        notifyBlobDissapear(Blobcolor.RED);
-                        blobDissapearR = true;
-                    }
-                } else {
-                    noDetectionCountR = 0;
-                    blobDissapearR = false;
-                }
-            }
-
-            if (dG) {
-
-                detectionsG = configureTrackingBlob(mat, detectionsG, hsvFrame, new Size(7, 7), Blobcolor.GREEN);
-
-                if (detectionsG == 0) {
-                    noDetectionCountG += 1;
-                    if ((noDetectionCountG > LOST_THRESHOLD) && (!blobDissapearG)) {
-                        notifyBlobDissapear(Blobcolor.GREEN);
-                        blobDissapearG = true;
-                    } else {
-                        noDetectionCountG = 0;
-                        blobDissapearG = false;
-                    }
-                }
-
-                if (dB) {
-
-                    detectionsB = configureTrackingBlob(mat, detectionsB, hsvFrame, new Size(11, 11), Blobcolor.BLUE);
-
-                    if (detectionsB == 0) {
-                        noDetectionCountB += 1;
-                        if ((noDetectionCountB > LOST_THRESHOLD) && (!blobDissapearB)) {
-                            notifyBlobDissapear(Blobcolor.BLUE);
-                            blobDissapearB = true;
-                        }
-                    } else {
-                        noDetectionCountB = 0;
-                        blobDissapearB = false;
-                    }
-                }
-
-                if (dC) {
-                    detectionsC = configureTrackingBlob(mat, detectionsC, hsvFrame, new Size(11, 11), Blobcolor.CUSTOM);
-                    if (detectionsC == 0) {
-                        noDetectionCountC += 1;
-                        if ((noDetectionCountC > LOST_THRESHOLD) && (!blobDissapearC)) {
-                            notifyBlobDissapear(Blobcolor.CUSTOM);
-                            blobDissapearC = true;
-                        } else {
-                            noDetectionCountC = 0;
-                            blobDissapearC = false;
-                        }
-                    }
-
-
-                    processing = false;
-
-                }
-            }
-
+        if(mat.empty()){
+            return;
         }
-    }
 
-    private int configureTrackingBlob(Mat mat, int detections, Mat hsvFrame, Size size, Blobcolor blobcolor) {
-        Mat maskred = new Mat(mat.rows(), mat.cols(), CvType.CV_32F);
+        synchronized (lockBlockTrackings) {
 
-        Core.inRange(hsvFrame, Blobcolor.getLowRange(blobcolor), Blobcolor.getHighRange(blobcolor), maskred);
+            for (BlockTracker blockTracking : blockTrackings) {
 
-        //Clean mask and find contours
-        Imgproc.erode(maskred, maskred, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, size));
-        Imgproc.dilate(maskred, maskred, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, size));
-        List<MatOfPoint> contoursred = new ArrayList<MatOfPoint>();
-        Imgproc.findContours(maskred, contoursred, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-
-        if (contoursred.size() > 0) {
-            double maxarea = 0;
-            MatOfPoint maxcontour = null;
-            for (MatOfPoint c : contoursred) {
-                if (Imgproc.contourArea(c) > maxarea) {
-                    maxcontour = c;
-                    maxarea = Imgproc.contourArea(c);
-                }
-            }
-            MatOfPoint2f maxcontourf = new MatOfPoint2f(maxcontour.toArray());
-            float[] radius = new float[1];
-            Point center = new Point();
-            Imgproc.minEnclosingCircle(maxcontourf, center, radius);
-            double area = Imgproc.contourArea(maxcontour);
-
-            double circularity = area / (Math.PI * radius[0] * radius[0]);
-            if (radius[0] > 10) {
-                detections = detections + 1;
-
-                Blob b = null;
-                if (circularity > 0.70) {
-                    b = new Blob(blobcolor, center, (int) radius[0], true, false);
-                } else {
-                    RotatedRect rrect = Imgproc.minAreaRect(maxcontourf);
-                    double quadrangularity = area / rrect.size.area();
-                    if (quadrangularity > 0.75) {
-
-                        b = new Blob(blobcolor, center, (int) area, false, true);
-                    } else {
-                        b = new Blob(blobcolor, center, (int) area, false, false);
-                    }
+                if(blockTracking.capturing()){
+                    continue;
                 }
 
-                this.notifyTrackingBlob(b);
-            }
+                BlockTrackerWorker blockTrackingWorker = this.popWorkerFromPool();
 
+                if (blockTrackingWorker == null) {
+                    continue;
+                }
+
+                blockTrackingWorker.configure(blockTracking, mat);
+
+                threadPool.execute(blockTrackingWorker);
+
+            }
         }
-        return detections;
+
+
     }
 
 
     @Override
-    public void onDebugFrame(Frame frame, String frameId) {
-
-    }
+    public void onDebugFrame(Frame frame, String frameId) {}
 
 
     @Override
@@ -242,6 +176,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void shutdown() throws InternalErrorException {
         cameraModule.unsuscribe(this);
+        threadPool.shutdown();
     }
 
     @Override
@@ -254,17 +189,81 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
         return "v0.1";
     }
 
+    private boolean existBlockTracking(Blobcolor blobcolor){
+        for (BlockTracker blockTracker : blockTrackings) {
+                if(blockTracker.getBlobcolor()==blobcolor){
+                    return true;
+                }
+        }
+
+        return false;
+    }
+
+
+
     @Override
-    public void configureDetection(boolean detectRed, boolean detectGreen,
-                                   boolean detectBlue, boolean detectCustom) {
-        dR = detectRed;
-        dB = detectBlue;
-        dG = detectGreen;
-        dC = detectCustom;
+    public void configureDetection(boolean detectRed,
+                                   boolean detectGreen,
+                                   boolean detectBlue,
+                                   boolean detectCustom) {
+
+
+        synchronized (lockBlockTrackings) {
+            if (detectRed) {
+                if((!existBlockTracking(Blobcolor.RED))) {
+                    this.blockTrackings.add(new BlockTracker(new Size(11, 11), Blobcolor.RED));
+                }
+            } else {
+                removeBlockTracking(Blobcolor.RED);
+            }
+
+            if (detectBlue) {
+                if((!existBlockTracking(Blobcolor.BLUE))) {
+                    this.blockTrackings.add(new BlockTracker(new Size(7, 7), Blobcolor.BLUE));
+                }
+            } else {
+                removeBlockTracking(Blobcolor.BLUE);
+            }
+
+            if (detectGreen) {
+                if((!existBlockTracking(Blobcolor.GREEN))) {
+                    this.blockTrackings.add(new BlockTracker(new Size(11, 11), Blobcolor.GREEN));
+                }
+            } else {
+                removeBlockTracking(Blobcolor.GREEN);
+            }
+
+            if (detectCustom) {
+                if((!existBlockTracking(Blobcolor.CUSTOM))) {
+                    this.blockTrackings.add(new BlockTracker(new Size(11, 11), Blobcolor.CUSTOM));
+                }
+            } else {
+                removeBlockTracking(Blobcolor.CUSTOM);
+            }
+        }
+
+    }
+
+    private void removeBlockTracking(Blobcolor block){
+
+        BlockTracker blockTrackingToRemove= null;
+
+        for (BlockTracker blockTracking :this.blockTrackings) {
+            if(blockTracking.getBlobcolor().equals(block)){
+                blockTrackingToRemove= blockTracking;
+            }
+        }
+
+        this.blockTrackings.remove(blockTrackingToRemove);
+
+
     }
 
     @Override
-    public void setThreshold(int th) {
-        LOST_THRESHOLD = th;
+    public void setThreshold(int threshold) {
+
+        for (BlockTracker blockTracking :this.blockTrackings) {
+            blockTracking.setLostBlockThreshold(threshold);
+        }
     }
 }

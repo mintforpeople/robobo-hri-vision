@@ -38,7 +38,7 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     protected IRemoteControlModule rcmodule = null;
 
 
-    protected void notifyTrackingBlob(Blob blob){
+    public void notifyTrackingBlob(Blob blob){
         for (IBlobListener listener:listeners){
             listener.onTrackingBlob(blob);
         }
@@ -53,7 +53,8 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
             rcmodule.postStatus(status);
         }
     }
-    protected void notifyBlobDissapear(Blobcolor c){
+    public void notifyBlobDissapear(Blobcolor c){
+
         for (IBlobListener listener:listeners){
             listener.onBlobDisappear(c);
         }
