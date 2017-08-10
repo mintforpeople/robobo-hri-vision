@@ -66,7 +66,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     private final Object lockWorkers = new Object();
 
-    //Para evitar la creacion de muchos objetos
+    //Para evitar la creacion de muchos objetos y, por consiguiente, la recolecion de basura
     private LinkedList<BlockTrackerWorker> workersPool= new LinkedList<>();
 
 
@@ -262,8 +262,10 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void setThreshold(int threshold) {
 
-        for (BlockTracker blockTracking :this.blockTrackings) {
-            blockTracking.setLostBlockThreshold(threshold);
+        synchronized (lockBlockTrackings) {
+            for (BlockTracker blockTracking : this.blockTrackings) {
+                blockTracking.setLostBlockThreshold(threshold);
+            }
         }
     }
 }
