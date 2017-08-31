@@ -40,16 +40,16 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlockTracker.DETECTION_STATE.DETECTED;
-import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlockTracker.DETECTION_STATE.NONE;
+import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlobTracker.DETECTION_STATE.DETECTED;
+import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlobTracker.DETECTION_STATE.NONE;
 
 
 /**
  * Created by julio on 7/08/17.
  */
-public class BlockTracker {
+public class BlobTracker {
 
-    private String TAG = "BlockTracker";
+    private String TAG = "BlobTracker";
 
     public static final int RADIUS = 10;
 
@@ -61,7 +61,7 @@ public class BlockTracker {
 
     private int noDetectionCount = 0;
 
-    private int lostBlockThreshold = 5;
+    private int lostBlobThreshold = 5;
 
     private final Size size;
 
@@ -74,7 +74,7 @@ public class BlockTracker {
     private boolean capturing = false;
 
 
-    public BlockTracker(Size size, Blobcolor blobcolor) {
+    public BlobTracker(Size size, Blobcolor blobcolor) {
 
         this.size = size;
         this.blobcolor = blobcolor;
@@ -88,8 +88,8 @@ public class BlockTracker {
         return capturing;
     }
 
-    public void setLostBlockThreshold(int lostBlockThreshold) {
-        this.lostBlockThreshold = lostBlockThreshold;
+    public void setLostBlobThreshold(int lostBlobThreshold) {
+        this.lostBlobThreshold = lostBlobThreshold;
     }
 
     public void capture(Mat mat) {
@@ -166,7 +166,7 @@ public class BlockTracker {
                     detectionState = DETECTION_STATE.TEMP_DISSAPEAR;
                     break;
                 case TEMP_DISSAPEAR:
-                    if (noDetectionCount > lostBlockThreshold){
+                    if (noDetectionCount > lostBlobThreshold){
                         detectionState = DETECTION_STATE.DISSAPEAR;
                     }
                     break;

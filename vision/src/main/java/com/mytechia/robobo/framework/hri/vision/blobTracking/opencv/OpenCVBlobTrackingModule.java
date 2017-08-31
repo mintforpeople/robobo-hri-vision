@@ -22,6 +22,8 @@
 package com.mytechia.robobo.framework.hri.vision.blobTracking.opencv;
 
 
+import android.os.Bundle;
+
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
@@ -29,22 +31,22 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.ABlobTrackingModule;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
+import com.mytechia.robobo.framework.hri.vision.util.CameraCalibrationData;
+import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationData;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static android.content.ContentValues.TAG;
 
 
 //http://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
@@ -58,7 +60,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     private boolean firstFrame = true;
 
-    private List<BlockTracker> blockTrackings= new ArrayList<>();
+    private List<BlobTracker> blobTrackings = new ArrayList<>();
 
     private final Object lockBlockTrackings= new Object();
 
@@ -67,20 +69,20 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     private final Object lockWorkers = new Object();
 
     //Para evitar la creacion de muchos objetos y, por consiguiente, la recolecion de basura
-    private LinkedList<BlockTrackerWorker> workersPool= new LinkedList<>();
+    private LinkedList<BlobTrackerWorker> workersPool= new LinkedList<>();
 
 
 
     public OpenCVBlobTrackingModule(){
 
         for (int i = 0; i <POOL_SIZE; i++) {
-            workersPool.add(new BlockTrackerWorker(this));
+            workersPool.add(new BlobTrackerWorker(this));
         }
 
     }
 
 
-    void returnToWorkersPool(BlockTrackerWorker blockTrackingWorker){
+    void returnToWorkersPool(BlobTrackerWorker blockTrackingWorker){
 
         if(blockTrackingWorker==null){
             return;
@@ -95,7 +97,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     }
 
 
-    BlockTrackerWorker popWorkerFromPool(){
+    BlobTrackerWorker popWorkerFromPool(){
 
         synchronized (lockWorkers) {
 
@@ -103,7 +105,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 return null;
             }
 
-            BlockTrackerWorker blockTrackingWorker=workersPool.pop();
+            BlobTrackerWorker blockTrackingWorker=workersPool.pop();
 
             return blockTrackingWorker;
         }
@@ -129,13 +131,13 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
         synchronized (lockBlockTrackings) {
 
-            for (BlockTracker blockTracking : blockTrackings) {
+            for (BlobTracker blockTracking : blobTrackings) {
 
                 if(blockTracking.capturing()){
                     continue;
                 }
 
-                BlockTrackerWorker blockTrackingWorker = this.popWorkerFromPool();
+                BlobTrackerWorker blockTrackingWorker = this.popWorkerFromPool();
 
                 if (blockTrackingWorker == null) {
                     continue;
@@ -159,13 +161,33 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         m = manager;
+        Bundle opts = m.getOptions();
+        CameraCalibrationData data = null;
+        try {
+            data = (CameraCalibrationData) opts.getSerializable("cameraCalibrationData");
+            ColorCalibrationData col = data.getBlue();
+            BLUE_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"BLUE");
+            col = data.getGreen();
+            GREEN_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"GREEN");
+            col = data.getRed();
+            RED_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"RED");
+            col = data.getCustom();
+            CUSTOM_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"CUSTOM");
+
+
+        }catch (NullPointerException e){
+            m.log(TAG,"No calibration data found, using defaults");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         cameraModule = m.getModuleInstance(ICameraModule.class);
         rcmodule = m.getModuleInstance(IRemoteControlModule.class);
         cameraModule.suscribe(this);
         rcmodule.registerCommand("CONFIGUREBLOB", new ICommandExecutor() {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
-                configureDetection(Boolean.parseBoolean(c.getParameters().get("red")),
+                configureDetection(
+                        Boolean.parseBoolean(c.getParameters().get("red")),
                         Boolean.parseBoolean(c.getParameters().get("green")),
                         Boolean.parseBoolean(c.getParameters().get("blue")),
                         Boolean.parseBoolean(c.getParameters().get("custom")));
@@ -189,9 +211,9 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
         return "v0.1";
     }
 
-    private boolean existBlockTracking(Blobcolor blobcolor){
-        for (BlockTracker blockTracker : blockTrackings) {
-                if(blockTracker.getBlobcolor()==blobcolor){
+    private boolean existBlobTracking(Blobcolor blobcolor){
+        for (BlobTracker blobTracker : blobTrackings) {
+                if(blobTracker.getBlobcolor()==blobcolor){
                     return true;
                 }
         }
@@ -210,51 +232,51 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
         synchronized (lockBlockTrackings) {
             if (detectRed) {
-                if((!existBlockTracking(Blobcolor.RED))) {
-                    this.blockTrackings.add(new BlockTracker(new Size(11, 11), Blobcolor.RED));
+                if((!existBlobTracking(RED_CAL))) {
+                    this.blobTrackings.add(new BlobTracker(new Size(11, 11), RED_CAL));
                 }
             } else {
-                removeBlockTracking(Blobcolor.RED);
+                removeBlobTracking(RED_CAL);
             }
 
             if (detectBlue) {
-                if((!existBlockTracking(Blobcolor.BLUE))) {
-                    this.blockTrackings.add(new BlockTracker(new Size(7, 7), Blobcolor.BLUE));
+                if((!existBlobTracking(BLUE_CAL))) {
+                    this.blobTrackings.add(new BlobTracker(new Size(11, 11), BLUE_CAL));
                 }
             } else {
-                removeBlockTracking(Blobcolor.BLUE);
+                removeBlobTracking(BLUE_CAL);
             }
 
             if (detectGreen) {
-                if((!existBlockTracking(Blobcolor.GREEN))) {
-                    this.blockTrackings.add(new BlockTracker(new Size(11, 11), Blobcolor.GREEN));
+                if((!existBlobTracking(GREEN_CAL))) {
+                    this.blobTrackings.add(new BlobTracker(new Size(11, 11), GREEN_CAL));
                 }
             } else {
-                removeBlockTracking(Blobcolor.GREEN);
+                removeBlobTracking(GREEN_CAL);
             }
 
             if (detectCustom) {
-                if((!existBlockTracking(Blobcolor.CUSTOM))) {
-                    this.blockTrackings.add(new BlockTracker(new Size(11, 11), Blobcolor.CUSTOM));
+                if((!existBlobTracking(CUSTOM_CAL))) {
+                    this.blobTrackings.add(new BlobTracker(new Size(11, 11), CUSTOM_CAL));
                 }
             } else {
-                removeBlockTracking(Blobcolor.CUSTOM);
+                removeBlobTracking(CUSTOM_CAL);
             }
         }
 
     }
 
-    private void removeBlockTracking(Blobcolor block){
+    private void removeBlobTracking(Blobcolor block){
 
-        BlockTracker blockTrackingToRemove= null;
+        BlobTracker blockTrackingToRemove= null;
 
-        for (BlockTracker blockTracking :this.blockTrackings) {
+        for (BlobTracker blockTracking :this.blobTrackings) {
             if(blockTracking.getBlobcolor().equals(block)){
                 blockTrackingToRemove= blockTracking;
             }
         }
 
-        this.blockTrackings.remove(blockTrackingToRemove);
+        this.blobTrackings.remove(blockTrackingToRemove);
 
 
     }
@@ -263,8 +285,8 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     public void setThreshold(int threshold) {
 
         synchronized (lockBlockTrackings) {
-            for (BlockTracker blockTracking : this.blockTrackings) {
-                blockTracking.setLostBlockThreshold(threshold);
+            for (BlobTracker blockTracking : this.blobTrackings) {
+                blockTracking.setLostBlobThreshold(threshold);
             }
         }
     }

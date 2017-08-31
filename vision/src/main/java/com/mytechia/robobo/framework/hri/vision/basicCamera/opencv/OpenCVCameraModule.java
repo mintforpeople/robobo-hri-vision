@@ -24,35 +24,26 @@ package com.mytechia.robobo.framework.hri.vision.basicCamera.opencv;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.hardware.Camera;
+import android.os.Bundle;
 import android.os.Looper;
-import android.renderscript.Script;
-import android.util.Log;
-import android.view.MenuItem;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.TextureView;
 import android.view.ViewGroup;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
-import com.mytechia.robobo.framework.IModule;
 import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ACameraModule;
+import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationData;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
+import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
 import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
 
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,6 +76,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     private FrameCounter fps = new FrameCounter();
 
 
+
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
         @Override
         public void onManagerConnected(int status) {
@@ -109,6 +101,8 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         m =  manager;
+
+
         context = manager.getApplicationContext();
         Looper.prepare();
 

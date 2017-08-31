@@ -37,6 +37,12 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     protected RoboboManager m;
     protected IRemoteControlModule rcmodule = null;
 
+    protected Blobcolor RED_CAL = Blobcolor.RED;
+    protected Blobcolor GREEN_CAL = Blobcolor.GREEN;
+    protected Blobcolor BLUE_CAL = Blobcolor.BLUE;
+    protected Blobcolor CUSTOM_CAL = Blobcolor.CUSTOM;
+
+
 
     public void notifyTrackingBlob(Blob blob){
         for (IBlobListener listener:listeners){
@@ -69,16 +75,16 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     }
 
     private String colorToString(Blobcolor blobcolor){
-        switch (blobcolor){
-            case BLUE:
-                return "blue";
-            case RED:
-                return "red";
-            case GREEN:
-                return  "green";
-            default:
-                return "custom";
+        if (blobcolor == BLUE_CAL){
+            return "blue";
+        }else if (blobcolor == GREEN_CAL){
+            return  "green";
+        }else if (blobcolor == RED_CAL){
+            return "red";
+        }else{
+            return "custom";
         }
+
     }
 
 

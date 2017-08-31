@@ -32,17 +32,17 @@ public interface IFaceDetectionModule extends IModule{
      * Suscribes a listener to the face detected notifications
      * @param listener The listener to be added
      */
-    public void suscribe(IFaceListener listener);
+    void suscribe(IFaceListener listener);
 
     /**
      * Unsuscribes a listener from the face detected notifications
      * @param listener The listener to be removed
      */
-    public void unsuscribe(IFaceListener listener);
+    void unsuscribe(IFaceListener listener);
 
-    public void startDetection();
-    public void pauseDetection();
+    void startDetection();
+    void pauseDetection();
 
-    public void setLostThreshold(int threshold);
+    void setLostThreshold(int threshold);
 
 }

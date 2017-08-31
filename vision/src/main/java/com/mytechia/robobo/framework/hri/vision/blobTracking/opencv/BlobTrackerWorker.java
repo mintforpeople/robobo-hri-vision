@@ -27,22 +27,22 @@ import org.opencv.core.Mat;
 
 import java.util.Objects;
 
-import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlockTracker.DETECTION_STATE.DETECTED;
-import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlockTracker.DETECTION_STATE.DISSAPEAR;
+import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlobTracker.DETECTION_STATE.DETECTED;
+import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlobTracker.DETECTION_STATE.DISSAPEAR;
 
 /**
  * Created by julio on 8/08/17.
  */
-public class BlockTrackerWorker implements Runnable {
+public class BlobTrackerWorker implements Runnable {
 
-    private String TAG = "BlockTracker";
+    private String TAG = "BlobTracker";
 
     private Mat mat;
-    private BlockTracker blockTracking;
+    private BlobTracker blockTracking;
     private OpenCVBlobTrackingModule openCVBlobTrackingModule;
 
 
-    public BlockTrackerWorker(OpenCVBlobTrackingModule openCVBlobTrackingModule) {
+    public BlobTrackerWorker(OpenCVBlobTrackingModule openCVBlobTrackingModule) {
 
         Objects.requireNonNull(openCVBlobTrackingModule, "The parameter openCVBlobTrackingModule is requiered");
 
@@ -50,7 +50,7 @@ public class BlockTrackerWorker implements Runnable {
     }
 
 
-    public void configure(BlockTracker blockTracking, Mat mat) {
+    public void configure(BlobTracker blockTracking, Mat mat) {
 
         this.blockTracking = blockTracking;
 
@@ -77,7 +77,7 @@ public class BlockTrackerWorker implements Runnable {
             }
 
         }catch (Throwable th){
-            Log.e(TAG, "Error running BlockTrackerWorker", th);
+            Log.e(TAG, "Error running BlobTrackerWorker", th);
         }finally {
             this.openCVBlobTrackingModule.returnToWorkersPool(this);
         }

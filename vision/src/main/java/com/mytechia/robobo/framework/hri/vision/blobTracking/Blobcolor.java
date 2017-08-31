@@ -27,7 +27,7 @@ package com.mytechia.robobo.framework.hri.vision.blobTracking;
 /**
  * Defines the detectable colors ad its HSV ranges
  */
-public enum Blobcolor {
+public class Blobcolor {
 
 //    Originals
 //    GREEN(29, 170, 100, 77, 255, 255),
@@ -40,19 +40,22 @@ public enum Blobcolor {
 //    RED(72,114,199,179,210,255),
 //    CUSTOM(45,98,148,135,226,255);
       //Samsung
-    GREEN(46,100 ,127,68,206,221),
-    BLUE(13,133,121,19,255,209),
-    RED(82,102,184,164,190,246),
-    CUSTOM(47,96,110,137,255,218);
+    public static Blobcolor GREEN = new Blobcolor(46,100 ,127,68,206,221,"GREEN");
+    public static Blobcolor BLUE = new Blobcolor (13,133,121,19,255,209,"BLUE");
+    public static Blobcolor RED = new Blobcolor(82,102,184,164,190,246,"RED");
+    public static Blobcolor CUSTOM = new Blobcolor(47,96,110,137,255,218,"CUSTOM");
 
-    public int hmin;
-    public int smin;
-    public int vmin;
-    public int hmax;
-    public int smax;
-    public int vmax;
+    private int hmin;
+    private int smin;
+    private int vmin;
+    private int hmax;
+    private int smax;
+    private int vmax;
+    private String name;
 
-    Blobcolor(int hmin, int smin, int vmin, int hmax, int smax, int vmax){
+
+
+    public Blobcolor(int hmin, int smin, int vmin, int hmax, int smax, int vmax, String name){
 
         this.hmax = hmax;
         this.smax = smax;
@@ -69,4 +72,9 @@ public enum Blobcolor {
     public static Scalar getHighRange(Blobcolor color){
         return new Scalar(color.hmax, color.smax, color.vmax);
     }
+
+    public String name() {
+        return name;
+    }
+
 }
