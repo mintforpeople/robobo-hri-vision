@@ -38,7 +38,7 @@ public class BlobTrackerWorker implements Runnable {
     private String TAG = "BlobTracker";
 
     private Mat mat;
-    private BlobTracker blockTracking;
+    private BlobTracker blobTracking;
     private OpenCVBlobTrackingModule openCVBlobTrackingModule;
 
 
@@ -52,7 +52,7 @@ public class BlobTrackerWorker implements Runnable {
 
     public void configure(BlobTracker blockTracking, Mat mat) {
 
-        this.blockTracking = blockTracking;
+        this.blobTracking = blockTracking;
 
         this.mat = mat;
 
@@ -64,15 +64,15 @@ public class BlobTrackerWorker implements Runnable {
 
         try {
 
-            this.blockTracking.capture(mat);
+            this.blobTracking.capture(mat);
 
-            if (blockTracking.blodDetectionState() == DISSAPEAR) {
+            if (blobTracking.blodDetectionState() == DISSAPEAR) {
 
-                openCVBlobTrackingModule.notifyBlobDissapear(blockTracking.getBlobcolor());
+                openCVBlobTrackingModule.notifyBlobDissapear(blobTracking.getBlobcolor());
 
-            } else if ((blockTracking.blodDetectionState() == DETECTED)) {
+            } else if ((blobTracking.blodDetectionState() == DETECTED)) {
 
-                openCVBlobTrackingModule.notifyTrackingBlob(blockTracking.detectedBlod());
+                openCVBlobTrackingModule.notifyTrackingBlob(blobTracking.detectedBlod());
 
             }
 

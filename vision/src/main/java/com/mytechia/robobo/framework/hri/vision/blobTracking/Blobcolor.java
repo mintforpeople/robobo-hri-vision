@@ -63,6 +63,7 @@ public class Blobcolor {
         this.hmin = hmin;
         this.smin = smin;
         this.vmin = vmin;
+        this.name = name;
     }
 
     public static Scalar getLowRange(Blobcolor color){
