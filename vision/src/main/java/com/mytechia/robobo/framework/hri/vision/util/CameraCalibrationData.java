@@ -14,7 +14,7 @@ import java.io.Serializable;
 /**
  * Color ranges for a specific device
  *
- * @author Luis Llamas <luis.llamas@mytechia.com>.
+ * @author Luis Llamas luis.llamas@mytechia.com.
  */
 public class CameraCalibrationData implements Serializable {
     private ColorCalibrationData red;

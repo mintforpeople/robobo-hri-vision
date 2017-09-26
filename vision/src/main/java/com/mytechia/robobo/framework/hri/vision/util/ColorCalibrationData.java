@@ -14,7 +14,7 @@ import java.io.Serializable;
 /**
  * HSV Range of a color
  *
- * @author Luis Llamas <luis.llamas@mytechia.com>.
+ * @author Luis Llamas luis.llamas@mytechia.com.
  */
 public class ColorCalibrationData implements Serializable {
     private int minH;

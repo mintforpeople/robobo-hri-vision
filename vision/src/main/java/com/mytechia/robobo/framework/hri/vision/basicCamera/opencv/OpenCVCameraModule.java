@@ -104,7 +104,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
 
         context = manager.getApplicationContext();
-        Looper.prepare();
 
         Properties properties = new Properties();
         AssetManager assetManager = manager.getApplicationContext().getAssets();
