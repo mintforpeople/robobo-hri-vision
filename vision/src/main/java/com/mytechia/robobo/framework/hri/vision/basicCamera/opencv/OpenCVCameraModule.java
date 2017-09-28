@@ -37,6 +37,8 @@ import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationData;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
 import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
+import com.mytechia.robobo.framework.power.IPowerModeListener;
+import com.mytechia.robobo.framework.power.PowerMode;
 
 
 import org.opencv.android.OpenCVLoader;
@@ -55,7 +57,7 @@ import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 /**
  * Implementation of the basic camera module using the OpenCV library
  */
-public class OpenCVCameraModule extends ACameraModule implements CameraBridgeViewBase.CvCameraViewListener2 {
+public class OpenCVCameraModule extends ACameraModule implements CameraBridgeViewBase.CvCameraViewListener2, IPowerModeListener {
     //region VAR
     private static final String TAG = "OpenCVCameraModule";
 
@@ -97,6 +99,18 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     //endregion
 
 
+    @Override
+    public void onPowerModeChange(PowerMode newMode) {
+
+        if (newMode == PowerMode.LOWPOWER) {
+            mOpenCvCameraView.disableView();
+        }
+        else {
+            mOpenCvCameraView.enableView();
+        }
+
+    }
+
     //region IModule methods
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
@@ -122,7 +136,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             m.log(LogLvl.WARNING,TAG,"Properties not defined, using defaults");
         }
 
-
+        manager.subscribeToPowerModeChanges(this);
 
     }
 
@@ -164,10 +178,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
         mOpenCvCameraView.setCvCameraViewListener(this);
         mOpenCvCameraView.disableFpsMeter();
-
-
-
-
 
         if (!OpenCVLoader.initDebug()) {
             m.log(LogLvl.WARNING, TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
