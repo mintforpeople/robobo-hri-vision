@@ -144,9 +144,9 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
             }
 
             @Override
-            public void onError(String errorMsg) {
+            public void onError(Exception errorMsg) {
 
-                final String error = errorMsg;
+                final String error = errorMsg.getLocalizedMessage();
 
 
             }
