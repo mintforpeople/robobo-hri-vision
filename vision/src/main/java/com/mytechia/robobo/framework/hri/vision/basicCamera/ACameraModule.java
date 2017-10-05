@@ -21,8 +21,6 @@
  ******************************************************************************/
 package com.mytechia.robobo.framework.hri.vision.basicCamera;
 
-import android.util.Log;
-
 import com.mytechia.robobo.framework.RoboboManager;
 
 import org.opencv.core.Mat;
@@ -33,33 +31,48 @@ import java.util.HashSet;
  * Abstract class that manages listeners and status
  */
 public abstract class ACameraModule implements ICameraModule{
+
     private HashSet<ICameraListener> listeners ;
+
+    protected RoboboManager roboboManager;
+
     public ACameraModule(){
-        listeners = new HashSet<ICameraListener>();
+        listeners = new HashSet<>();
     }
-    protected RoboboManager m;
+
+
     protected void notifyFrame(Frame frame){
-        for (ICameraListener listener:listeners){
+        synchronized (listeners) {
+            for (ICameraListener listener : listeners) {
                 listener.onNewFrame(frame);
+            }
         }
     }
     protected void notifyDebugFrame(Frame frame, String id){
-        for (ICameraListener listener:listeners){
+        synchronized (listeners) {
+            for (ICameraListener listener : listeners) {
                 listener.onDebugFrame(frame, id);
+            }
         }
     }
 
     protected void notifyMat(Mat mat){
-        for (ICameraListener listener:listeners){
-            listener.onNewMat(mat);
+        synchronized (listeners) {
+            for (ICameraListener listener : listeners) {
+                listener.onNewMat(mat);
+            }
         }
     }
 
     public void suscribe(ICameraListener listener){
-        m.log("Cam_module", "Suscribed:"+listener.toString());
-        listeners.add(listener);
+        synchronized (listeners) {
+            roboboManager.log("Cam_module", "Suscribed:" + listener.toString());
+            listeners.add(listener);
+        }
     }
     public void unsuscribe(ICameraListener listener){
-        listeners.remove(listener);
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
     }
 }

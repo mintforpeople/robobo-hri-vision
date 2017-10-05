@@ -24,8 +24,7 @@ package com.mytechia.robobo.framework.hri.vision.basicCamera.opencv;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.os.Bundle;
-import android.os.Looper;
+import android.util.Log;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 
@@ -33,9 +32,7 @@ import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ACameraModule;
-import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationData;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
-import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
 import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
 import com.mytechia.robobo.framework.power.IPowerModeListener;
 import com.mytechia.robobo.framework.power.PowerMode;
@@ -85,7 +82,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    m.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
+                    roboboManager.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
                     mOpenCvCameraView.enableView();
                 } break;
                 default:
@@ -114,7 +111,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     //region IModule methods
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
-        m =  manager;
+        roboboManager =  manager;
 
 
         context = manager.getApplicationContext();
@@ -133,7 +130,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             resolution_width = Integer.parseInt(properties.getProperty("resolution_width"));
         }
         catch (NumberFormatException e){
-            m.log(LogLvl.WARNING,TAG,"Properties not defined, using defaults");
+            roboboManager.log(LogLvl.WARNING,TAG,"Properties not defined, using defaults");
         }
 
         manager.subscribeToPowerModeChanges(this);
@@ -144,8 +141,10 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
     @Override
     public void shutdown() throws InternalErrorException {
-        if (mOpenCvCameraView != null)
+        if (mOpenCvCameraView != null) {
+            Log.i(TAG, "OpenCVCameraModule shutdown");
             mOpenCvCameraView.disableView();
+        }
     }
 
     @Override
@@ -180,10 +179,10 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         mOpenCvCameraView.disableFpsMeter();
 
         if (!OpenCVLoader.initDebug()) {
-            m.log(LogLvl.WARNING, TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            roboboManager.log(LogLvl.WARNING, TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, context, mLoaderCallback);
         } else {
-            m.log(TAG, "OpenCV library found inside package. Using it!");
+            roboboManager.log(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
 
@@ -217,7 +216,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
                 index = CAMERA_ID_BACK;
                 break;
         }
-        m.log(TAG,"New camera index: "+index);
+        roboboManager.log(TAG,"New camera index: "+index);
         mOpenCvCameraView.disableView();
         mOpenCvCameraView.setCameraIndex(index);
         mOpenCvCameraView.enableView();
@@ -244,7 +243,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         long millis = System.currentTimeMillis();
         if (millis-lastFrameTime>=deltaTimeThreshold) {
-           // m.log("CameraModule",millis-lastFrameTime+"");
+           // roboboManager.log("CameraModule",millis-lastFrameTime+"");
 
             lastFrameTime = millis;
             Bitmap bmp;
@@ -272,7 +271,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             fps.newFrame();
 
             if (fps.getElapsedTime() % 10 == 0) {
-                m.log(LogLvl.TRACE, "CAMERA", "FPS = " + fps.getFPS());
+                roboboManager.log(LogLvl.TRACE, "CAMERA", "FPS = " + fps.getFPS());
             }
 
         }
@@ -291,14 +290,14 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     public void onCameraViewStarted(int width, int height) {
         resolution_height = height;
         resolution_width = width;
-        m.log(TAG,"Camera view started, resolution: "+height+"x"+width);
+        roboboManager.log(TAG,"Camera view started, resolution: "+height+"x"+width);
 
 
     }
 
     @Override
     public void onCameraViewStopped() {
-        m.log(TAG,"Camera view stopped");
+        roboboManager.log(TAG,"Camera view stopped");
     }
 
     //endregion
