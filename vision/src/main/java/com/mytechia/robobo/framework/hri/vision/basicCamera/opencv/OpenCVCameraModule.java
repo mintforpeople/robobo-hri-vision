@@ -289,7 +289,8 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     //region OpenCV Methods
     @Override
     public void onCameraViewStarted(int width, int height) {
-
+        resolution_height = height;
+        resolution_width = width;
         m.log(TAG,"Camera view started, resolution: "+height+"x"+width);
 
 
@@ -301,4 +302,14 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     }
 
     //endregion
+
+    @Override
+    public int getResX() {
+        return resolution_width;
+    }
+
+    @Override
+    public int getResY() {
+        return resolution_height;
+    }
 }

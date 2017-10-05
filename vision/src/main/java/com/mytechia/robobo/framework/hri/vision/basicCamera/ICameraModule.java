@@ -89,4 +89,8 @@ public interface ICameraModule extends IModule {
      * @param fps
      */
     void setFps(int fps);
+
+    int getResX();
+
+    int getResY();
 }
