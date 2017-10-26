@@ -87,7 +87,7 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
             }
 
             @Override
-            public void onError(Exception errorMsg) {
+            public void onError(Throwable errorMsg) {
 
                 final String error = errorMsg.getLocalizedMessage();
 

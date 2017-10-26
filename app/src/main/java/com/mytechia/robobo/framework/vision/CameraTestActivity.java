@@ -92,7 +92,7 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
             }
 
             @Override
-            public void onError(Exception errorMsg) {
+            public void onError(Throwable errorMsg) {
 
                 final String error = errorMsg.getLocalizedMessage();
 

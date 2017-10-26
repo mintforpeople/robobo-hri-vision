@@ -121,7 +121,7 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
             }
 
             @Override
-            public void onError(Exception errorMsg) {
+            public void onError(Throwable errorMsg) {
 
                 final String error = errorMsg.getLocalizedMessage();
 

@@ -164,6 +164,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
         Bundle opts = m.getOptions();
         CameraCalibrationData data = null;
         try {
+
             data = (CameraCalibrationData) opts.getSerializable("cameraCalibrationData");
             ColorCalibrationData col = data.getBlue();
             BLUE_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"BLUE");
@@ -173,7 +174,6 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
             RED_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"RED");
             col = data.getCustom();
             CUSTOM_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"CUSTOM");
-
 
         }catch (NullPointerException e){
             m.log(TAG,"No calibration data found, using defaults");
