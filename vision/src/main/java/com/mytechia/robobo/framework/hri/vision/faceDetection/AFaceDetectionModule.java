@@ -57,7 +57,7 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
             listener.onFaceDetected(coords,eyesDistance);
         }
         if (rcmodule!=null) {
-            Status status = new Status("NEWFACE");
+            Status status = new Status("FACE");
             status.putContents("coordx",Math.round((coords.x/resolutionX)*100)+"");
             status.putContents("coordy",Math.round((coords.y/resolutionY)*100)+"");
             status.putContents("distance", Math.round(eyesDistance)+"");
@@ -71,7 +71,7 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
             listener.onFaceAppear(coords,eyesDistance);
         }
         if (rcmodule!=null) {
-            Status status = new Status("FOUNDFACE");
+            Status status = new Status("FACE");
             status.putContents("coordx",Math.round(coords.x/resolutionX)*100+"");
             status.putContents("coordy",Math.round(coords.y/resolutionY)*100+"");
             status.putContents("distance", Math.round(eyesDistance)+"");
@@ -85,7 +85,10 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
             listener.onFaceDissapear();
         }
         if (rcmodule!=null) {
-            Status status = new Status("LOSTFACE");
+            Status status = new Status("FACE");
+            status.putContents("coordx",-1+"");
+            status.putContents("coordy",-1+"");
+            status.putContents("distance",-1+"");
 
             rcmodule.postStatus(status);
         }
