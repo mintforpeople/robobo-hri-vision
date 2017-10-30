@@ -183,7 +183,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
         cameraModule = m.getModuleInstance(ICameraModule.class);
         rcmodule = m.getModuleInstance(IRemoteControlModule.class);
         cameraModule.suscribe(this);
-        rcmodule.registerCommand("CONFIGUREBLOB", new ICommandExecutor() {
+        rcmodule.registerCommand("CONFIGURE-BLOBTRACKING", new ICommandExecutor() {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
                 configureDetection(

@@ -51,7 +51,7 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
 
         if (rcmodule!=null) {
 
-            Status status = new Status("COLORBLOB");
+            Status status = new Status("BLOB");
             status.putContents("posx",(Math.round(((float)blob.getX()/resolutionX)*100))+"");
             status.putContents("posy",(Math.round(((float)blob.getY()/resolutionY)*100))+"");
             status.putContents("size",blob.getSize()+"");
@@ -65,7 +65,7 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
             listener.onBlobDisappear(c);
         }
         if (rcmodule!=null) {
-            Status status = new Status("COLORBLOB");
+            Status status = new Status("BLOB");
             status.putContents("posx","0");
             status.putContents("posy","0");
             status.putContents("size","0");
