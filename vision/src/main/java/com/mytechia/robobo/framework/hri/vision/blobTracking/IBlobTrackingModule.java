@@ -25,10 +25,10 @@ package com.mytechia.robobo.framework.hri.vision.blobTracking;
 import com.mytechia.robobo.framework.IModule;
 
 public interface IBlobTrackingModule extends IModule{
-    public void configureDetection(boolean detectRed, boolean detectGreen, boolean detectBlue, boolean detectCustom);
-    public void suscribe(IBlobListener listener);
-    public void unsuscribe(IBlobListener listener);
-    public void setThreshold( int th);
+    void configureDetection(boolean detectRed, boolean detectGreen, boolean detectBlue, boolean detectCustom);
+    void suscribe(IBlobListener listener);
+    void unsuscribe(IBlobListener listener);
+    void setThreshold(int th);
 
 
 }

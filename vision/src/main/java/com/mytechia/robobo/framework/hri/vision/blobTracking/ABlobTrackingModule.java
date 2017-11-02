@@ -21,7 +21,6 @@
  ******************************************************************************/
 package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
-import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
@@ -38,15 +37,21 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     protected RoboboManager m;
     protected IRemoteControlModule rcmodule = null;
 
+    protected Blobcolor RED_CAL = Blobcolor.RED;
+    protected Blobcolor GREEN_CAL = Blobcolor.GREEN;
+    protected Blobcolor BLUE_CAL = Blobcolor.BLUE;
+    protected Blobcolor CUSTOM_CAL = Blobcolor.CUSTOM;
 
-    protected void notifyTrackingBlob(Blob blob){
+
+
+    public void notifyTrackingBlob(Blob blob){
         for (IBlobListener listener:listeners){
             listener.onTrackingBlob(blob);
         }
 
         if (rcmodule!=null) {
 
-            Status status = new Status("COLORBLOB");
+            Status status = new Status("BLOB");
             status.putContents("posx",(Math.round(((float)blob.getX()/resolutionX)*100))+"");
             status.putContents("posy",(Math.round(((float)blob.getY()/resolutionY)*100))+"");
             status.putContents("size",blob.getSize()+"");
@@ -54,12 +59,13 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
             rcmodule.postStatus(status);
         }
     }
-    protected void notifyBlobDissapear(Blobcolor c){
+    public void notifyBlobDissapear(Blobcolor c){
+
         for (IBlobListener listener:listeners){
             listener.onBlobDisappear(c);
         }
         if (rcmodule!=null) {
-            Status status = new Status("COLORBLOB");
+            Status status = new Status("BLOB");
             status.putContents("posx","0");
             status.putContents("posy","0");
             status.putContents("size","0");
@@ -69,16 +75,16 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     }
 
     private String colorToString(Blobcolor blobcolor){
-        switch (blobcolor){
-            case BLUE:
-                return "blue";
-            case RED:
-                return "red";
-            case GREEN:
-                return  "green";
-            default:
-                return "custom";
+        if (blobcolor == BLUE_CAL){
+            return "blue";
+        }else if (blobcolor == GREEN_CAL){
+            return  "green";
+        }else if (blobcolor == RED_CAL){
+            return "red";
+        }else{
+            return "custom";
         }
+
     }
 
 

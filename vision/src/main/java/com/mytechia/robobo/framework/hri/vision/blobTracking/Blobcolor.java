@@ -22,37 +22,32 @@
 package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
 
+ import com.mytechia.robobo.framework.hri.vision.util.CameraCalibrationData;
+ import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationData;
+
  import org.opencv.core.Scalar;
 
 /**
  * Defines the detectable colors ad its HSV ranges
  */
-public enum Blobcolor {
+public class Blobcolor {
 
-//    Originals
-//    GREEN(29, 170, 100, 77, 255, 255),
-//    BLUE(0,80,40,20,255,200),
-//    RED(90,150,100,179,255,240);
+    public static Blobcolor GREEN = blobColorFromColorCalibrationData(CameraCalibrationData.DEFAULT_GREEN,"GREEN");
+    public static Blobcolor BLUE = blobColorFromColorCalibrationData(CameraCalibrationData.DEFAULT_BLUE,"BLUE");
+    public static Blobcolor RED = blobColorFromColorCalibrationData(CameraCalibrationData.DEFAULT_RED,"RED");
+    public static Blobcolor CUSTOM = blobColorFromColorCalibrationData(CameraCalibrationData.DEFAULT_CUSTOM,"CUSTOM");
 
-    //BQ
-//    GREEN(39,187,87,67,255,233),
-//    BLUE(11,140,127,13,255,199),
-//    RED(72,114,199,179,210,255),
-//    CUSTOM(45,98,148,135,226,255);
-      //Samsung
-    GREEN(46,100 ,127,68,206,221),
-    BLUE(13,133,121,19,255,209),
-    RED(82,102,184,164,190,246),
-    CUSTOM(47,96,110,137,255,218);
+    private int hmin;
+    private int smin;
+    private int vmin;
+    private int hmax;
+    private int smax;
+    private int vmax;
+    private String name;
 
-    public int hmin;
-    public int smin;
-    public int vmin;
-    public int hmax;
-    public int smax;
-    public int vmax;
 
-    Blobcolor(int hmin, int smin, int vmin, int hmax, int smax, int vmax){
+
+    public Blobcolor(int hmin, int smin, int vmin, int hmax, int smax, int vmax, String name){
 
         this.hmax = hmax;
         this.smax = smax;
@@ -60,6 +55,7 @@ public enum Blobcolor {
         this.hmin = hmin;
         this.smin = smin;
         this.vmin = vmin;
+        this.name = name;
     }
 
     public static Scalar getLowRange(Blobcolor color){
@@ -69,4 +65,20 @@ public enum Blobcolor {
     public static Scalar getHighRange(Blobcolor color){
         return new Scalar(color.hmax, color.smax, color.vmax);
     }
+
+    public static Blobcolor blobColorFromColorCalibrationData(ColorCalibrationData color, String key) {
+        return new Blobcolor (
+                color.getMinH(),
+                color.getMinS(),
+                color.getMinV(),
+                color.getMaxH(),
+                color.getMaxS(),
+                color.getMaxV(),
+                key);
+    }
+
+    public String name() {
+        return name;
+    }
+
 }

@@ -25,5 +25,5 @@ package com.mytechia.robobo.framework.hri.vision.faceRecognition;
 
 
 public interface IFaceRecognizedListener {
-    public void onFaceRecognized(int facetag);
+    void onFaceRecognized(int facetag);
 }

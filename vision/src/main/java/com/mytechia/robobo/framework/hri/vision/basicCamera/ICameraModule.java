@@ -40,18 +40,18 @@ public interface ICameraModule extends IModule {
      * Suscribes a listener to the frame notifications
      * @param listener The listener to be added
      */
-    public void suscribe(ICameraListener listener);
+    void suscribe(ICameraListener listener);
 
     /**
      * Unsuscribes a listener from the frame notifications
      * @param listener The listener to be removed
      */
-    public void unsuscribe(ICameraListener listener);
+    void unsuscribe(ICameraListener listener);
 
     /**
      * Starts the image capture
      */
-    public void signalInit();
+    void signalInit();
 
 
 
@@ -59,34 +59,38 @@ public interface ICameraModule extends IModule {
      * Pass a surface view to draw the images into
      * @param view The surfaceview
      */
-    public void passSurfaceView(SurfaceView view);
+    void passSurfaceView(SurfaceView view);
 
     /**
      * Pass the camerabridge for capturing images with opencv
      * @param bridgebase the OpenCV CameraBridgeBase
      */
-    public void passOCVthings(CameraBridgeViewBase bridgebase);
+    void passOCVthings(CameraBridgeViewBase bridgebase);
 
     /**
      * Changes between front and back camera
      */
-    public void changeCamera();
+    void changeCamera();
 
     /**
      * Returns frames for debugging
      * @param frame The frame
      * @param frameId Tag of the frame
      */
-    public void debugFrame(Frame frame, String frameId);
+    void debugFrame(Frame frame, String frameId);
 
     /**
      * To show the frame in the opencv view
      * @param set True to activate the option, false instead (default false)
      */
-    public void showFrameInView(boolean set);
+    void showFrameInView(boolean set);
     /**
      * Sets the FPS for the frame notifications
      * @param fps
      */
-    public void setFps(int fps);
+    void setFps(int fps);
+
+    int getResX();
+
+    int getResY();
 }
