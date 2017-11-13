@@ -56,6 +56,11 @@ public abstract class AColorDetectionModule implements IColorDetectionModule {
 //        }
 //    }
 
+    /**
+     * Called when a color is detected
+     * @param colorrgb
+     * @param nearest_color
+     */
     protected void notifyColor(int colorrgb, int nearest_color){
         for (IColorListener listener:listeners){
             listener.onNewColor(colorrgb,nearest_color);

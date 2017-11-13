@@ -46,7 +46,16 @@ public class Blobcolor {
     private String name;
 
 
-
+    /**
+     * Constructor from scalar objects
+     * @param hmin H Channel min value
+     * @param smin S Channel min value
+     * @param vmin V Channel min value
+     * @param hmax H Channel max value
+     * @param smax S Channel max value
+     * @param vmax V Channel max value
+     * @param name Color name
+     */
     public Blobcolor(int hmin, int smin, int vmin, int hmax, int smax, int vmax, String name){
 
         this.hmax = hmax;
@@ -58,14 +67,30 @@ public class Blobcolor {
         this.name = name;
     }
 
+    /**
+     * Gets the low hsv range from a color
+     * @param color the color
+     * @return a Scalar object with the range
+     */
     public static Scalar getLowRange(Blobcolor color){
         return new Scalar(color.hmin, color.smin, color.vmin);
     }
 
+    /**
+     * Gets the high hsv range from a color
+     * @param color the color
+     * @return a Scalar object with the range
+     */
     public static Scalar getHighRange(Blobcolor color){
         return new Scalar(color.hmax, color.smax, color.vmax);
     }
 
+    /**
+     * Creates a blobcolor from the calibrarion data
+     * @param color The color
+     * @param key Key for the retrieval of the calibration data
+     * @return
+     */
     public static Blobcolor blobColorFromColorCalibrationData(ColorCalibrationData color, String key) {
         return new Blobcolor (
                 color.getMinH(),
@@ -77,6 +102,10 @@ public class Blobcolor {
                 key);
     }
 
+    /**
+     * Returns the printable name of the color
+     * @return The name
+     */
     public String name() {
         return name;
     }

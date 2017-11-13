@@ -90,7 +90,15 @@ public interface ICameraModule extends IModule {
      */
     void setFps(int fps);
 
+    /**
+     * Returns the vertical resolution of the image
+     * @return
+     */
     int getResX();
 
+    /**
+     * Returns the horizontal resolution of the image
+     * @return
+     */
     int getResY();
 }

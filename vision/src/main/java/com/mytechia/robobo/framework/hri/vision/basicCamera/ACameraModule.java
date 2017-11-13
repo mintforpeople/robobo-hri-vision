@@ -40,7 +40,10 @@ public abstract class ACameraModule implements ICameraModule{
         listeners = new HashSet<>();
     }
 
-
+    /**
+     * To notify when a frame is captured
+     * @param frame the captured frame
+     */
     protected void notifyFrame(Frame frame){
         synchronized (listeners) {
             for (ICameraListener listener : listeners) {
@@ -48,6 +51,12 @@ public abstract class ACameraModule implements ICameraModule{
             }
         }
     }
+
+    /**
+     * To notify when a frame is captured in debug mode
+     * @param frame the captured frame
+     * @param id identifier to filter frames
+     */
     protected void notifyDebugFrame(Frame frame, String id){
         synchronized (listeners) {
             for (ICameraListener listener : listeners) {
@@ -55,7 +64,10 @@ public abstract class ACameraModule implements ICameraModule{
             }
         }
     }
-
+    /**
+     * To notify when a frame is captured
+     * @param mat the captured frame
+     */
     protected void notifyMat(Mat mat){
         synchronized (listeners) {
             for (ICameraListener listener : listeners) {

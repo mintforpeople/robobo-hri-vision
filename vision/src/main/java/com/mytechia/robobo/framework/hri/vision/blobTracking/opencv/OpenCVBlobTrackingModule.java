@@ -49,11 +49,12 @@ import java.util.concurrent.Executors;
 import static android.content.ContentValues.TAG;
 
 
-//http://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
-//https://github.com/badlogic/opencv-fun/blob/master/src/pool/utils/BallDetector.java
-
+/**
+ * Opencv implementation of the blob detector
+ */
 public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICameraListener {
-
+    //http://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
+//https://github.com/badlogic/opencv-fun/blob/master/src/pool/utils/BallDetector.java
     private static final int POOL_SIZE=4;
 
     private ICameraModule cameraModule;

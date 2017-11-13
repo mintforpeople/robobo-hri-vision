@@ -27,6 +27,10 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 
 import java.util.HashSet;
 
+
+/**
+ * Abstract class that manages the listener subscription, unsubscription and notifications
+ */
 public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     private HashSet<IBlobListener> listeners;
     protected float resolutionX = 1;
@@ -43,7 +47,10 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     protected Blobcolor CUSTOM_CAL = Blobcolor.CUSTOM;
 
 
-
+    /**
+     * Called when a blob is detected
+     * @param blob the detected blob
+     */
     public void notifyTrackingBlob(Blob blob){
         for (IBlobListener listener:listeners){
             listener.onTrackingBlob(blob);
@@ -59,6 +66,11 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
             rcmodule.postStatus(status);
         }
     }
+
+    /**
+     * Called when a blob disappears
+     * @param c blob color
+     */
     public void notifyBlobDissapear(Blobcolor c){
 
         for (IBlobListener listener:listeners){
@@ -74,6 +86,11 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
         }
     }
 
+    /**
+     * Gets a printable name from a blobcolor
+     * @param blobcolor the color
+     * @return a String with the color name
+     */
     private String colorToString(Blobcolor blobcolor){
         if (blobcolor == BLUE_CAL){
             return "blue";

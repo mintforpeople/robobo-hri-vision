@@ -35,7 +35,15 @@ public interface IFaceListener {
      */
     void onFaceDetected(PointF faceCoords, float eyesDistance);
 
+    /**
+     * Called when a face appears fo thye first time
+     * @param faceCoords The coordinates of the center of the face
+     * @param eyesDistance The distance between eyes
+     */
     void onFaceAppear(PointF faceCoords, float eyesDistance);
 
+    /**
+     * Called when a face disappears
+     */
     void onFaceDissapear();
 }
