@@ -31,11 +31,15 @@ import android.view.ViewGroup;
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
+import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ACameraModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
 import com.mytechia.robobo.framework.power.IPowerModeListener;
 import com.mytechia.robobo.framework.power.PowerMode;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
+import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
+import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 
 import org.opencv.android.OpenCVLoader;
@@ -73,6 +77,8 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     private long deltaTimeThreshold = 17;
 
     private FrameCounter fps = new FrameCounter();
+    private IRemoteControlModule remoteControlModule;
+
 
 
 
@@ -112,7 +118,11 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         roboboManager =  manager;
-
+        try {
+            remoteControlModule = manager.getModuleInstance(IRemoteControlModule.class);
+        }catch (ModuleNotFoundException e){
+            e.printStackTrace();
+        }
 
         context = manager.getApplicationContext();
 
@@ -133,6 +143,14 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             roboboManager.log(LogLvl.WARNING,TAG,"Properties not defined, using defaults");
         }
 
+        remoteControlModule.registerCommand("SET-CAMERA", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                if(c.getParameters().containsKey("camera")){
+                    changeCamera(c.getParameters().get("camera"));
+                }
+            }
+        });
         manager.subscribeToPowerModeChanges(this);
 
     }
@@ -215,6 +233,24 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             case CAMERA_ID_FRONT:
                 index = CAMERA_ID_BACK;
                 break;
+        }
+        roboboManager.log(TAG,"New camera index: "+index);
+        mOpenCvCameraView.disableView();
+        mOpenCvCameraView.setCameraIndex(index);
+        mOpenCvCameraView.enableView();
+    }
+
+    /**
+     * Method for changing to a especific camera
+     * @param camera
+     */
+    public  void changeCamera(String camera){
+        if (camera.equals("back")){
+            index = CAMERA_ID_BACK;
+
+        }else {
+            index = CAMERA_ID_FRONT;
+
         }
         roboboManager.log(TAG,"New camera index: "+index);
         mOpenCvCameraView.disableView();
