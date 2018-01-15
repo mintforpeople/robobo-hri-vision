@@ -1,7 +1,8 @@
 package com.mytechia.robobo.framework.hri.vision.util;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 /*******************************************************************************
  *
@@ -24,14 +25,15 @@ import java.util.LinkedList;
  *   along with Robobo Remote Control Module.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-public class AverageFilter implements IFilter {
-
+public class MedianFilter implements IFilter {
     private int size = 5;
+    private int midpos = 2;
     private int sum = 0;
     private LinkedList<Integer> buffer;
 
-    public AverageFilter(int size){
+    public MedianFilter(int size){
         this.size = size;
+        this.midpos = (int) Math.floor(size/2);
         buffer = new LinkedList<>();
         for (int i = 0; i < size; i++){
             buffer.push(0);
@@ -42,10 +44,11 @@ public class AverageFilter implements IFilter {
     public int filter(int value) {
         buffer.removeFirst();
         buffer.push(value);
-        for (Integer val:buffer){
-            sum = sum+val;
-        }
-        return sum/size;
+
+        List<Integer> ordered = buffer;
+        Collections.sort(ordered);
+
+        return ordered.get(midpos);
     }
 
     @Override
@@ -56,3 +59,4 @@ public class AverageFilter implements IFilter {
         }
     }
 }
+

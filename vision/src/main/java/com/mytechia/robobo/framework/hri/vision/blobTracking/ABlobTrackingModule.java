@@ -22,6 +22,8 @@
 package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
 import com.mytechia.robobo.framework.RoboboManager;
+import com.mytechia.robobo.framework.hri.vision.util.AverageFilter;
+import com.mytechia.robobo.framework.hri.vision.util.IFilter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 
@@ -46,6 +48,9 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     protected Blobcolor BLUE_CAL = Blobcolor.BLUE;
     protected Blobcolor CUSTOM_CAL = Blobcolor.CUSTOM;
 
+    private IFilter filterPosX = new AverageFilter(5);
+    private IFilter filterPosY = new AverageFilter(5);
+    private IFilter filterSize = new AverageFilter(5);
 
     /**
      * Called when a blob is detected
@@ -59,9 +64,9 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
         if (rcmodule!=null) {
 
             Status status = new Status("BLOB");
-            status.putContents("posx",(Math.round(((float)blob.getX()/resolutionX)*100))+"");
-            status.putContents("posy",(Math.round(((float)blob.getY()/resolutionY)*100))+"");
-            status.putContents("size",blob.getSize()+"");
+            status.putContents("posx",filterPosX.filter(Math.round(((float)blob.getX()/resolutionX)*100))+"");
+            status.putContents("posy",filterPosY.filter(Math.round(((float)blob.getY()/resolutionY)*100))+"");
+            status.putContents("size",filterSize.filter(blob.getSize())+"");
             status.putContents("color",colorToString(blob.getColor()));
             rcmodule.postStatus(status);
         }
