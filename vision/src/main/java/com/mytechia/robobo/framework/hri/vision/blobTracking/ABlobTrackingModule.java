@@ -64,9 +64,9 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
         if (rcmodule!=null) {
 
             Status status = new Status("BLOB");
-            status.putContents("posx",filterPosX.filter(Math.round(((float)blob.getX()/resolutionX)*100))+"");
-            status.putContents("posy",filterPosY.filter(Math.round(((float)blob.getY()/resolutionY)*100))+"");
-            status.putContents("size",filterSize.filter(blob.getSize())+"");
+            status.putContents("posx",Math.round(((float)blob.getX()/resolutionX)*100)+"");
+            status.putContents("posy",Math.round(((float)blob.getY()/resolutionY)*100)+"");
+            status.putContents("size",blob.getSize()+"");
             status.putContents("color",colorToString(blob.getColor()));
             rcmodule.postStatus(status);
         }

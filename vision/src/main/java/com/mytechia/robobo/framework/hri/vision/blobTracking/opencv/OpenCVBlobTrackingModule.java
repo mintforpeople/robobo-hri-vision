@@ -32,7 +32,7 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.ABlobTrackingModule;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
 import com.mytechia.robobo.framework.hri.vision.util.CameraCalibrationData;
-import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationData;
+import com.mytechia.robobo.framework.hri.vision.util.IColorCalibrationData;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
@@ -167,7 +167,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
         try {
 
             data = (CameraCalibrationData) opts.getSerializable("cameraCalibrationData");
-            ColorCalibrationData col = data.getBlue();
+            IColorCalibrationData col = data.getBlue();
             BLUE_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"BLUE");
             col = data.getGreen();
             GREEN_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"GREEN");

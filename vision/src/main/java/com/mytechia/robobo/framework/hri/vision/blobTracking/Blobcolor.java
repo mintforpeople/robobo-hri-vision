@@ -23,7 +23,8 @@ package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
 
  import com.mytechia.robobo.framework.hri.vision.util.CameraCalibrationData;
- import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationData;
+ import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationDataHSV;
+ import com.mytechia.robobo.framework.hri.vision.util.IColorCalibrationData;
 
  import org.opencv.core.Scalar;
 
@@ -87,19 +88,26 @@ public class Blobcolor {
 
     /**
      * Creates a blobcolor from the calibrarion data
-     * @param color The color
+     * @param icolor The color
      * @param key Key for the retrieval of the calibration data
      * @return
      */
-    public static Blobcolor blobColorFromColorCalibrationData(ColorCalibrationData color, String key) {
-        return new Blobcolor (
-                color.getMinH(),
-                color.getMinS(),
-                color.getMinV(),
-                color.getMaxH(),
-                color.getMaxS(),
-                color.getMaxV(),
-                key);
+    public static Blobcolor blobColorFromColorCalibrationData(IColorCalibrationData icolor, String key) {
+
+        if (icolor.getType() == IColorCalibrationData.type_HSV) {
+            ColorCalibrationDataHSV color = (ColorCalibrationDataHSV) icolor;
+            return new Blobcolor(
+                    color.getMinH(),
+                    color.getMinS(),
+                    color.getMinV(),
+                    color.getMaxH(),
+                    color.getMaxS(),
+                    color.getMaxV(),
+                    key);
+        }
+        else {
+            return new Blobcolor(0,0,0,0,0,0,"NONE");
+        }
     }
 
     /**

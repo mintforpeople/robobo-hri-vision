@@ -9,14 +9,12 @@
  */
 package com.mytechia.robobo.framework.hri.vision.util;
 
-import java.io.Serializable;
-
 /**
  * HSV Range of a color
  *
  * @author Luis Llamas luis.llamas@mytechia.com.
  */
-public class ColorCalibrationData implements Serializable {
+public class ColorCalibrationDataHSV extends AColorCalibrationData {
     private int minH;
     private int minS;
     private int minV;
@@ -24,13 +22,15 @@ public class ColorCalibrationData implements Serializable {
     private int maxS;
     private int maxV;
 
-    public ColorCalibrationData(int minH, int minS, int minV, int maxH, int maxS, int maxV){
+    public ColorCalibrationDataHSV(int minH, int minS, int minV, int maxH, int maxS, int maxV){
         this.minH = minH;
         this.minS = minS;
         this.minV = minV;
         this.maxH = maxH;
         this.maxS = maxS;
         this.maxV = maxV;
+        this.type = type_HSV;
+
     }
     public int getMinH() {
         return this.minH;
@@ -54,5 +54,10 @@ public class ColorCalibrationData implements Serializable {
 
     public int getMaxV() {
         return this.maxV;
+    }
+
+    @Override
+    public int getType() {
+        return type_HSV;
     }
 }
