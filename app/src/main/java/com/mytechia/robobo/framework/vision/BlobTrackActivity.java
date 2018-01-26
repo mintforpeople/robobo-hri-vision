@@ -90,7 +90,6 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
     public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG,"TouchEvent");
 
-        this.mDetector.onTouchEvent(event);
         return true;
 
     }
@@ -193,7 +192,6 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
 
 
 
-
     }
 
     @Override
@@ -201,16 +199,16 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
 
 
         lastFrame = frame;
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//
-//
-//
-//                imageView.setImageBitmap(frame.getBitmap());
-//
-//            }
-//        });
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+
+
+                imageView.setImageBitmap(frame.getBitmap());
+
+            }
+        });
 
     }
 
@@ -229,6 +227,11 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
 
             }
         });
+    }
+
+    @Override
+    public void onOpenCVStartup() {
+
     }
 
 
@@ -268,6 +271,8 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
     public void onTrackingBlob(final Blob blob) {
         final int x = blob.getX();
         final int y = blob.getY();
+        roboboManager.log(LogLvl.WARNING, "BLOBTRACK", "BLOOOOO B");
+
 //        final int size = blob.getSize();
         final int size = 15;
         runOnUiThread(new Runnable() {

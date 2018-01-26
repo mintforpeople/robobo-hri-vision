@@ -27,17 +27,20 @@ import android.util.Log;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blob;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
 
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Size;
+import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.video.Video;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlobTracker.DETECTION_STATE.DETECTED;
@@ -65,13 +68,21 @@ public class BlobTracker {
 
     private final Size size;
 
+    private int min_area = 1000;
+
+
     private Blob blob;
 
     public enum DETECTION_STATE {NONE, DETECTED, TEMP_DISSAPEAR,  DISSAPEAR}
 
     private DETECTION_STATE detectionState=NONE;
 
-    private boolean capturing = false;
+    private boolean processing = false;
+
+    private Rect trackWindow = new Rect();
+
+    private TermCriteria termCriteria = new TermCriteria(TermCriteria.EPS | TermCriteria.COUNT, 1, 0);
+
 
 
     public BlobTracker(Size size, Blobcolor blobcolor) {
@@ -84,81 +95,52 @@ public class BlobTracker {
         return blobcolor;
     }
 
-    public boolean capturing() {
-        return capturing;
+    public boolean processing() {
+        return processing;
     }
 
     public void setLostBlobThreshold(int lostBlobThreshold) {
         this.lostBlobThreshold = lostBlobThreshold;
     }
 
-    public void capture(Mat mat) {
+    public void process(Mat mat) {
+        double area = 0;
+        Mat hsvFrame = new Mat();
+        Mat backproj = new Mat();
+        Imgproc.cvtColor(mat,hsvFrame,Imgproc.COLOR_BGR2HSV);
 
-        capturing = true;
+        //try {
+        //TODO Meter segmentación aquí
 
-        Mat hsvFrame = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC3);
-
-        Imgproc.cvtColor(mat, hsvFrame, Imgproc.COLOR_BGR2HSV);
-
-        Imgproc.blur(hsvFrame, hsvFrame, new Size(11, 11));
-
-        Mat mask = new Mat(mat.rows(), mat.cols(), CvType.CV_32F);
-
-        Core.inRange(hsvFrame, Blobcolor.getLowRange(blobcolor), Blobcolor.getHighRange(blobcolor), mask);
-
-        //Clean mask and find contours
-        Imgproc.erode(mask, mask, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, size));
-
-        Imgproc.dilate(mask, mask, Imgproc.getStructuringElement(Imgproc.CV_SHAPE_ELLIPSE, size));
-
-        List<MatOfPoint> contoursred = new ArrayList<>();
-
-        try {
-            Imgproc.findContours(mask, contoursred, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-        } catch (Throwable th) {
-            Log.e(TAG, "", th);
-            capturing = false;
-        }
-
-        this.blob = null;
-
-        if (contoursred.size() > 0) {
-            double maxarea = 0;
-            MatOfPoint maxcontour = null;
-            for (MatOfPoint c : contoursred) {
-                if (Imgproc.contourArea(c) > maxarea) {
-                    maxcontour = c;
-                    maxarea = Imgproc.contourArea(c);
-                }
-            }
-
-            MatOfPoint2f maxcontourf = new MatOfPoint2f(maxcontour.toArray());
-            float[] radii = new float[1];
-            Point center = new Point();
-            Imgproc.minEnclosingCircle(maxcontourf, center, radii);
-            double area = Imgproc.contourArea(maxcontour);
-
-            float radius = radii[0];
-            double circularity = area / (Math.PI * radius * radius);
-
-            if (radius > RADIUS) {
-
-                if (circularity > CIRCULARITY) {
-                    this.blob = new Blob(blobcolor, center, (int) radius, true, false);
-                } else {
-                    RotatedRect rrect = Imgproc.minAreaRect(maxcontourf);
-                    double quadrangularity = area / rrect.size.area();
-                    if (quadrangularity > QUADRANGULARITY) {
-                        blob = new Blob(blobcolor, center, (int) area, false, true);
-                    } else {
-                        blob = new Blob(blobcolor, center, (int) area, false, false);
-                    }
-                }
+            if (trackWindow.area()<= 1) {
+                trackWindow = initTrackWindow(hsvFrame, blobcolor.getHistogramData());
 
             }
-        }
+            if (trackWindow.area()> min_area) {
+                backproj = calcBackproj(hsvFrame, blobcolor.getHistogramData());
+                RotatedRect trackBox = Video.CamShift(backproj, trackWindow,
+                        termCriteria);
+                trackWindow = trackBox.boundingRect();
 
-        if (blob == null) {
+                //input = backproj;
+                //Imgproc.threshold(input, input, (double) 2, (double) 255, Imgproc.THRESH_BINARY);
+                area = Math.round(trackBox.size.area()*Math.PI/4);
+
+                this.blob = new Blob(blobcolor, trackBox.center, (int) area, false, false);
+
+            }
+            else
+            {
+                trackWindow = new Rect();
+                this.blob = null;
+            }
+
+
+
+
+
+
+        if (this.blob == null) {
             noDetectionCount += 1;
 
             switch (detectionState) {
@@ -180,19 +162,67 @@ public class BlobTracker {
             detectionState = DETECTED;
         }
 
-        capturing = false;
+        processing = false;
 
         hsvFrame.release();
 
     }
 
-    public Blob detectedBlod() {
+    public Blob detectedBlob() {
         return this.blob;
     }
 
-    public DETECTION_STATE blodDetectionState() {
+    public DETECTION_STATE blobDetectionState() {
         return detectionState;
     }
 
+    private Mat calcBackproj(Mat input, Mat hist) {
+
+        MatOfFloat mRanges = new MatOfFloat(0, 179, 0, 255);
+        MatOfInt mChannels = new MatOfInt(0, 1);
+
+        List<Mat> lHSV = Arrays.asList(input);
+
+        // C++:
+        // normalize( hist, hist, 0, 255, NORM_MINMAX, -1, Mat() );
+        //Core.normalize(hist, hist, 0, 255, Core.NORM_MINMAX, -1, new Mat());
+
+        // C++:
+        // calcBackProject( &hsv, 1, channels, hist, backproj, ranges, 1, true );
+        Mat backproj = new Mat();
+        Imgproc.calcBackProject(lHSV, mChannels, hist, backproj, mRanges, 1
+        );
+
+        return backproj;
+    }
+
+    private Rect initTrackWindow(Mat input, Mat hist) {
+        Mat backproj = calcBackproj(input, hist);
+        Imgproc.threshold(backproj, backproj, (double) 2, (double) 255, Imgproc.THRESH_BINARY);
+
+        List<MatOfPoint> contours = new ArrayList<>();
+
+        try {
+            Imgproc.findContours(backproj, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        } catch (Throwable th) {
+            Log.e(TAG, "", th);
+            processing = false;
+        }
+
+        double maxarea = 0;
+        MatOfPoint maxcontour = null;
+        for (MatOfPoint c : contours) {
+            if (Imgproc.contourArea(c) > maxarea) {
+                maxcontour = c;
+                maxarea = Imgproc.contourArea(c);
+            }
+        }
+        Rect out = new Rect();
+        if (maxcontour!= null)
+            Log.wtf("area:", Double.toString(maxarea));
+        if (maxarea > min_area)
+            out = Imgproc.boundingRect(maxcontour);
+        return out;
+    }
 
 }

@@ -167,4 +167,9 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
     public void onDebugFrame(Frame frame, String frameId) {
 
     }
+
+    @Override
+    public void onOpenCVStartup() {
+
+    }
 }

@@ -191,6 +191,11 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     }
 
     @Override
+    public void onOpenCVStartup() {
+
+    }
+
+    @Override
     public void startDetection() {
         active = true;
     }

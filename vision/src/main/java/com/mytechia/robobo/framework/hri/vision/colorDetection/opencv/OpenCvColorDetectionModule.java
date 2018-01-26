@@ -310,4 +310,9 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
     public void onDebugFrame(Frame frame, String frameId) {
 
     }
+
+    @Override
+    public void onOpenCVStartup() {
+
+    }
 }

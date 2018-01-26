@@ -197,6 +197,11 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
 
     }
 
+    @Override
+    public void onOpenCVStartup() {
+
+    }
+
 
 }
 

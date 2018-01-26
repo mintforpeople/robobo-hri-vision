@@ -26,13 +26,15 @@ import android.os.Bundle;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
+import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.ABlobTrackingModule;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
 import com.mytechia.robobo.framework.hri.vision.util.CameraCalibrationData;
-import com.mytechia.robobo.framework.hri.vision.util.IColorCalibrationData;
+import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationDataHSV;
+import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationDataHistogram;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
@@ -134,7 +136,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
             for (BlobTracker blockTracking : blobTrackings) {
 
-                if(blockTracking.capturing()){
+                if(blockTracking.processing()){
                     continue;
                 }
 
@@ -158,32 +160,30 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void onDebugFrame(Frame frame, String frameId) {}
 
-
     @Override
-    public void startup(RoboboManager manager) throws InternalErrorException {
-        m = manager;
+    public void onOpenCVStartup() {
+
         Bundle opts = m.getOptions();
         CameraCalibrationData data = null;
         try {
 
             data = (CameraCalibrationData) opts.getSerializable("cameraCalibrationData");
-            IColorCalibrationData col = data.getBlue();
-            BLUE_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"BLUE");
-            col = data.getGreen();
-            GREEN_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"GREEN");
-            col = data.getRed();
-            RED_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"RED");
-            col = data.getCustom();
-            CUSTOM_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"CUSTOM");
+
+            ColorCalibrationDataHistogram col = (ColorCalibrationDataHistogram) data.getBlue();
+            BLUE_CAL = new Blobcolor(col.getHistMat(),"BLUE");
+            col = (ColorCalibrationDataHistogram) data.getGreen();
+            GREEN_CAL = new Blobcolor(col.getHistMat(),"GREEN");
+            col = (ColorCalibrationDataHistogram) data.getRed();
+            RED_CAL = new Blobcolor(col.getHistMat(),"RED");
+            col = (ColorCalibrationDataHistogram) data.getCustom();
+            CUSTOM_CAL = new Blobcolor(col.getHistMat(),"CUSTOM");
 
         }catch (NullPointerException e){
             m.log(TAG,"No calibration data found, using defaults");
         }catch (Exception e){
             e.printStackTrace();
         }
-        cameraModule = m.getModuleInstance(ICameraModule.class);
-        rcmodule = m.getModuleInstance(IRemoteControlModule.class);
-        cameraModule.suscribe(this);
+
         rcmodule.registerCommand("CONFIGURE-BLOBTRACKING", new ICommandExecutor() {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
@@ -194,6 +194,21 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                         Boolean.parseBoolean(c.getParameters().get("custom")));
             }
         });
+    }
+
+
+    @Override
+    public void startup(RoboboManager manager) throws InternalErrorException {
+        m = manager;
+        try {
+            cameraModule = m.getModuleInstance(ICameraModule.class);
+            rcmodule = m.getModuleInstance(IRemoteControlModule.class);
+
+        } catch (ModuleNotFoundException e) {
+            e.printStackTrace();
+        }
+        cameraModule.suscribe(this);
+
     }
 
     @Override

@@ -203,7 +203,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             roboboManager.log(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
-
+        notifyOpenCVStartup();
     }
 
 

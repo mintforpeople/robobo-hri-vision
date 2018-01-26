@@ -64,15 +64,15 @@ public class BlobTrackerWorker implements Runnable {
 
         try {
 
-            this.blobTracking.capture(mat);
+            this.blobTracking.process(mat);
 
-            if (blobTracking.blodDetectionState() == DISSAPEAR) {
+            if (blobTracking.blobDetectionState() == DISSAPEAR) {
 
                 openCVBlobTrackingModule.notifyBlobDissapear(blobTracking.getBlobcolor());
 
-            } else if ((blobTracking.blodDetectionState() == DETECTED)) {
+            } else if ((blobTracking.blobDetectionState() == DETECTED)) {
 
-                openCVBlobTrackingModule.notifyTrackingBlob(blobTracking.detectedBlod());
+                openCVBlobTrackingModule.notifyTrackingBlob(blobTracking.detectedBlob());
 
             }
 

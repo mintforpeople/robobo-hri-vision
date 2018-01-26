@@ -180,6 +180,11 @@ public class ColorDetectActivity extends Activity implements ICameraListener, IC
     }
 
     @Override
+    public void onOpenCVStartup() {
+
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
     }

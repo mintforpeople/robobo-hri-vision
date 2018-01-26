@@ -76,6 +76,18 @@ public abstract class ACameraModule implements ICameraModule{
         }
     }
 
+    /**
+     * To notify when the opencv library is loaded
+     *
+     */
+    protected void notifyOpenCVStartup(){
+        synchronized (listeners) {
+            for (ICameraListener listener : listeners) {
+                listener.onOpenCVStartup();
+            }
+        }
+    }
+
     public void suscribe(ICameraListener listener){
         synchronized (listeners) {
             roboboManager.log("Cam_module", "Suscribed:" + listener.toString());
