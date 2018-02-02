@@ -152,4 +152,15 @@ public class Blobcolor {
         return name;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() == this.getClass()){
+            Blobcolor b = (Blobcolor) obj;
+            if (b.name.equals(this.name)){
+                return true;
+            }
+        }
+            return false;
+
+    }
 }

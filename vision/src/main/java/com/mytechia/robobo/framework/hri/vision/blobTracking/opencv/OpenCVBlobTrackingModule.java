@@ -229,7 +229,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     private boolean existBlobTracking(Blobcolor blobcolor){
         for (BlobTracker blobTracker : blobTrackings) {
-                if(blobTracker.getBlobcolor()==blobcolor){
+                if(blobTracker.getBlobcolor().equals(blobcolor)){
                     return true;
                 }
         }
