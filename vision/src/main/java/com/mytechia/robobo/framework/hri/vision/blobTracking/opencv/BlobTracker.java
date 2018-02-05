@@ -110,7 +110,6 @@ public class BlobTracker {
         Imgproc.cvtColor(mat,hsvFrame,Imgproc.COLOR_BGR2HSV);
 
         //try {
-        //TODO Meter segmentación aquí
 
             if (trackWindow.area()<= 1) {
                 trackWindow = initTrackWindow(hsvFrame, blobcolor.getHistogramData());
@@ -176,6 +175,13 @@ public class BlobTracker {
         return detectionState;
     }
 
+
+    /**
+     * Calculates the back projection image
+     * @param input Input image
+     * @param hist Back projection histogram
+     * @return The output probability image
+     */
     private Mat calcBackproj(Mat input, Mat hist) {
 
         MatOfFloat mRanges = new MatOfFloat(0, 179, 0, 255);
@@ -183,12 +189,6 @@ public class BlobTracker {
 
         List<Mat> lHSV = Arrays.asList(input);
 
-        // C++:
-        // normalize( hist, hist, 0, 255, NORM_MINMAX, -1, Mat() );
-        //Core.normalize(hist, hist, 0, 255, Core.NORM_MINMAX, -1, new Mat());
-
-        // C++:
-        // calcBackProject( &hsv, 1, channels, hist, backproj, ranges, 1, true );
         Mat backproj = new Mat();
         Imgproc.calcBackProject(lHSV, mChannels, hist, backproj, mRanges, 1
         );
@@ -196,6 +196,12 @@ public class BlobTracker {
         return backproj;
     }
 
+    /**
+     * Calculates the tracking window for camshift
+     * @param input Input image
+     * @param hist Back projection histogram
+     * @return Tracking window rect
+     */
     private Rect initTrackWindow(Mat input, Mat hist) {
         Mat backproj = calcBackproj(input, hist);
         Imgproc.threshold(backproj, backproj, (double) 2, (double) 255, Imgproc.THRESH_BINARY);
@@ -204,8 +210,8 @@ public class BlobTracker {
 
         try {
             Imgproc.findContours(backproj, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-        } catch (Throwable th) {
-            Log.e(TAG, "", th);
+        } catch (Exception e) {
+            e.printStackTrace();
             processing = false;
         }
 
@@ -218,8 +224,7 @@ public class BlobTracker {
             }
         }
         Rect out = new Rect();
-        if (maxcontour!= null)
-            Log.wtf("area:", Double.toString(maxarea));
+
         if (maxarea > min_area)
             out = Imgproc.boundingRect(maxcontour);
         return out;
