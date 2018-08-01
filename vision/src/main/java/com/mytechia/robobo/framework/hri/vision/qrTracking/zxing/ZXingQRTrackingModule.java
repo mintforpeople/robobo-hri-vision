@@ -51,7 +51,6 @@ import org.opencv.core.Mat;
 public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraListener {
 
     private ICameraModule cameraModule = null;
-    private IRemoteControlModule rcmodule = null;
     private Reader reader = null;
     private final String TAG = "QRModule";
     private int lostThreshold = 5;
@@ -71,7 +70,7 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
             rcmodule = m.getModuleInstance(IRemoteControlModule.class);
 
         } catch (ModuleNotFoundException e) {
-
+            e.printStackTrace();
         }
         cameraModule.suscribe(this);
         reader = new QRCodeMultiReader();
@@ -107,7 +106,8 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
         try {
             Result res = reader.decode(bitmap);
             ResultPoint center = midPoint(res.getResultPoints()[0],res.getResultPoints()[2]);
-            QRInfo qr = new QRInfo(res.getText(),center.getX(),center.getY()) ;
+            float distance = distanceBetweenPoints(res.getResultPoints()[1],center);
+            QRInfo qr = new QRInfo(res.getText(),center.getX(),center.getY(),distance) ;
             //Log.d(TAG,qr.toString());
 
 

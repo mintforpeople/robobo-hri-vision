@@ -28,34 +28,31 @@ public class QRInfo {
     private String idString;
     private float xPosition;
     private float yPosition;
+    private float distance;
 
-    public QRInfo(String id, float posx, float posy){
+    public QRInfo(String id, float posx, float posy, float distance){
         this.idString = id;
         this.xPosition = posx;
         this.yPosition = posy;
+        this.distance = distance;
     }
     public String getIdString() {
         return idString;
     }
 
-    public void setIdString(String idString) {
-        this.idString = idString;
-    }
 
     public float getxPosition() {
         return xPosition;
     }
 
-    public void setxPosition(int xPosition) {
-        this.xPosition = xPosition;
-    }
 
     public float getyPosition() {
         return yPosition;
     }
 
-    public void setyPosition(int yPosition) {
-        this.yPosition = yPosition;
+
+    public float getDistance() {
+        return distance;
     }
 
 
@@ -65,6 +62,7 @@ public class QRInfo {
                 "idString='" + idString + '\'' +
                 ", xPosition=" + xPosition +
                 ", yPosition=" + yPosition +
+                ", distance=" + distance +
                 '}';
     }
 }

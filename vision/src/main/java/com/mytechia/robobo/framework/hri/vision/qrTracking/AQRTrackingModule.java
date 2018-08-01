@@ -45,6 +45,7 @@ public abstract class AQRTrackingModule implements IQRTrackingModule {
             status.putContents("coordx",qr.getxPosition()+"");
             status.putContents("coordy",qr.getyPosition()+"");
             status.putContents("id", qr.getIdString());
+            status.putContents("distance", qr.getDistance()+"");
 
             rcmodule.postStatus(status);
         }
@@ -59,6 +60,8 @@ public abstract class AQRTrackingModule implements IQRTrackingModule {
             Status status = new Status("QRCODEAPPEAR");
             status.putContents("coordx",qr.getxPosition()+"");
             status.putContents("coordy",qr.getyPosition()+"");
+            status.putContents("distance", qr.getDistance()+"");
+
             status.putContents("id", qr.getIdString());
 
             rcmodule.postStatus(status);
