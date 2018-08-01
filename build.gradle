@@ -21,6 +21,7 @@ allprojects {
         maven {
             url "http://192.168.0.5:7080/nexus/content/repositories/snapshots/"
         }
+        google()
     }
 }
 

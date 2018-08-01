@@ -124,8 +124,8 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
             @Override
             public void run() {
 
-                //bridgeBase.setVisibility(SurfaceView.VISIBLE);
-                //camModule.passOCVthings(bridgeBase);
+                bridgeBase.setVisibility(SurfaceView.VISIBLE);
+                camModule.passOCVthings(bridgeBase);
 
 
 
