@@ -134,21 +134,21 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
         synchronized (lockBlockTrackings) {
 
-            for (BlobTracker blockTracking : blobTrackings) {
+            for (BlobTracker blobTracking : blobTrackings) {
 
-                if(blockTracking.processing()){
+                if(blobTracking.processing()){
                     continue;
                 }
 
-                BlobTrackerWorker blockTrackingWorker = this.popWorkerFromPool();
+                BlobTrackerWorker blobTrackingWorker = this.popWorkerFromPool();
 
-                if (blockTrackingWorker == null) {
+                if (blobTrackingWorker == null) {
                     continue;
                 }
 
-                blockTrackingWorker.configure(blockTracking, mat);
+                blobTrackingWorker.configure(blobTracking, mat);
 
-                threadPool.execute(blockTrackingWorker);
+                threadPool.execute(blobTrackingWorker);
 
             }
         }

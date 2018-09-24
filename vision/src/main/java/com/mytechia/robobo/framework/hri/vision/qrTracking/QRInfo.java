@@ -3,6 +3,9 @@ package com.mytechia.robobo.framework.hri.vision.qrTracking;
 import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
 
+import static com.mytechia.robobo.framework.hri.vision.qrTracking.QRUtils.distanceBetweenPoints;
+import static com.mytechia.robobo.framework.hri.vision.qrTracking.QRUtils.midPoint;
+
 /*******************************************************************************
  *
  *   Copyright 2018 Mytech Ingenieria Aplicada <http://www.mytechia.com>
@@ -29,13 +32,34 @@ public class QRInfo {
     private float xPosition;
     private float yPosition;
     private float distance;
+    private ResultPoint rp1;
+    private ResultPoint rp2;
+    private ResultPoint rp3;
 
-    public QRInfo(String id, float posx, float posy, float distance){
-        this.idString = id;
-        this.xPosition = posx;
-        this.yPosition = posy;
-        this.distance = distance;
+
+    public ResultPoint getRp1() {
+        return rp1;
     }
+
+    public ResultPoint getRp2() {
+        return rp2;
+    }
+
+    public ResultPoint getRp3() {
+        return rp3;
+    }
+
+    public QRInfo (Result res){
+        ResultPoint center = midPoint(res.getResultPoints()[0],res.getResultPoints()[2]);
+        this.xPosition = center.getX();
+        this.yPosition = center.getY();
+        this.distance = distanceBetweenPoints(res.getResultPoints()[1],center);
+        this.idString = res.getText();
+        this.rp1 = res.getResultPoints()[0];
+        this.rp2 = res.getResultPoints()[1];
+        this.rp3 = res.getResultPoints()[2];
+    }
+
     public String getIdString() {
         return idString;
     }

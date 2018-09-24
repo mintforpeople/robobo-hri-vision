@@ -46,7 +46,12 @@ public abstract class AQRTrackingModule implements IQRTrackingModule {
             status.putContents("coordy",qr.getyPosition()+"");
             status.putContents("id", qr.getIdString());
             status.putContents("distance", qr.getDistance()+"");
-
+            status.putContents("p1x",qr.getRp1().getX()+"");
+            status.putContents("p1y",qr.getRp1().getY()+"");
+            status.putContents("p2x",qr.getRp2().getX()+"");
+            status.putContents("p2y",qr.getRp2().getY()+"");
+            status.putContents("p3x",qr.getRp3().getX()+"");
+            status.putContents("p3y",qr.getRp3().getY()+"");
             rcmodule.postStatus(status);
         }
     }
