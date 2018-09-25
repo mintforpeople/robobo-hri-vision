@@ -29,6 +29,9 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlM
 
 import org.opencv.core.Mat;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static com.mytechia.robobo.framework.hri.vision.qrTracking.QRUtils.distanceBetweenPoints;
 import static com.mytechia.robobo.framework.hri.vision.qrTracking.QRUtils.midPoint;
 
@@ -64,6 +67,7 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
     private QRInfo currentQr = null;
     private boolean processing = false;
     private FrameCounter fps;
+    ExecutorService executor;
 
 
 
@@ -81,6 +85,7 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
         fps = new FrameCounter();
         cameraModule.suscribe(this);
         reader = new QRCodeMultiReader();
+        executor = Executors.newFixedThreadPool(1);
     }
 
     @Override
@@ -99,63 +104,68 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
     }
 
     @Override
-    public void onNewFrame(Frame frame) {
+    public void onNewFrame(final Frame frame) {
         if (!processing){
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    processing = true;
+                    fps.newFrame();
 
-            processing = true;
-            fps.newFrame();
+                    if (fps.getElapsedTime() % 10 == 0) {
+                        Log.v("QR", "FPS = " + fps.getFPS()+ "  "+fps.getElapsedTime() % 10 );
+                    }
+                    Bitmap bMap = frame.getBitmap();
 
-            if (fps.getElapsedTime() % 10 == 0) {
-                Log.v("QR", "FPS = " + fps.getFPS()+ "  "+fps.getElapsedTime() % 10 );
-            }
-            Bitmap bMap = frame.getBitmap();
+                    int[] intArray = new int[bMap.getWidth() * bMap.getHeight()];
+                    //copy pixel data from the Bitmap into the 'intArray' array
+                    bMap.getPixels(intArray, 0, bMap.getWidth(), 0, 0, bMap.getWidth(), bMap.getHeight());
 
-            int[] intArray = new int[bMap.getWidth() * bMap.getHeight()];
-            //copy pixel data from the Bitmap into the 'intArray' array
-            bMap.getPixels(intArray, 0, bMap.getWidth(), 0, 0, bMap.getWidth(), bMap.getHeight());
+                    LuminanceSource source = new RGBLuminanceSource(bMap.getWidth(), bMap.getHeight(),intArray);
 
-            LuminanceSource source = new RGBLuminanceSource(bMap.getWidth(), bMap.getHeight(),intArray);
+                    BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 
-            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+                    try {
+                        Result res = reader.decode(bitmap);
 
-            try {
-                Result res = reader.decode(bitmap);
-
-                QRInfo qr = new QRInfo(res) ;
-                //Log.d(TAG,qr.toString());
-
-
-                if (currentQr == null){
-                    notifyQRAppear(qr);
-                    currentQr = qr;
-
-                }else if (!currentQr.getIdString().equals(qr.getIdString())){
-                    notifyQRDisappear(currentQr);
-                    notifyQRAppear(qr);
-                    currentQr = qr;
+                        QRInfo qr = new QRInfo(res) ;
+                        //Log.d(TAG,qr.toString());
 
 
+                        if (currentQr == null){
+                            notifyQRAppear(qr);
+                            currentQr = qr;
+
+                        }else if (!currentQr.getIdString().equals(qr.getIdString())){
+                            notifyQRDisappear(currentQr);
+                            notifyQRAppear(qr);
+                            currentQr = qr;
+
+
+                        }
+
+
+                        notifyQR(qr);
+                        lostCount = 0;
+                        formatErrorCount = 0;
+
+
+
+                    } catch (NotFoundException e) {
+                        ZXingQRTrackingModule.this.lostCount = ZXingQRTrackingModule.this.lostCount + 1;
+                    } catch (ChecksumException | FormatException e) {
+                        ZXingQRTrackingModule.this.formatErrorCount = ZXingQRTrackingModule.this.formatErrorCount + 1;
+
+                    }
+
+                    if (((ZXingQRTrackingModule.this.lostCount+ZXingQRTrackingModule.this.formatErrorCount/2)>ZXingQRTrackingModule.this.lostThreshold)&&(ZXingQRTrackingModule.this.currentQr!=null)){
+                        ZXingQRTrackingModule.this.notifyQRDisappear(ZXingQRTrackingModule.this.currentQr);
+                        ZXingQRTrackingModule.this.currentQr = null;
+                    }
+                    processing = false;
                 }
+            });
 
-
-                notifyQR(qr);
-                lostCount = 0;
-                formatErrorCount = 0;
-
-
-
-            } catch (NotFoundException e) {
-                this.lostCount = this.lostCount + 1;
-            } catch (ChecksumException | FormatException e) {
-                this.formatErrorCount = this.formatErrorCount + 1;
-
-            }
-
-            if (((this.lostCount+this.formatErrorCount/2)>this.lostThreshold)&&(this.currentQr!=null)){
-                this.notifyQRDisappear(this.currentQr);
-                this.currentQr = null;
-            }
-            processing = false;
         }
     }
 

@@ -43,6 +43,9 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlM
 
 import org.opencv.core.Mat;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * Implementation of the face detection module using the android face detection API
  */
@@ -64,6 +67,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     private boolean lostFace = true;
     private boolean active = false;
     private boolean firstFrame = true;
+    ExecutorService executor;
 
     //endregion
 
@@ -83,6 +87,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
         cameraModule.suscribe(this);
         faces =  new FaceDetector.Face[5];
 
+        executor = Executors.newFixedThreadPool(1);
 
     }
 
@@ -129,7 +134,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
             final Frame finalFrame = frame;
             if (!processing) {
-                Thread t = new Thread(new Runnable() {
+                executor.execute(new Runnable() {
                     @Override
                     public void run() {
 
@@ -173,7 +178,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
                     }
                 });
-                t.start();
+
 
             }
         }
