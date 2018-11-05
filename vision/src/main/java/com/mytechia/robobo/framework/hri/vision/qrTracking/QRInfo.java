@@ -1,11 +1,3 @@
-package com.mytechia.robobo.framework.hri.vision.qrTracking;
-
-import com.google.zxing.Result;
-import com.google.zxing.ResultPoint;
-
-import static com.mytechia.robobo.framework.hri.vision.qrTracking.QRUtils.distanceBetweenPoints;
-import static com.mytechia.robobo.framework.hri.vision.qrTracking.QRUtils.midPoint;
-
 /*******************************************************************************
  *
  *   Copyright 2018 Mytech Ingenieria Aplicada <http://www.mytechia.com>
@@ -27,6 +19,15 @@ import static com.mytechia.robobo.framework.hri.vision.qrTracking.QRUtils.midPoi
  *   along with Robobo Vision Modules.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+package com.mytechia.robobo.framework.hri.vision.qrTracking;
+
+import com.google.zxing.Result;
+import com.google.zxing.ResultPoint;
+
+import static com.mytechia.robobo.framework.hri.vision.qrTracking.QRUtils.distanceBetweenPoints;
+import static com.mytechia.robobo.framework.hri.vision.qrTracking.QRUtils.midPoint;
+
+
 public class QRInfo {
     private String idString;
     private float xPosition;

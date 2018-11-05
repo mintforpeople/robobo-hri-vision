@@ -1,9 +1,3 @@
-package com.mytechia.robobo.framework.hri.vision.util;
-
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
 /*******************************************************************************
  *
  *   Copyright 2016 Mytech Ingenieria Aplicada <http://www.mytechia.com>
@@ -25,6 +19,15 @@ import java.util.List;
  *   along with Robobo Remote Control Module.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+
+package com.mytechia.robobo.framework.hri.vision.util;
+
+
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+
 public class MedianFilter implements IFilter {
     private int size = 5;
     private int midpos = 2;

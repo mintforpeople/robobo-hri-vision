@@ -1,7 +1,3 @@
-package com.mytechia.robobo.framework.hri.vision.qrTracking;
-
-import com.mytechia.robobo.framework.IModule;
-
 /*******************************************************************************
  *
  *   Copyright 2018 Mytech Ingenieria Aplicada <http://www.mytechia.com>
@@ -23,6 +19,11 @@ import com.mytechia.robobo.framework.IModule;
  *   along with Robobo Vision Modules.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+package com.mytechia.robobo.framework.hri.vision.qrTracking;
+
+import com.mytechia.robobo.framework.IModule;
+
+
 public interface IQRTrackingModule extends IModule {
     void suscribe(IQRListener listener);
     void unsuscribe(IQRListener listener);

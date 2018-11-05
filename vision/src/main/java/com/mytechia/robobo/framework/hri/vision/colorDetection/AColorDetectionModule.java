@@ -22,7 +22,6 @@
 
 package com.mytechia.robobo.framework.hri.vision.colorDetection;
 
-import android.graphics.Bitmap;
 import android.graphics.Color;
 
 import com.mytechia.robobo.framework.RoboboManager;

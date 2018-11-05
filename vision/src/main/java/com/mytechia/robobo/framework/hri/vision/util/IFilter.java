@@ -1,5 +1,3 @@
-package com.mytechia.robobo.framework.hri.vision.util;
-
 /*******************************************************************************
  *
  *   Copyright 2018 Mytech Ingenieria Aplicada <http://www.mytechia.com>
@@ -21,6 +19,9 @@ package com.mytechia.robobo.framework.hri.vision.util;
  *   along with Robobo Vision Library.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+package com.mytechia.robobo.framework.hri.vision.util;
+
+
 public interface IFilter {
 
     int filter(int value);

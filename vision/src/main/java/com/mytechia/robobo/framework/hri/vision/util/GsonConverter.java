@@ -1,16 +1,3 @@
-package com.mytechia.robobo.framework.hri.vision.util;
-
-import android.util.Base64;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import org.opencv.core.Mat;
-
-import static org.opencv.core.CvType.CV_32FC1;
-import static org.opencv.core.CvType.CV_8U;
-
 /*******************************************************************************
  *
  *   Copyright 2016 Mytech Ingenieria Aplicada <http://www.mytechia.com>
@@ -32,6 +19,20 @@ import static org.opencv.core.CvType.CV_8U;
  *   along with Robobo Remote Control Module.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+package com.mytechia.robobo.framework.hri.vision.util;
+
+import android.util.Base64;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import org.opencv.core.Mat;
+
+import static org.opencv.core.CvType.CV_32FC1;
+import static org.opencv.core.CvType.CV_8U;
+
+
 public class GsonConverter {
     public static String matToJson(Mat mat){
 

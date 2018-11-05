@@ -1,5 +1,3 @@
-package com.mytechia.robobo.framework.hri.vision.qrTracking;
-
 /*******************************************************************************
  *
  *   Copyright 2018 Mytech Ingenieria Aplicada <http://www.mytechia.com>
@@ -21,6 +19,10 @@ package com.mytechia.robobo.framework.hri.vision.qrTracking;
  *   along with Robobo Vision Module.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+
+package com.mytechia.robobo.framework.hri.vision.qrTracking;
+
+
 public interface IQRListener {
     void onQRDetected(QRInfo qr);
     void onQRAppears(QRInfo qr);

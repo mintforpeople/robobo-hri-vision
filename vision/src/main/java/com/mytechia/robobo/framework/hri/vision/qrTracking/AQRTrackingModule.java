@@ -1,13 +1,3 @@
-package com.mytechia.robobo.framework.hri.vision.qrTracking;
-
-import android.util.Log;
-
-import com.mytechia.robobo.framework.RoboboManager;
-import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
-import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
-
-import java.util.HashSet;
-
 /*******************************************************************************
  *
  *   Copyright 2018 Mytech Ingenieria Aplicada <http://www.mytechia.com>
@@ -29,6 +19,17 @@ import java.util.HashSet;
  *   along with Robobo Vision Modules.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+package com.mytechia.robobo.framework.hri.vision.qrTracking;
+
+import android.util.Log;
+
+import com.mytechia.robobo.framework.RoboboManager;
+import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
+
+import java.util.HashSet;
+
+
 public abstract class AQRTrackingModule implements IQRTrackingModule {
     private HashSet<IQRListener> listeners = new HashSet<>();
     protected IRemoteControlModule rcmodule = null;

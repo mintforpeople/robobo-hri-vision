@@ -1,8 +1,3 @@
-package com.mytechia.robobo.framework.hri.vision.util;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-
 /*******************************************************************************
  *
  *   Copyright 2016 Mytech Ingenieria Aplicada <http://www.mytechia.com>
@@ -24,6 +19,12 @@ import java.util.LinkedList;
  *   along with Robobo Remote Control Module.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+package com.mytechia.robobo.framework.hri.vision.util;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+
+
 public class AverageFilter implements IFilter {
 
     private int size = 5;

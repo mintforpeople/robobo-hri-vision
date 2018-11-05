@@ -1,7 +1,3 @@
-package com.mytechia.robobo.framework.hri.vision.qrTracking;
-
-import com.google.zxing.ResultPoint;
-
 /*******************************************************************************
  *
  *   Copyright 2016 Mytech Ingenieria Aplicada <http://www.mytechia.com>
@@ -23,6 +19,11 @@ import com.google.zxing.ResultPoint;
  *   along with Robobo Remote Control Module.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+package com.mytechia.robobo.framework.hri.vision.qrTracking;
+
+import com.google.zxing.ResultPoint;
+
+
 public class QRUtils {
     public static ResultPoint centerPoints(ResultPoint p1, ResultPoint p2, ResultPoint p3){
 
