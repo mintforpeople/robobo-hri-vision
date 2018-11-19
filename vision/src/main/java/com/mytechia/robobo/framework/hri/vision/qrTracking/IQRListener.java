@@ -24,7 +24,19 @@ package com.mytechia.robobo.framework.hri.vision.qrTracking;
 
 
 public interface IQRListener {
+    /**
+     * Called when a QR is detected (every frame)
+     * @param qr Detected QR
+     */
     void onQRDetected(QRInfo qr);
+    /**
+     * Called when a QR appears(first frame)
+     * @param qr Detected QR
+     */
     void onQRAppears(QRInfo qr);
+    /**
+     * Called when a QR is lost
+     * @param qr Lost QR
+     */
     void onQRDisappears(QRInfo qr);
 }

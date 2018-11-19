@@ -23,8 +23,18 @@ package com.mytechia.robobo.framework.hri.vision.qrTracking;
 
 import com.google.zxing.ResultPoint;
 
-
+/**
+ * Utility class to be used with the qr tracking module
+ */
 public class QRUtils {
+
+    /**
+     * Obtain the center point between 3 points
+     * @param p1 First point
+     * @param p2 Second point
+     * @param p3 Third point
+     * @return Cente point
+     */
     public static ResultPoint centerPoints(ResultPoint p1, ResultPoint p2, ResultPoint p3){
 
         float yDelta_a = p2.getY() - p1.getY();
@@ -43,10 +53,22 @@ public class QRUtils {
         return new ResultPoint(centerX, centerY);
     }
 
+    /**
+     * Obtain the mid point between two points
+     * @param p1 First point
+     * @param p2 Second point
+     * @return Midpoint
+     */
     public static ResultPoint midPoint(ResultPoint p1, ResultPoint p2){
         return new ResultPoint((p1.getX()+p2.getX())/2,(p1.getY()+p2.getY())/2);
     }
 
+    /**
+     * Get the distance betwueen 2 points
+     * @param p1 First point
+     * @param p2 Second point
+     * @return Distance between the two points
+     */
     public static float distanceBetweenPoints(ResultPoint p1, ResultPoint p2){
         return (float) Math.sqrt(Math.pow(p2.getX()-p1.getX(),2)+Math.pow(p2.getY()+p1.getY(),2));
     }

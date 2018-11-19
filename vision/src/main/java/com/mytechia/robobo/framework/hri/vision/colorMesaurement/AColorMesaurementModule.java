@@ -48,6 +48,12 @@ public abstract class AColorMesaurementModule implements IColorMesaurementModule
         listeners.remove(listener);
     }
 
+    /**
+     * Notifies to the suscribed listaners that new color information is available
+     * @param r Red channel intensity
+     * @param g Green channel intensity
+     * @param b Blue channel intensity
+     */
     protected void notifyColorMesaured(int r, int g, int b){
         for (IColorMesauredListener l:listeners) {
             l.onColorMesaured(r,g,b);

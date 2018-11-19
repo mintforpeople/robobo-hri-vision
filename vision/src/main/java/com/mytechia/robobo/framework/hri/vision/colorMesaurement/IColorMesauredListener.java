@@ -28,9 +28,9 @@ package com.mytechia.robobo.framework.hri.vision.colorMesaurement;
 public interface IColorMesauredListener {
     /**
      * Called when a color is measured
-     * @param r Red channel
-     * @param g Green channel
-     * @param b Blue channel
+     * @param r Red channel (overall %)
+     * @param g Green channel (overall %)
+     * @param b Blue channel (overall %)
      */
     void onColorMesaured(int r, int g, int b);
 }

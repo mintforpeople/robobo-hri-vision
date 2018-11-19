@@ -77,7 +77,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
 
     public OpenCVBlobTrackingModule(){
-
+        // Add workers to pool
         for (int i = 0; i <POOL_SIZE; i++) {
             workersPool.add(new BlobTrackerWorker(this));
         }
@@ -118,6 +118,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void onNewFrame(Frame frame) {
 
+        // In the first frame get the resolution of the captured images
         if (firstFrame) {
             resolutionX = frame.getWidth();
             resolutionY = frame.getHeight();
@@ -134,6 +135,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
         synchronized (lockBlockTrackings) {
 
+            // For each color being tracked
             for (BlobTracker blobTracking : blobTrackings) {
 
                 if(blobTracking.processing()){
@@ -146,8 +148,9 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                     continue;
                 }
 
+                // Configure tracker with the new mat
                 blobTrackingWorker.configure(blobTracking, mat);
-
+                //Execute workers
                 threadPool.execute(blobTrackingWorker);
 
             }
@@ -163,6 +166,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void onOpenCVStartup() {
 
+        // Load calibration values stored in the manager options
         Bundle opts = m.getOptions();
         CameraCalibrationData data = null;
         try {
@@ -184,6 +188,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
             e.printStackTrace();
         }
 
+        // Register remote command to configure different trackings
         rcmodule.registerCommand("CONFIGURE-BLOBTRACKING", new ICommandExecutor() {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
@@ -200,6 +205,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         m = manager;
+        // Get instances od camera and remote modules
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
             rcmodule = m.getModuleInstance(IRemoteControlModule.class);

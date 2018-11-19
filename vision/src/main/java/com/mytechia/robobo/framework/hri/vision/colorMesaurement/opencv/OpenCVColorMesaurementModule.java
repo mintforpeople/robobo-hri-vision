@@ -52,6 +52,8 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         m = manager;
+        // Get instances of the camera module and the remote control module
+        //TODO Put inside a try catch block
         cameraModule = manager.getModuleInstance(ICameraModule.class);
         rcmodule = manager.getModuleInstance(IRemoteControlModule.class);
         cameraModule.suscribe(this);
@@ -91,16 +93,19 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
         int r = 0;
         int g = 0;
         int b = 0;
+        // Use only 1/4 of the image pixels
         long pixels = mat.rows()/4* mat.cols()/4;
         long count =0;
 
+        // Convert mat to hsv color space
         Mat hsvMat = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC3);
         Imgproc.cvtColor(mat, hsvMat, Imgproc.COLOR_RGB2HSV, 3);
 
 
 
-
+        // Iterate each fourth row in the image
         for (int row = 0; row<(hsvMat.rows()); row+=4){
+            // Iterate each fourth column in the image
             for (int col = 0; col<(hsvMat.cols()); col+=4) {
                 //Log.d(TAG, "Row: "+row+" Col: "+col);
                 double[] pixel = hsvMat.get(row,col);
@@ -112,14 +117,17 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
                 int saturation = (int) Math.round(pixel[1]);
                 int value = (int) Math.round(pixel[2]);
 
+                // Discard too dark colors
                 if ((value > 120) && (saturation > 160)){
 //                    Log.d(TAG,"Saturation:"+saturation);
 //                    Log.d(TAG,"Value:"+value);
 //                    Log.d(TAG,"Hue:"+hue);
 
-
+                    // Shift color wheel
                     hue = hue - 8;
                     count = count +1;
+
+                    // Classify color and add to color count
                     if (hue < 0) {
                         hue = 171 + Math.abs(hue);
                     }
@@ -163,12 +171,16 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
         int sum = r+g+b;
         //sum = (hsvMat.cols()*hsvMat.rows())/8;
 //        Log.d(TAG,"Count: "+count);
+
+        // Calculate the percentage of each color in the image
         if((sum!=0)&&(count>3)) {
             r = Math.round(((float)r / (float)sum) * 100);
             g = Math.round(((float)g / (float)sum) * 100);
             b = Math.round(((float)b / (float)sum) * 100);
 
 //            Log.d(TAG, "R: " + r + " G: " + g + " B: " + b+" Covered: "+(float)count/(float)pixels);
+
+            // Only notify if the values had changed from the last time notificated
             if ((lastb!=b)||(lastg!=g)||(lastr!=r)) {
                 notifyColorMesaured(r, g, b);
                 lastb = b;
@@ -176,6 +188,7 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
                 lastr = r;
             }
         }
+        // Notify no color detected
         else {
 //            Log.d(TAG, "R: " + 0 + " G: " + 0 + " B: " + 0);
             if ((lastb!=b)||(lastg!=g)||(lastr!=r)) {

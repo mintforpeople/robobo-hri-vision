@@ -48,7 +48,7 @@ import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlobT
 
 
 /**
- * Created by julio on 7/08/17.
+ * Blob tracker class, instantiate one for each color
  */
 public class BlobTracker {
 
@@ -75,7 +75,7 @@ public class BlobTracker {
 
     public enum DETECTION_STATE {NONE, DETECTED, TEMP_DISSAPEAR,  DISSAPEAR}
 
-    private DETECTION_STATE detectionState=NONE;
+    private DETECTION_STATE detectionState = NONE;
 
     private boolean processing = false;
 
@@ -105,16 +105,20 @@ public class BlobTracker {
 
     public void process(Mat mat) {
         double area = 0;
+        // Frame mats
         Mat hsvFrame = new Mat();
         Mat backproj = new Mat();
+
+        // Convert BGR to HSV
         Imgproc.cvtColor(mat,hsvFrame,Imgproc.COLOR_BGR2HSV);
 
         //try {
-
+            // If there is no tracking active, initialize tracking window
             if (trackWindow.area()<= 1) {
                 trackWindow = initTrackWindow(hsvFrame, blobcolor.getHistogramData());
 
             }
+            // If the area is greates than the minimum, calculate the new tracking position
             if (trackWindow.area()> min_area) {
                 backproj = calcBackproj(hsvFrame, blobcolor.getHistogramData());
                 RotatedRect trackBox = Video.CamShift(backproj, trackWindow,
@@ -134,11 +138,7 @@ public class BlobTracker {
                 this.blob = null;
             }
 
-
-
-
-
-
+        // If nothing is detected increment the not detected count
         if (this.blob == null) {
             noDetectionCount += 1;
 

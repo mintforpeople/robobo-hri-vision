@@ -60,7 +60,7 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
         for (IBlobListener listener:listeners){
             listener.onTrackingBlob(blob);
         }
-
+        // Send status
         if (rcmodule!=null) {
 
             Status status = new Status("BLOB");

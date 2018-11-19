@@ -56,7 +56,9 @@ import java.util.concurrent.Executors;
 import static com.mytechia.robobo.framework.hri.vision.qrTracking.QRUtils.distanceBetweenPoints;
 import static com.mytechia.robobo.framework.hri.vision.qrTracking.QRUtils.midPoint;
 
-
+/**
+ * Implementation of the QRTrackingModule using ZXing library
+ */
 public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraListener {
 
     private ICameraModule cameraModule = null;
@@ -76,6 +78,7 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
     public void startup(RoboboManager manager) throws InternalErrorException {
 
         m = manager;
+        // LOad camera and remote controlo modules
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
             rcmodule = m.getModuleInstance(IRemoteControlModule.class);
@@ -83,9 +86,13 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
+        // Create framecounter
         fps = new FrameCounter();
         cameraModule.suscribe(this);
+
+        // Create Qr code reader
         reader = new QRCodeMultiReader();
+        // Create thread executor to avoid locking OnNewFrame thread
         executor = Executors.newFixedThreadPool(1);
     }
 
@@ -106,7 +113,9 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
 
     @Override
     public void onNewFrame(final Frame frame) {
+        // If it not already processing a frame
         if (!processing){
+            // Execute on thread
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -127,8 +136,9 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
                     BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 
                     try {
+                        // Decode image to find QR codes
                         Result res = reader.decode(bitmap);
-
+                        // Create a QRInfo object with the result
                         QRInfo qr = new QRInfo(res) ;
                         //Log.d(TAG,qr.toString());
 

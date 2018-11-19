@@ -57,7 +57,7 @@ import java.util.zip.CheckedOutputStream;
 
 
 /**
- * Implementation of the color detection module using OpenCV
+ * Implementation of the color detection module using OpenCV // OLD
  */
 public class OpenCvColorDetectionModule extends AColorDetectionModule implements ICameraListener {
     /*

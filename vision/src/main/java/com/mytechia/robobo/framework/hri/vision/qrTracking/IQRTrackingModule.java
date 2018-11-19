@@ -25,7 +25,20 @@ import com.mytechia.robobo.framework.IModule;
 
 
 public interface IQRTrackingModule extends IModule {
+    /**
+     * Suscribes a listener to the qe notifications
+     * @param listener The listener to be added
+     */
     void suscribe(IQRListener listener);
+    /**
+     * Unsuscribes a listener from the qr notifications
+     * @param listener The listener to be removed
+     */
     void unsuscribe(IQRListener listener);
+
+    /**
+     * Set the number of frames passed without detection to consider a QR as lost
+     * @param threshold Number of frames
+     */
     void setLostThreshold(int threshold);
 }

@@ -3,7 +3,8 @@ package com.mytechia.robobo.framework.hri.vision.colorMesaurement;
 import com.mytechia.robobo.framework.IModule;
 
 /**
- * Created by luis on 19/1/17.
+ * Module that allows to measure te color in front of the camera and decomposes it in the three RGB
+ * color channels
  */
 
 public interface IColorMesaurementModule extends IModule {

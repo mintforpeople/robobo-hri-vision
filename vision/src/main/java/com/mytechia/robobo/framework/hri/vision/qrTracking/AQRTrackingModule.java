@@ -36,11 +36,15 @@ public abstract class AQRTrackingModule implements IQRTrackingModule {
     protected RoboboManager m;
     private String TAG = "AQRModule";
 
-
+    /**
+     * Notify all the suscribed listeners of a detected QR code
+     * @param qr Detected QR
+     */
     protected void notifyQR(QRInfo qr){
         for (IQRListener listener:listeners){
             listener.onQRDetected(qr);
         }
+        // Send remote status
         if (rcmodule!=null) {
             Status status = new Status("QRCODE");
             status.putContents("coordx",qr.getxPosition()+"");
@@ -57,11 +61,16 @@ public abstract class AQRTrackingModule implements IQRTrackingModule {
         }
     }
 
+    /**
+     * Notify all the suscribed listeners of the apparition of a QR code
+     * @param qr Detected QR
+     */
     protected void notifyQRAppear(QRInfo qr) {
         Log.d(TAG,"QR Appeared");
         for (IQRListener listener : listeners) {
             listener.onQRAppears(qr);
         }
+        // Send remote status
         if (rcmodule!=null) {
             Status status = new Status("QRCODEAPPEAR");
             status.putContents("coordx",qr.getxPosition()+"");
@@ -73,13 +82,17 @@ public abstract class AQRTrackingModule implements IQRTrackingModule {
             rcmodule.postStatus(status);
         }
     }
-
+    /**
+     * Notify all the suscribed listeners that the tracked qr is lost
+     * @param qr Lost QR
+     */
     protected void notifyQRDisappear(QRInfo qr) {
         Log.d(TAG,"QR Disappeared");
 
         for (IQRListener listener : listeners) {
             listener.onQRDisappears(qr);
         }
+        // Send remote status
         if (rcmodule!=null) {
             Status status = new Status("QRCODELOST");
             status.putContents("id", qr.getIdString());

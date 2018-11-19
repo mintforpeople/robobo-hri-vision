@@ -62,21 +62,31 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     //region VAR
     private static final String TAG = "OpenCVCameraModule";
 
+    // OpenCV Camera Bridge
     private CameraBridgeViewBase mOpenCvCameraView;
     private Context context;
+
+    // Flags for enabling different image types
     private boolean notifyBitmap = true;
     private boolean notifyMat = true;
+
+    // Index of the camera being used
     private int index = CAMERA_ID_FRONT;
+
+    // Flag for showing the image on the opencv view, used for debug purposes
     private boolean showImgInView = false;
 
-
+    // Camera resolution
     private int resolution_height = 640;
     private int resolution_width = 480;
 
+    // FPS control variables
     private long lastFrameTime = 0;
     private long deltaTimeThreshold = 17;
 
     private FrameCounter fps = new FrameCounter();
+
+    // Remote control module instance
     private IRemoteControlModule remoteControlModule;
 
 
@@ -105,6 +115,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public void onPowerModeChange(PowerMode newMode) {
 
+        // On low power mode disable the view to stop the camera capture
         if (newMode == PowerMode.LOWPOWER) {
             mOpenCvCameraView.disableView();
         }
@@ -118,6 +129,8 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         roboboManager =  manager;
+
+        // Get instance of the remote module
         try {
             remoteControlModule = manager.getModuleInstance(IRemoteControlModule.class);
         }catch (ModuleNotFoundException e){
@@ -126,6 +139,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
         context = manager.getApplicationContext();
 
+        // Load properties form resources file
         Properties properties = new Properties();
         AssetManager assetManager = manager.getApplicationContext().getAssets();
 
@@ -143,6 +157,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             roboboManager.log(LogLvl.WARNING,TAG,"Properties not defined, using defaults");
         }
 
+        // Register the command to change de camera in use
         remoteControlModule.registerCommand("SET-CAMERA", new ICommandExecutor() {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
@@ -215,6 +230,8 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public void passOCVthings(CameraBridgeViewBase bridgebase) {
         mOpenCvCameraView = bridgebase;
+
+        // Setting the view to the desired resolution
         ViewGroup.LayoutParams params = bridgebase.getLayoutParams();
         params.height = resolution_height;
         params.width = resolution_width;
@@ -278,16 +295,21 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         long millis = System.currentTimeMillis();
+
+        // Check if we want to process a new frame
         if (millis-lastFrameTime>=deltaTimeThreshold) {
            // roboboManager.log("CameraModule",millis-lastFrameTime+"");
 
             lastFrameTime = millis;
             Bitmap bmp;
+            // Obtain the RGB version of the image in OCV Mat format
             Mat mat = inputFrame.rgba();
 
 
             //Giramos la imagen para evitar que salga torcida
             //Core.flip(mat.t(), mat, 1);
+
+            // TODO eliminar esta linea
             bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
 
             //Conversión de la matriz a bitmap
@@ -304,6 +326,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
                 notifyMat(mat);
             }
 
+            // Update frame counter
             fps.newFrame();
 
             if (fps.getElapsedTime() % 10 == 0) {
@@ -312,6 +335,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
         }
 
+        // Return null to not show any image in the view
         if (showImgInView){
             return inputFrame.rgba();
         }else {

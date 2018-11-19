@@ -31,7 +31,7 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 import java.util.HashSet;
 
 /**
- * Abstract class that manages the listeners and the status updates
+ * Abstract class that manages the listeners and the status updates // OLD
  */
 public abstract class AColorDetectionModule implements IColorDetectionModule {
     private HashSet<IColorListener> listeners = new HashSet<IColorListener>();
