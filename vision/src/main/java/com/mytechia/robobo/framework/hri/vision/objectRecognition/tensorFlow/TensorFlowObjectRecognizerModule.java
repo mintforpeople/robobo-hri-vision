@@ -38,15 +38,14 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
     private static final int TF_OD_API_INPUT_SIZE = 300;
     private static final boolean TF_OD_API_IS_QUANTIZED = true;
     private static final String TF_OD_API_MODEL_FILE = "detect.tflite";
-    private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/labelmap.txt";
+    //private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/labelmap.txt";
+    private static final String TF_OD_API_LABELS_FILE = "labelmap.txt";
     private static final DetectorMode MODE = DetectorMode.TF_OD_API;
 
     // Minimum detection confidence to track a detection.
     private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.5f;
     private static final boolean MAINTAIN_ASPECT = false;
-    private static final Size DESIRED_PREVIEW_SIZE = new Size(288, 352);
-    private static final boolean SAVE_PREVIEW_BITMAP = false;
-    private static final float TEXT_SIZE_DIP = 10;
+
 
     private Integer sensorOrientation;
 
@@ -57,27 +56,25 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
     private Boolean isProcessing = false;
 
-    private Bitmap rgbFrameBitmap = null;
     private Bitmap croppedBitmap = null;
     private Matrix frameToCropTransform;
 
     private Float minConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
     private Integer maxDetections = 10;
+
+
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
-        int cropSize = TF_OD_API_INPUT_SIZE;
 
         try {
 
 
             detector =
                     TFLiteObjectDetectionAPIModel.create(
-                            manager.getApplicationContext().getAssets(),
                             TF_OD_API_MODEL_FILE,
                             TF_OD_API_LABELS_FILE,
                             TF_OD_API_INPUT_SIZE,
                             TF_OD_API_IS_QUANTIZED);
-            cropSize = TF_OD_API_INPUT_SIZE;
         } catch (final IOException e) {
             e.printStackTrace();
             manager.log(LogLvl.ERROR, "ObjectDetectionModule","Exception initializing classifier!");
@@ -127,21 +124,17 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
                             cropSize, cropSize,
                             sensorOrientation, MAINTAIN_ASPECT);
 
+
+            Matrix cropToFrameTransform = new Matrix();
+            frameToCropTransform.invert(cropToFrameTransform);
+
             final Canvas canvas = new Canvas(croppedBitmap);
             canvas.drawBitmap(frame.getBitmap(), frameToCropTransform, null);
 
             isProcessing = true;
 
-            final long startTime = SystemClock.uptimeMillis();
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
 
-
-            float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-            switch (MODE) {
-                case TF_OD_API:
-                    minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-                    break;
-            }
 
             final List<Classifier.Recognition> mappedRecognitions =
                     new LinkedList<Classifier.Recognition>();
@@ -152,8 +145,9 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
             for (final Classifier.Recognition result : results) {
                 if (objectsRecognized.size() <= maxDetections) {
                     final RectF location = result.getLocation();
-                    if (location != null && result.getConfidence() >= minimumConfidence) {
-                        ((LinkedList<RecognizedObject>) objectsRecognized).addFirst(new RecognizedObject(result.getTitle(), result.getConfidence(), result.getLocation()));
+                    if (location != null && result.getConfidence() >= minConfidence) {
+                        cropToFrameTransform.mapRect(location);
+                        ((LinkedList<RecognizedObject>) objectsRecognized).addFirst(new RecognizedObject(result.getTitle(), result.getConfidence(), location));
 
                         result.setLocation(location);
                         mappedRecognitions.add(result);

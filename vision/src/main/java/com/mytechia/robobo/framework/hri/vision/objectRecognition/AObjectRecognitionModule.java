@@ -27,10 +27,17 @@ public abstract class AObjectRecognitionModule implements IObjectRecognitionModu
         for (IObjectRecognizerListener listener:listeners){
             listener.onObjectsRecognized(detections);
         }
-        //if (rcmodule!=null) {
-            //Status status = new Status("NEWCOLOR");
+        if (rcmodule!=null) {
 
-            //rcmodule.postStatus(status);
-        //}
+            for (RecognizedObject obj: detections){
+                Status status = new Status("OBJECT");
+                status.putContents("label",obj.getLabel());
+                status.putContents("posx", (int)obj.getBoundingBox().centerX() + "");
+                status.putContents("posy", (int)obj.getBoundingBox().centerY() + "");
+                status.putContents("confidence", obj.getConfidence() + "");
+                rcmodule.postStatus(status);
+
+            }
+        }
     }
 }

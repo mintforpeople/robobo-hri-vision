@@ -21,11 +21,9 @@ package com.mytechia.robobo.framework.vision;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -40,16 +38,11 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
-import com.mytechia.robobo.framework.hri.vision.blobTracking.Blob;
-import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
-import com.mytechia.robobo.framework.hri.vision.blobTracking.IBlobListener;
-import com.mytechia.robobo.framework.hri.vision.blobTracking.IBlobTrackingModule;
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.IObjectRecognitionModule;
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.IObjectRecognizerListener;
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.RecognizedObject;
@@ -58,6 +51,7 @@ import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Mat;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
@@ -89,6 +83,8 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
     private long lastDetection = 0;
     private int index = CAMERA_ID_FRONT;
 
+    private List<RecognizedObject> objectList;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG,"TouchEvent");
@@ -103,7 +99,7 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_test);
-
+        objectList = new ArrayList<RecognizedObject>();
 
 //Request permissions
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -191,6 +187,7 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
         mDetector = new GestureDetectorCompat(getApplicationContext(),this);
         camModule.suscribe(this);
         objModule.suscribe(this);
+        objModule.setConfidence(0.5f);
         camModule.setFps(40);
 
 
@@ -203,6 +200,19 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
 
 
         lastFrame = frame;
+        Canvas canvas = new Canvas(frame.getBitmap());
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+        paint.setStrokeWidth(1);
+        paint.setStyle(Paint.Style.STROKE);
+
+        for (RecognizedObject obj: objectList){
+            canvas.drawCircle(obj.getBoundingBox().centerX(),obj.getBoundingBox().centerY(), 5, paint);
+            canvas.drawText(obj.getLabel(),obj.getBoundingBox().centerX()+7,obj.getBoundingBox().centerY(),paint);
+            canvas.drawRect(obj.getBoundingBox(), paint);
+
+        }
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -227,7 +237,7 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
             @Override
             public void run() {
 
-                imageView.setImageDrawable(new BitmapDrawable(getResources(), frame.getBitmap()));
+                //imageView.setImageDrawable(new BitmapDrawable(getResources(), frame.getBitmap()));
 
             }
         });
@@ -276,6 +286,9 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
     public void onObjectsRecognized(final List<RecognizedObject> objectList) {
 
         final TextView tv = this.textView;
+
+        this.objectList = objectList;
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

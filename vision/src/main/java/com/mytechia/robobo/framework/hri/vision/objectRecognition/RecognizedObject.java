@@ -3,19 +3,19 @@ package com.mytechia.robobo.framework.hri.vision.objectRecognition;
 import android.graphics.RectF;
 
 public class RecognizedObject {
-    private String tag;
+    private String label;
     private Float confidence;
     private RectF boundingBox;
 
 
-    public RecognizedObject(String tag,Float confidence, RectF boundingBox) {
-        this.tag = tag;
+    public RecognizedObject(String label, Float confidence, RectF boundingBox) {
+        this.label = label;
         this.confidence = confidence;
         this.boundingBox = boundingBox;
     }
 
-    public String getTag() {
-        return tag;
+    public String getLabel() {
+        return label;
     }
 
     public RectF getBoundingBox() {
@@ -28,6 +28,6 @@ public class RecognizedObject {
 
     @Override
     public String toString() {
-        return "Tag: " + this.tag + " Conf: "+(int)(this.confidence*100)+"% x: " + (int)boundingBox.centerX() + " y: " +(int) boundingBox.centerY() ;
+        return "Tag: " + this.label + " Conf: "+(int)(this.confidence*100)+"% x: " + (int)boundingBox.centerX() + " y: " +(int) boundingBox.centerY() ;
     }
 }
