@@ -63,10 +63,8 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
 
 
 
-        this.surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         this.imageView = (ImageView) findViewById(R.id.testImageView) ;
         this.bridgeBase = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
-        this.textureView = (TextureView) findViewById(R.id.textureView);
         this.surfaceView.setVisibility(View.INVISIBLE);
         this.imageView.setVisibility(View.INVISIBLE);
         this.textureView.setVisibility(View.VISIBLE);
