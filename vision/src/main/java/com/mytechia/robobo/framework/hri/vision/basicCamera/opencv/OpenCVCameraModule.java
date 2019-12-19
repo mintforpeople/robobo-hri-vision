@@ -88,7 +88,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
     // Remote control module instance
     private IRemoteControlModule remoteControlModule;
-
+    private int seqnum = 0;
 
 
 
@@ -213,7 +213,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
         if (!OpenCVLoader.initDebug()) {
             roboboManager.log(LogLvl.WARNING, TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, context, mLoaderCallback);
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, context, mLoaderCallback);
         } else {
             roboboManager.log(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
@@ -295,7 +295,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         long millis = System.currentTimeMillis();
-
         // Check if we want to process a new frame
         if (millis-lastFrameTime>=deltaTimeThreshold) {
            // roboboManager.log("CameraModule",millis-lastFrameTime+"");
@@ -318,9 +317,12 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 //        frame.setHeight(bmp.getHeight());
 //        frame.setWidth(bmp.getWidth());
 //        frame.setBitmap(bmp);
+            this.seqnum = this.seqnum + 1;
 
+            Frame frame = new Frame(mat);
+            frame.setSeqNum(this.seqnum);
             //TODO devolver byte[] para artoolkit???
-            notifyFrame(new Frame(mat));
+            notifyFrame(frame);
 
             if (notifyMat) {
                 notifyMat(mat);
@@ -370,5 +372,10 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public int getResY() {
         return resolution_height;
+    }
+
+    @Override
+    public int getCameraCode() {
+        return index;
     }
 }

@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/imageView"
         android:layout_alignParentStart="true"
-        android:src="@drawable/robobo_logo"
+        android:contentDescription="TODO" android:src="@drawable/robobo_logo"
         android:layout_centerInParent="true"
         android:layout_gravity="center" />
 

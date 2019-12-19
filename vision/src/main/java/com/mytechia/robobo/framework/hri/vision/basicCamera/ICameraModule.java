@@ -101,4 +101,10 @@ public interface ICameraModule extends IModule {
      * @return
      */
     int getResY();
+
+    /**
+     * Returns the current camera index
+     * @return Camera code
+     */
+    int getCameraCode();
 }

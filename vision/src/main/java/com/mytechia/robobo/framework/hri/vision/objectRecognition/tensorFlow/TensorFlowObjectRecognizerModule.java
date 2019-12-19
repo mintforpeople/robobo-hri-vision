@@ -114,6 +114,7 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
     public void onNewFrame(Frame frame) {
 
         if (!isProcessing) {
+            Log.w("TFOBJECTDETECTOR","Frame number: "+frame.getSeqNum());
             int cropSize = TF_OD_API_INPUT_SIZE;
 
             croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888);
