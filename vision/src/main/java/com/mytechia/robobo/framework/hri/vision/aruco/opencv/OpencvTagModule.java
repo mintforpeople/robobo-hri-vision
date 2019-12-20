@@ -5,8 +5,8 @@ import android.util.Log;
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
-import com.mytechia.robobo.framework.hri.vision.aruco.AArucoModule;
-import com.mytechia.robobo.framework.hri.vision.aruco.ArucoTag;
+import com.mytechia.robobo.framework.hri.vision.aruco.ATagModule;
+import com.mytechia.robobo.framework.hri.vision.aruco.Tag;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
@@ -21,13 +21,14 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_BACK;
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
-public class OpencvArucoModule extends AArucoModule implements ICameraListener {
+public class OpencvTagModule extends ATagModule implements ICameraListener {
 
     private RoboboManager m;
     private ICameraModule cameraModule;
+
+    private int currentTagDict = Aruco.DICT_4X4_1000;
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
@@ -75,18 +76,25 @@ public class OpencvArucoModule extends AArucoModule implements ICameraListener {
         DetectorParameters parameters = DetectorParameters.create();
         parameters.set_minDistanceToBorder(0);
         parameters.set_adaptiveThreshWinSizeMax(100);
-        Aruco.detectMarkers(mat, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000),markerCorners,markerIds, parameters,rejectedCandidates);
+        Aruco.detectMarkers(mat, Aruco.getPredefinedDictionary(currentTagDict),markerCorners,markerIds, parameters,rejectedCandidates);
         int i = 0;
 
-        List<ArucoTag>  tags = new ArrayList<>();
+        List<Tag>  tags = new ArrayList<>();
         for (i = 0; i < markerIds.rows(); i++){
+            Tag tag;
+            if (cameraModule.getCameraCode() == CAMERA_ID_FRONT){
+               tag = new Tag(markerCorners.get(i),markerIds.get(i,0)[0], true, cameraModule.getResX());
 
-            ArucoTag tag = new ArucoTag(markerCorners.get(i),markerIds.get(i,0)[0]);
+            }else {
+                tag = new Tag(markerCorners.get(i),markerIds.get(i,0)[0], false, cameraModule.getResX());
+
+            }
             Log.w("ARUCO", tag.toString());
+            tags.add(tag);
         }
 
         if (markerIds.rows() > 0){
-            notifyMarkersDetected(markerCorners, markerIds);
+            notifyMarkersDetected(tags);
         }
         //Log.w("ARUCO", "Markers: "+markerIds.toString());
 
@@ -100,5 +108,15 @@ public class OpencvArucoModule extends AArucoModule implements ICameraListener {
     @Override
     public void onOpenCVStartup() {
 
+    }
+
+    @Override
+    public void useAruco() {
+        currentTagDict = Aruco.DICT_4X4_1000;
+    }
+
+    @Override
+    public void useAprilTags() {
+        currentTagDict = Aruco.DICT_APRILTAG_16h5;
     }
 }

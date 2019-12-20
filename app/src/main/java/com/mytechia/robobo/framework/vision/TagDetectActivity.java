@@ -21,9 +21,6 @@ package com.mytechia.robobo.framework.vision;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -40,20 +37,20 @@ import android.widget.TextView;
 
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
-import com.mytechia.robobo.framework.hri.vision.aruco.IArucoListener;
-import com.mytechia.robobo.framework.hri.vision.aruco.IArucoModule;
+import com.mytechia.robobo.framework.hri.vision.aruco.Tag;
+import com.mytechia.robobo.framework.hri.vision.aruco.ITagListener;
+import com.mytechia.robobo.framework.hri.vision.aruco.ITagModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.IObjectRecognitionModule;
-import com.mytechia.robobo.framework.hri.vision.objectRecognition.IObjectRecognizerListener;
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.RecognizedObject;
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.aruco.Aruco;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -61,7 +58,7 @@ import java.util.List;
 
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
-public class ArucoDetectActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, IArucoListener{
+public class TagDetectActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, ITagListener {
     private static final String TAG="CameraFaceTestActivity";
 
 
@@ -73,7 +70,7 @@ public class ArucoDetectActivity extends AppCompatActivity implements ICameraLis
 
     private ICameraModule camModule;
     private IObjectRecognitionModule objModule;
-    private IArucoModule arucoModule;
+    private ITagModule arucoModule;
     private CameraBridgeViewBase bridgeBase;
 
 
@@ -91,6 +88,7 @@ public class ArucoDetectActivity extends AppCompatActivity implements ICameraLis
 
     private List<RecognizedObject> objectList;
     List<Mat> corners;
+    List<Tag> markers;
     Mat ids;
     boolean detected = false;
     @Override
@@ -169,7 +167,7 @@ public class ArucoDetectActivity extends AppCompatActivity implements ICameraLis
         try {
 
             this.camModule = this.roboboManager.getModuleInstance(ICameraModule.class);
-            this.arucoModule = this.roboboManager.getModuleInstance(IArucoModule.class);
+            this.arucoModule = this.roboboManager.getModuleInstance(ITagModule.class);
 
 
         } catch (ModuleNotFoundException e) {
@@ -240,8 +238,8 @@ public class ArucoDetectActivity extends AppCompatActivity implements ICameraLis
         Mat newmat = mat.clone();
 
         if (detected){
-            Aruco.drawDetectedMarkers(newmat, corners, ids);
-
+            //Aruco.drawDetectedMarkers(newmat, corners, ids);
+            newmat = drawArucos(markers, newmat);
             //Core.flip(mat,mat, 0);
             detected = false;
 
@@ -259,6 +257,20 @@ public class ArucoDetectActivity extends AppCompatActivity implements ICameraLis
 
             }
         });
+    }
+
+
+    private  Mat drawArucos(List<Tag> tags, Mat image){
+
+        for (Tag tag : tags){
+            for (int i = 0; i < 4; i++){
+                Imgproc.line(image, new Point(tag.getCorner(i).x,tag.getCorner(i).y),new Point(tag.getCorner((i+1)%4).x,tag.getCorner((i+1)%4).y),new Scalar(255,0,0));
+
+                Imgproc.circle(image,new Point(tag.getCorner(i).x,tag.getCorner(i).y),3, new Scalar(0,255,0));
+            }
+        }
+
+        return image;
     }
 
     @Override
@@ -311,12 +323,18 @@ public class ArucoDetectActivity extends AppCompatActivity implements ICameraLis
         return false;
     }
 
-
     @Override
+    public void onAruco(List<Tag> markers) {
+        this.markers = markers;
+        detected = true;
+    }
+
+
+   /* @Override
     public void onAruco(List<Mat> corners, Mat ids) {
         this.corners = corners;
 
         this.ids = ids;
         this.detected = true;
-    }
+    }*/
 }
