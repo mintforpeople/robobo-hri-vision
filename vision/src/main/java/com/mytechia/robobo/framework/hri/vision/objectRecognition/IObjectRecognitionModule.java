@@ -8,5 +8,7 @@ public interface IObjectRecognitionModule extends IModule {
     void unsuscribe(IObjectRecognizerListener listener);
     void setConfidence(Float confLevel);
     void setMaxDetections(Integer maxDetectionNumber);
+    void pauseDetection();
+    void resumeDetection();
 
 }

@@ -309,7 +309,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             //Core.flip(mat.t(), mat, 1);
 
             // TODO eliminar esta linea
-            bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+            //bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
 
             //Conversión de la matriz a bitmap
 //        Utils.matToBitmap(mat, bmp);
@@ -321,7 +321,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
             Frame frame = new Frame(mat);
             frame.setSeqNum(this.seqnum);
-            //TODO devolver byte[] para artoolkit???
             notifyFrame(frame);
 
             if (notifyMat) {

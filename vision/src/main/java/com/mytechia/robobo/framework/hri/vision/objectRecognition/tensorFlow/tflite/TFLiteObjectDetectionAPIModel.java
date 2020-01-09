@@ -159,8 +159,11 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
           final boolean isQuantized)
           throws IOException {
     final TFLiteObjectDetectionAPIModel d = new TFLiteObjectDetectionAPIModel();
-
+    //TODO COMPROBAR QUE EXISTA Y PONER FALLBACK A ASSETS
     File dir = new File (Environment.getExternalStorageDirectory() + "/properties");
+
+
+
     InputStream labelsInput = null;
 
 

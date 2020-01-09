@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Size;
@@ -28,6 +29,7 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlM
 
 import org.opencv.core.Mat;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,20 +63,33 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
     private Float minConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
     private Integer maxDetections = 10;
-
+    private Boolean paused = false;
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
 
         try {
+            File detectFile = new File (Environment.getExternalStorageDirectory() + "/properties/detect.tflite");
+            File labelFile = new File (Environment.getExternalStorageDirectory() + "/properties/labelmap.txt");
 
+            // Check if user configured model exists
+            if (detectFile.exists() && labelFile.exists()) {
 
-            detector =
-                    TFLiteObjectDetectionAPIModel.create(
-                            TF_OD_API_MODEL_FILE,
-                            TF_OD_API_LABELS_FILE,
-                            TF_OD_API_INPUT_SIZE,
-                            TF_OD_API_IS_QUANTIZED);
+                detector =
+                        TFLiteObjectDetectionAPIModel.create(
+                                TF_OD_API_MODEL_FILE,
+                                TF_OD_API_LABELS_FILE,
+                                TF_OD_API_INPUT_SIZE,
+                                TF_OD_API_IS_QUANTIZED);
+            }else { //Fallback to internal default model
+                detector =
+                        TFLiteObjectDetectionAPIModel.create(
+                                manager.getApplicationContext().getAssets(),
+                                TF_OD_API_MODEL_FILE,
+                                "file:///android_asset/labelmap.txt",
+                                TF_OD_API_INPUT_SIZE,
+                                TF_OD_API_IS_QUANTIZED);
+            }
         } catch (final IOException e) {
             e.printStackTrace();
             manager.log(LogLvl.ERROR, "ObjectDetectionModule","Exception initializing classifier!");
@@ -113,8 +128,7 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
     @Override
     public void onNewFrame(Frame frame) {
 
-        if (!isProcessing) {
-            Log.w("TFOBJECTDETECTOR","Frame number: "+frame.getSeqNum());
+        if (!isProcessing && !paused) {
             int cropSize = TF_OD_API_INPUT_SIZE;
 
             croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888);
@@ -193,6 +207,16 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
     @Override
     public void setMaxDetections(Integer maxDetectionNumber) {
         maxDetections = maxDetectionNumber;
+    }
+
+    @Override
+    public void pauseDetection() {
+        paused = true;
+    }
+
+    @Override
+    public void resumeDetection() {
+        paused = false;
     }
 
     // Which detection model to use: by default uses Tensorflow Object Detection API frozen
