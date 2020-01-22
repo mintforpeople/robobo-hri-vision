@@ -44,7 +44,7 @@ dependencies {
 
     implementation 'com.google.zxing:core:3.3.3'
 
-    implementation ('com.mytechia:opencv:4.1.0-my-SNAPSHOT'){
+    implementation ('com.mytechia:opencv:4.1.0-my'){
         changing true
     }
 

@@ -1,4 +1,4 @@
-package com.mytechia.robobo.framework.hri.vision.aruco;
+package com.mytechia.robobo.framework.hri.vision.tag;
 
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;

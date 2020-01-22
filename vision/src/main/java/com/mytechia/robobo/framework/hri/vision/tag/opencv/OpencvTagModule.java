@@ -1,15 +1,17 @@
-package com.mytechia.robobo.framework.hri.vision.aruco.opencv;
+package com.mytechia.robobo.framework.hri.vision.tag.opencv;
 
 import android.util.Log;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
-import com.mytechia.robobo.framework.hri.vision.aruco.ATagModule;
-import com.mytechia.robobo.framework.hri.vision.aruco.Tag;
+import com.mytechia.robobo.framework.hri.vision.tag.ATagModule;
+import com.mytechia.robobo.framework.hri.vision.tag.Tag;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
+import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
+import com.mytechia.robobo.framework.hri.vision.util.CameraDistortionCalibrationData;
 
 
 import org.opencv.aruco.Aruco;
@@ -27,12 +29,15 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
 
     private RoboboManager m;
     private ICameraModule cameraModule;
-
+    private String distCoeffs = "{\"rows\"\\:1,\"cols\"\\:5,\"type\"\\:0,\"data\"\\:\"AQAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\u003d\\\\u003d\\\\n\"}";
+    private String cameraMatrix = "{\"rows\"\\:3,\"cols\"\\:3,\"type\"\\:0,\"data\"\\:\"/wDtAP//AAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\nAAAAAAAAAAAAAAAAAAAA\\\\n\"}";
     private int currentTagDict = Aruco.DICT_4X4_1000;
-
+    private CameraDistortionCalibrationData calibrationData;
+    private AuxPropertyWriter propertyWriter;
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         m = manager;
+        propertyWriter = new AuxPropertyWriter();
         // Load camera and remote control modules
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
@@ -40,6 +45,10 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
+
+        distCoeffs = propertyWriter.retrieveConf("distCoeffs", distCoeffs);
+        cameraMatrix = propertyWriter.retrieveConf("cameraMatrix", cameraMatrix);
+        calibrationData = new CameraDistortionCalibrationData(cameraMatrix,distCoeffs,null,null);
         cameraModule.suscribe(this);
     }
 
@@ -76,9 +85,9 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
         DetectorParameters parameters = DetectorParameters.create();
         parameters.set_minDistanceToBorder(0);
         parameters.set_adaptiveThreshWinSizeMax(100);
-        Aruco.detectMarkers(mat, Aruco.getPredefinedDictionary(currentTagDict),markerCorners,markerIds, parameters,rejectedCandidates);
+        Aruco.detectMarkers(mat, Aruco.getPredefinedDictionary(currentTagDict),markerCorners,markerIds, parameters,rejectedCandidates,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat());
         int i = 0;
-
+        //Aruco.estimatePoseSingleMarkers(markerCorners,14.5f,cameraMatrix,distCoeffs);
         List<Tag>  tags = new ArrayList<>();
         for (i = 0; i < markerIds.rows(); i++){
             Tag tag;
@@ -89,7 +98,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
                 tag = new Tag(markerCorners.get(i),markerIds.get(i,0)[0], false, cameraModule.getResX());
 
             }
-            Log.w("ARUCO", tag.toString());
+            //Log.w("ARUCO", tag.toString());
             tags.add(tag);
         }
 
@@ -118,5 +127,15 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
     @Override
     public void useAprilTags() {
         currentTagDict = Aruco.DICT_APRILTAG_16h5;
+    }
+
+    @Override
+    public void pauseDetection() {
+        cameraModule.unsuscribe(this);
+    }
+
+    @Override
+    public void resumeDetection() {
+        cameraModule.suscribe(this);
     }
 }

@@ -1,4 +1,4 @@
-package com.mytechia.robobo.framework.hri.vision.aruco;
+package com.mytechia.robobo.framework.hri.vision.tag;
 
 import java.util.List;
 
