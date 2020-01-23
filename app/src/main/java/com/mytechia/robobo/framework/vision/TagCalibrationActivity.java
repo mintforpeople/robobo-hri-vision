@@ -87,14 +87,11 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     private Switch visualizeSwitch;
 
 
-    private List<RecognizedObject> objectList;
     List<Tag> markers;
-    Mat ids;
     boolean detected = false;
     boolean preview = false;
     boolean capturing = false;
 
-    Mat capturedImage;
 
     private AuxPropertyWriter propertyWriter;
     private CameraDistortionCalibrationData distortionData;
@@ -115,7 +112,6 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calibration_test);
-        objectList = new ArrayList<RecognizedObject>();
         capturedList = new ArrayList<Mat>();
         propertyWriter = new AuxPropertyWriter();
         //Request permissions
@@ -202,11 +198,20 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
                 List<Mat> rvecs = new ArrayList<Mat>();
                 List<Mat> tvecs = new ArrayList<Mat>();
                 Aruco.calibrateCameraCharuco(corners,ids,board,imagesize,cameraMatrix,distCoeffs,rvecs,tvecs);
-int a = 1;
-                /*distortionData = new CameraDistortionCalibrationData(cameraMatrix,distCoeffs,n);
+                distortionData = new CameraDistortionCalibrationData(cameraMatrix,distCoeffs);//,rvecs,tvecs);
                 propertyWriter.storeConf("distCoeffs",distortionData.getDistCoeffs());
                 propertyWriter.storeConf("cameraMatrix",distortionData.getCameraMatrix());
-                propertyWriter.commitConf();*/
+                int i = 0;
+                /*for (String element : distortionData.getRvecs()){
+                    propertyWriter.storeConf("rvecs_"+i,element);
+                    i++;
+                }
+                i = 0;
+                for (String element : distortionData.getTvecs()){
+                    propertyWriter.storeConf("tvecs_"+i,element);
+                    i++;
+                }*/
+                propertyWriter.commitConf();
             }
         });
 
@@ -332,10 +337,17 @@ int a = 1;
         Mat charucoCorners = new Mat();
         Mat charucoIds = new Mat();
         CharucoBoard board = CharucoBoard.create(11,8,25,14.5f, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000));
-
         Aruco.detectMarkers(image,Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000),tagCorners, tagIds);
-        Aruco.interpolateCornersCharuco(tagCorners,tagIds,image,board,charucoCorners,charucoIds);
-        Aruco.drawDetectedCornersCharuco(image, charucoCorners);
+        Mat rvecs = new Mat();
+        Mat tvecs = new Mat();
+        //Aruco.estimatePoseSingleMarkers(markerCorners,14.5f,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(), tvecs, rvecs);
+        Aruco.estimatePoseBoard(tagCorners,tagIds,board,distortionData.getCameraMatrixMat(),distortionData.getDistCoeffsMat(),rvecs,tvecs);
+        Log.w("TAG","Corners"+tagCorners.size()+ " Ids"+ tagIds.size());
+        if ((tagCorners.size()>0)&&(tagIds.size().height >0)&&(tagIds.size().width >0)) {
+            Aruco.interpolateCornersCharuco(tagCorners, tagIds, image, board, charucoCorners, charucoIds);
+            Aruco.drawDetectedCornersCharuco(image, charucoCorners);
+            //Aruco.drawAxis(image,distortionData.getCameraMatrixMat(), distortionData.getDistCoeffsMat(),rvecs,tvecs,25);
+        }
         return image;
     }
 

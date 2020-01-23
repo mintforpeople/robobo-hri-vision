@@ -14,8 +14,10 @@ public class Tag {
     private Mat corners;
     private double id;
     private ArrayList<PointF> cornerPoints;
+    private float[] rvecs;
+    private float[] tvecs;
 
-    public Tag(Mat corners, double id, boolean flipped, int width){
+    public Tag(Mat corners, double id, boolean flipped, int imageWidth){
         this.corners = corners;
         this.id = id;
         if (!flipped){
@@ -30,11 +32,42 @@ public class Tag {
             cornerPoints = new ArrayList<>(4);
             for (int i = 0; i < 4; i++){
                 PointF point;
-                if ((float)corners.get(0,i)[0] < width/2){
-                    point = new PointF((float)corners.get(0,i)[0]-(float)width/2,(float)corners.get(0,i)[1]);
+                if ((float)corners.get(0,i)[0] < imageWidth/2){
+                    point = new PointF((float)corners.get(0,i)[0]-(float)imageWidth/2,(float)corners.get(0,i)[1]);
 
                 }else{
-                    point = new PointF(width - (float)corners.get(0,i)[0],(float)corners.get(0,i)[1]);
+                    point = new PointF(imageWidth - (float)corners.get(0,i)[0],(float)corners.get(0,i)[1]);
+
+                }
+                cornerPoints.set(i,point);
+            }
+
+
+        }
+    }
+
+    public Tag(Mat corners, double id, boolean flipped, int imageWidth, float[] rvecs, float[] tvecs){
+        this.corners = corners;
+        this.id = id;
+        this.rvecs = rvecs;
+        this.tvecs = tvecs;
+        if (!flipped){
+            cornerPoints = new ArrayList<>(4);
+            for (int i = 0; i < 4; i++){
+
+
+                PointF point = new PointF((float)corners.get(0,i)[0],(float)corners.get(0,i)[1]);
+                cornerPoints.add(point);
+            }
+        }else {
+            cornerPoints = new ArrayList<>(4);
+            for (int i = 0; i < 4; i++){
+                PointF point;
+                if ((float)corners.get(0,i)[0] < imageWidth/2){
+                    point = new PointF((float)corners.get(0,i)[0]-(float)imageWidth/2,(float)corners.get(0,i)[1]);
+
+                }else{
+                    point = new PointF(imageWidth - (float)corners.get(0,i)[0],(float)corners.get(0,i)[1]);
 
                 }
                 cornerPoints.set(i,point);
@@ -69,7 +102,13 @@ public class Tag {
         return id;
     }
 
+    public float[] getRvecs() {
+        return rvecs;
+    }
 
+    public float[] getTvecs() {
+        return tvecs;
+    }
 
     @Override
     public String toString() {

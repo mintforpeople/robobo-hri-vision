@@ -48,7 +48,7 @@ public abstract class ATagModule implements ITagModule {
         if (rcmodule!=null) {
 
             for (Tag tag: tags){
-                Status status = new Status("ARUCO");
+                Status status = new Status("TAG");
                 status.putContents("id",tag.getId()+"");
                 status.putContents("cor1x", (int)tag.getCorner(0).x + "");
                 status.putContents("cor1y", (int)tag.getCorner(0).y + "");
@@ -58,6 +58,12 @@ public abstract class ATagModule implements ITagModule {
                 status.putContents("cor3y", (int)tag.getCorner(2).y + "");
                 status.putContents("cor4x", (int)tag.getCorner(3).x + "");
                 status.putContents("cor4y", (int)tag.getCorner(4).y + "");
+                status.putContents("rvec_0", tag.getRvecs()[0]+"");
+                status.putContents("rvec_1", tag.getRvecs()[1]+"");
+                status.putContents("rvec_2", tag.getRvecs()[2]+"");
+                status.putContents("tvec_0", tag.getTvecs()[0]+"");
+                status.putContents("tvec_1", tag.getTvecs()[1]+"");
+                status.putContents("tvec_2", tag.getTvecs()[2]+"");
 
                 rcmodule.postStatus(status);
 

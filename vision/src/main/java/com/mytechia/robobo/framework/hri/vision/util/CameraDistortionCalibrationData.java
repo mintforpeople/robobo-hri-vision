@@ -9,28 +9,28 @@ public class CameraDistortionCalibrationData {
 
     private String cameraMatrix;
     private String distCoeffs;
-    private List<String> rvecs;
-    private List<String> tvecs;
-    public CameraDistortionCalibrationData(Mat cameraMatrix, Mat distCoeffs, List<Mat> rvecs, List<Mat> tvecs){
+    //private List<String> rvecs;
+    //private List<String> tvecs;
+    public CameraDistortionCalibrationData(Mat cameraMatrix, Mat distCoeffs){//}, List<Mat> rvecs, List<Mat> tvecs){
         this.cameraMatrix = GsonConverter.matToJson(cameraMatrix);
         this.distCoeffs = GsonConverter.matToJson(distCoeffs);
-        this.rvecs = new ArrayList<>();
+        /*this.rvecs = new ArrayList<>();
         this.tvecs = new ArrayList<>();
 
         for (int i = 0; i < 3; i++){
             this.rvecs.add(i,GsonConverter.matToJson(rvecs.get(i)));
             this.tvecs.add(i,GsonConverter.matToJson(tvecs.get(i)));
-        }
+        }*/
 
 
     }
 
 
-    public CameraDistortionCalibrationData(String cameraMatrix, String distCoeffs, List<String> rvecs, List<String> tvecs){
+    public CameraDistortionCalibrationData(String cameraMatrix, String distCoeffs){//, List<String> rvecs, List<String> tvecs){
         this.cameraMatrix = cameraMatrix;
         this.distCoeffs = distCoeffs;
-        this.rvecs = rvecs;
-        this.tvecs = tvecs;
+        //this.rvecs = rvecs;
+        //this.tvecs = tvecs;
 
     }
 
@@ -51,12 +51,31 @@ public class CameraDistortionCalibrationData {
         return distCoeffs;
     }
 
-    public List<String> getRvecs() {
+    /*public List<String> getRvecs() {
         return rvecs;
     }
 
     public List<String> getTvecs() {
         return tvecs;
     }
+
+    public List<Mat> getRvecsMat() {
+        List<Mat> rvecMat = new ArrayList<>();
+        for (int i = 0; i < 3; i++){
+            rvecMat.add(i,GsonConverter.matFromJson(rvecs.get(i)));
+        }
+        return rvecMat;
+    }
+
+    public List<Mat> getTvecsMat() {
+        List<Mat> tvecMat = new ArrayList<>();
+        for (int i = 0; i < 3; i++){
+            tvecMat.add(i,GsonConverter.matFromJson(tvecs.get(i)));
+        }
+        return tvecMat;
+    }
+    */
+
+
 
 }
