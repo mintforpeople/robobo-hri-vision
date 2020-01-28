@@ -99,7 +99,7 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
 
         m = manager;
-        // LOad camera and remote controlo modules
+        // Load camera and remote control modules
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
 

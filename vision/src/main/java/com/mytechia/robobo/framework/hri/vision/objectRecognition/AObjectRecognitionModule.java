@@ -30,10 +30,12 @@ public abstract class AObjectRecognitionModule implements IObjectRecognitionModu
         if (rcmodule!=null) {
 
             for (RecognizedObject obj: detections){
-                Status status = new Status("OBJECT");
+                Status status = new Status("DETECTED_OBJECT");
                 status.putContents("label",obj.getLabel());
                 status.putContents("posx", (int)obj.getBoundingBox().centerX() + "");
                 status.putContents("posy", (int)obj.getBoundingBox().centerY() + "");
+                status.putContents("width",(int)obj.getBoundingBox().width() + "");
+                status.putContents("height",(int)obj.getBoundingBox().height() + "");
                 status.putContents("confidence", obj.getConfidence() + "");
                 rcmodule.postStatus(status);
 
