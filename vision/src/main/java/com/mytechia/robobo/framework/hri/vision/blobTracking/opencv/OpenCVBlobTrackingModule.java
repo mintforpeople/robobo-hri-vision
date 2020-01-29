@@ -190,14 +190,14 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
         // Register remote command to configure different trackings
         rcmodule.registerCommand("CONFIGURE-BLOBTRACKING", new ICommandExecutor() {
-            @Override
-            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
-                configureDetection(
-                        Boolean.parseBoolean(c.getParameters().get("red")),
-                        Boolean.parseBoolean(c.getParameters().get("green")),
-                        Boolean.parseBoolean(c.getParameters().get("blue")),
-                        Boolean.parseBoolean(c.getParameters().get("custom")));
-            }
+                @Override
+                public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                    configureDetection(
+                            Boolean.parseBoolean(c.getParameters().get("red")),
+                            Boolean.parseBoolean(c.getParameters().get("green")),
+                            Boolean.parseBoolean(c.getParameters().get("blue")),
+                            Boolean.parseBoolean(c.getParameters().get("custom")));
+                }
         });
     }
 

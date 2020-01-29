@@ -48,6 +48,7 @@ import com.mytechia.robobo.framework.hri.vision.objectRecognition.RecognizedObje
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -192,7 +193,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         });
         mDetector = new GestureDetectorCompat(getApplicationContext(),this);
         camModule.suscribe(this);
-        camModule.changeCamera();
+        //camModule.changeCamera();
         arucoModule.suscribe(this);
         camModule.setFps(40);
 
@@ -213,8 +214,15 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
 
         if (detected){
             //Aruco.drawDetectedMarkers(newmat, corners, ids);
-            newmat = drawArucos(markers, newmat);
-            //Core.flip(mat,mat, 0);
+
+            if (camModule.getCameraCode() == CAMERA_ID_FRONT){
+                newmat = drawArucos(markers, newmat);
+
+
+            }else {
+                newmat = drawArucos(markers, newmat);
+
+            }
             detected = false;
 
         }

@@ -108,7 +108,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
 
                     // If the camera is the frontal the image is mirrored
                     if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
-                        Core.flip(mat, mat, 0);
+//                        Core.flip(mat, mat, 1);
 
                     }
 
@@ -133,7 +133,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
 
                     // rvecs, tvecs, 3x1 CV_64FC3 matrix
                     // Marker pose detection
-                    Aruco.estimatePoseSingleMarkers(markerCorners, 14.5f, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), tvecs, rvecs);
+                    Aruco.estimatePoseSingleMarkers(markerCorners, 100, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), tvecs, rvecs);
 
                     // rvecs, tvecs, 3x1 CV_64FC1 matrix
                     //Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
@@ -162,7 +162,9 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
                         // Check the camera before creating the tags
                         if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
                             //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX());
-                            tag = new Tag(markerCorners.get(i),markerIds.get(i,0)[0],true, cameraModule.getResX(),tagRvecs,tagTvecs);
+                            // TODO: Revisar si se van a espejar las coordenadas o así está bien
+                            tag = new Tag(markerCorners.get(i),markerIds.get(i,0)[0],false, cameraModule.getResX(),tagRvecs,tagTvecs);
+
 
                         } else {
                             //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX());

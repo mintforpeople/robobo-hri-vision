@@ -63,14 +63,15 @@ public class Tag {
             cornerPoints = new ArrayList<>(4);
             for (int i = 0; i < 4; i++){
                 PointF point;
-                if ((float)corners.get(0,i)[0] < imageWidth/2){
-                    point = new PointF((float)corners.get(0,i)[0]-(float)imageWidth/2,(float)corners.get(0,i)[1]);
+                //if ((float)corners.get(0,i)[0] < imageWidth/2){
+                    point = new PointF((imageWidth)-(float)corners.get(0,i)[0],(float)corners.get(0,i)[1]);
+                    //point = new PointF((float)corners.get(0,i)[0],(float)corners.get(0,i)[1]);
 
-                }else{
-                    point = new PointF(imageWidth - (float)corners.get(0,i)[0],(float)corners.get(0,i)[1]);
+                /*}else{
+                    point = new PointF(imageWidth/2 - (float)corners.get(0,i)[0],(float)corners.get(0,i)[1]);
 
-                }
-                cornerPoints.set(i,point);
+                }*/
+                cornerPoints.add(point);
             }
 
 
