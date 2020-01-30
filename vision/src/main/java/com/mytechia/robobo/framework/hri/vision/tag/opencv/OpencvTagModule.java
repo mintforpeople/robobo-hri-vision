@@ -12,6 +12,7 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
 import com.mytechia.robobo.framework.hri.vision.util.CameraDistortionCalibrationData;
+import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 
 import org.opencv.aruco.Aruco;
@@ -54,6 +55,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
         // Load camera and remote control modules
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
+            rcmodule = m.getModuleInstance(IRemoteControlModule.class);
+
 
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();

@@ -57,7 +57,7 @@ public abstract class ATagModule implements ITagModule {
                 status.putContents("cor3x", (int)tag.getCorner(2).x + "");
                 status.putContents("cor3y", (int)tag.getCorner(2).y + "");
                 status.putContents("cor4x", (int)tag.getCorner(3).x + "");
-                status.putContents("cor4y", (int)tag.getCorner(4).y + "");
+                status.putContents("cor4y", (int)tag.getCorner(3).y + "");
                 status.putContents("rvec_0", tag.getRvecs()[0]+"");
                 status.putContents("rvec_1", tag.getRvecs()[1]+"");
                 status.putContents("rvec_2", tag.getRvecs()[2]+"");
