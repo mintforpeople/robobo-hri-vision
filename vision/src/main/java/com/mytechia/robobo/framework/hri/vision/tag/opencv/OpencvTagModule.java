@@ -111,7 +111,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
 
                     // If the camera is the frontal the image is mirrored
                     if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
-//                        Core.flip(mat, mat, 1);
+                        Core.flip(mat, mat, 1);
 
                     }
 
@@ -166,7 +166,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
                         if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
                             //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX());
                             // TODO: Revisar si se van a espejar las coordenadas o así está bien
-                            tag = new Tag(markerCorners.get(i),markerIds.get(i,0)[0],false, cameraModule.getResX(),tagRvecs,tagTvecs);
+                            tag = new Tag(markerCorners.get(i),markerIds.get(i,0)[0],true, cameraModule.getResX(),tagRvecs,tagTvecs);
 
 
                         } else {
