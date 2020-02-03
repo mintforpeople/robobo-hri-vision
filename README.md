@@ -1,6 +1,14 @@
 # robobo-hri-vision
 This repository contains the source code of the different modules that made up the ROBOBO Vision Library
 
+* Basic Camera Module
+* Blob Tracking Module
+* Color Detection Module
+* Color Measurement Module
+* Face Detection Module
+* Object Recognition Module
+* QR Tracking Module
+* Tag Detection Module
 
 ## Acknowledgement
 <!--
