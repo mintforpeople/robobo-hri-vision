@@ -15,7 +15,7 @@ The model must be trained for a 300x300 input image.
 
 To import the module in your Robobo application you must declare the module in the modules.properties file:
 
-robobo.module.#MODULE_NUMBER#=com.mytechia.robobo.framework.hri.vision.objectRecognition.tensorFlow.TensorFlowObjectRecognizerModule
+`robobo.module.#MODULE_NUMBER#=com.mytechia.robobo.framework.hri.vision.objectRecognition.tensorFlow.TensorFlowObjectRecognizerModule`
 
 ## Acknowledgement
 <!-- 
