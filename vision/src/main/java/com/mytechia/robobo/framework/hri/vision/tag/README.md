@@ -22,7 +22,9 @@ The module provides the following data about the detected objects:
 
 The default detected markers are Aruco tags from the 4x4_1000 dictionary, with 100mm sides
 
+To import the module in your Robobo application you must declare the module in the modules.properties file:
 
+`robobo.module.#MODULE_NUMBER#=com.mytechia.robobo.framework.hri.vision.tag.opencv.OpencvTagModule`
 ## Acknowledgement
 <!-- 
     ROSIN acknowledgement from the ROSIN press kit
