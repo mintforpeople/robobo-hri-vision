@@ -1,5 +1,6 @@
 package com.mytechia.robobo.framework.hri.vision.tag.opencv;
 
+import android.os.Environment;
 import android.util.Log;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
@@ -22,8 +23,12 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -33,8 +38,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
 
     private RoboboManager m;
     private ICameraModule cameraModule;
-    private String distCoeffs = "{\"rows\"\\:1,\"cols\"\\:5,\"type\"\\:0,\"data\"\\:\"AQAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\u003d\\\\u003d\\\\n\"}";
-    private String cameraMatrix = "{\"rows\"\\:3,\"cols\"\\:3,\"type\"\\:0,\"data\"\\:\"/wDtAP//AAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\nAAAAAAAAAAAAAAAAAAAA\\\\n\"}";
+    private String distCoeffs;// = "{\"rows\":1,\"cols\":5,\"type\":0,\"data\":\"AQAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\u003d\\\\u003d\\\\n\"}";
+    private String cameraMatrix;// = "{\"rows\"\\:3,\"cols\"\\:3,\"type\"\\:0,\"data\"\\:\"/wDtAP//AAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\nAAAAAAAAAAAAAAAAAAAA\\\\n\"}";
     //private List<String> rvecs;
     //private List<String> tvecs;
     private int currentTagDict = Aruco.DICT_4X4_1000;
@@ -61,9 +66,17 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
+        Properties defaults = new Properties();
+        try{
 
-        distCoeffs = propertyWriter.retrieveConf("distCoeffs", distCoeffs);
-        cameraMatrix = propertyWriter.retrieveConf("cameraMatrix", cameraMatrix);
+            defaults.load(manager.getApplicationContext().getAssets().open("camproperties.properties"));
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+        distCoeffs = propertyWriter.retrieveConf("distCoeffs", defaults.getProperty("distCoeffs"));
+        cameraMatrix = propertyWriter.retrieveConf("cameraMatrix", defaults.getProperty("cameraMatrix"));
         /*rvecs.set(0, propertyWriter.retrieveConf("rvecs_0","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
         rvecs.set(1, propertyWriter.retrieveConf("rvecs_1","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
         rvecs.set(2, propertyWriter.retrieveConf("rvecs_2","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
