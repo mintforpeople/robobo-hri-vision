@@ -71,7 +71,7 @@ public abstract class ACameraModule implements ICameraModule{
     protected void notifyMat(Mat mat){
         synchronized (listeners) {
             for (ICameraListener listener : listeners) {
-                listener.onNewMat(mat);
+                listener.onNewMat(mat.clone());
             }
         }
     }

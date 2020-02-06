@@ -113,86 +113,89 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
     @Override
     public void onNewMat(final Mat mat) {
 
-        if (!processing) {
+        if (!processing && mat.cols() > 0 && mat.rows() > 0) {
             // Execute on its own thread to avoid locking the camera callback
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
                     processing = true;
+                    try {
+                        Mat markerIds = new Mat();
 
-                    Mat markerIds = new Mat();
+                        // If the camera is the frontal the image is mirrored
+                        if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
+                            Core.flip(mat, mat, 1);
 
-                    // If the camera is the frontal the image is mirrored
-                    if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
-                        Core.flip(mat, mat, 1);
+                        }
 
-                    }
+                        ArrayList<Mat> markerCorners = new ArrayList<>();
+                        ArrayList<Mat> rejectedCandidates = new ArrayList<>();
 
-                    ArrayList<Mat> markerCorners = new ArrayList<>();
-                    ArrayList<Mat> rejectedCandidates = new ArrayList<>();
+                        // Colorspace conversion
+                        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
 
-                    // Colorspace conversion
-                    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
+                        // Detection parameters
+                        DetectorParameters parameters = DetectorParameters.create();
+                        parameters.set_minDistanceToBorder(0);
+                        parameters.set_adaptiveThreshWinSizeMax(100);
 
-                    // Detection parameters
-                    DetectorParameters parameters = DetectorParameters.create();
-                    parameters.set_minDistanceToBorder(0);
-                    parameters.set_adaptiveThreshWinSizeMax(100);
+                        // Marker detection
+                        Aruco.detectMarkers(mat, Aruco.getPredefinedDictionary(currentTagDict), markerCorners, markerIds, parameters, rejectedCandidates, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat());
 
-                    // Marker detection
-                    Aruco.detectMarkers(mat, Aruco.getPredefinedDictionary(currentTagDict), markerCorners, markerIds, parameters, rejectedCandidates, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat());
+                        // Rotation vector
+                        Mat rvecs = new Mat();
+                        // Translation vector
+                        Mat tvecs = new Mat();
 
-                    // Rotation vector
-                    Mat rvecs = new Mat();
-                    // Translation vector
-                    Mat tvecs = new Mat();
+                        // rvecs, tvecs, 3x1 CV_64FC3 matrix
+                        // Marker pose detection
+                        Aruco.estimatePoseSingleMarkers(markerCorners, 100, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), tvecs, rvecs);
 
-                    // rvecs, tvecs, 3x1 CV_64FC3 matrix
-                    // Marker pose detection
-                    Aruco.estimatePoseSingleMarkers(markerCorners, 100, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), tvecs, rvecs);
-
-                    // rvecs, tvecs, 3x1 CV_64FC1 matrix
-                    //Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
+                        // rvecs, tvecs, 3x1 CV_64FC1 matrix
+                        //Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
                     /*if (tvecs.rows()>0){
 
                         Log.w("RVECS", (float)rvecs.get(0,0)[0]+" "+(float)rvecs.get(1,0)[0]+ " "+(float) rvecs.get(2,0)[0]);
                     }*/
 
-                    // List of detected tags
-                    List<Tag> tags = new ArrayList<>();
+                        // List of detected tags
+                        List<Tag> tags = new ArrayList<>();
 
-                    // Individual vectors for the tags
-                    float[] tagRvecs = new float[3];
-                    float[] tagTvecs = new float[3];
+                        // Individual vectors for the tags
+                        float[] tagRvecs = new float[3];
+                        float[] tagTvecs = new float[3];
 
-                    for (int i = 0; i < markerIds.rows(); i++) {
-                        Tag tag;
+                        for (int i = 0; i < markerIds.rows(); i++) {
+                            Tag tag;
 
-                        tagRvecs[0] = (float) rvecs.get(i, 0)[0];
-                        tagRvecs[1] = (float) rvecs.get(i, 0)[1];
-                        tagRvecs[2] = (float) rvecs.get(i, 0)[2];
-                        tagTvecs[0] = (float) tvecs.get(i, 0)[0];
-                        tagTvecs[1] = (float) tvecs.get(i, 0)[1];
-                        tagTvecs[2] = (float) tvecs.get(i, 0)[2];
+                            tagRvecs[0] = (float) rvecs.get(i, 0)[0];
+                            tagRvecs[1] = (float) rvecs.get(i, 0)[1];
+                            tagRvecs[2] = (float) rvecs.get(i, 0)[2];
+                            tagTvecs[0] = (float) tvecs.get(i, 0)[0];
+                            tagTvecs[1] = (float) tvecs.get(i, 0)[1];
+                            tagTvecs[2] = (float) tvecs.get(i, 0)[2];
 
-                        // Check the camera before creating the tags
-                        if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
-                            //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX());
-                            // TODO: Revisar si se van a espejar las coordenadas o así está bien
-                            tag = new Tag(markerCorners.get(i),markerIds.get(i,0)[0],true, cameraModule.getResX(),tagRvecs,tagTvecs);
+                            // Check the camera before creating the tags
+                            if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
+                                //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX());
+                                // TODO: Revisar si se van a espejar las coordenadas o así está bien
+                                tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX(), tagRvecs, tagTvecs);
 
 
-                        } else {
-                            //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX());
-                            tag = new Tag(markerCorners.get(i),markerIds.get(i,0)[0],false, cameraModule.getResX(),tagRvecs,tagTvecs);
+                            } else {
+                                //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX());
+                                tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX(), tagRvecs, tagTvecs);
+                            }
+                            //Log.w("ARUCO", tag.toString());
+                            tags.add(tag);
                         }
-                        //Log.w("ARUCO", tag.toString());
-                        tags.add(tag);
-                    }
 
-                    // Notify to the remote control module
-                    if (markerIds.rows() > 0) {
-                        notifyMarkersDetected(tags);
+                        // Notify to the remote control module
+                        if (markerIds.rows() > 0) {
+                            notifyMarkersDetected(tags);
+                        }
+                    } catch (Exception e){
+                        e.printStackTrace();
                     }
 
                     processing = false;
