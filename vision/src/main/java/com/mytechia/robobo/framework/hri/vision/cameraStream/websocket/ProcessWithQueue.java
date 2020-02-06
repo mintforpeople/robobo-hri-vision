@@ -1,24 +1,23 @@
-package com.mytechia.robobo.framework.hri.vision.cameraStream;
+package com.mytechia.robobo.framework.hri.vision.cameraStream.websocket;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ProcessWithQueue extends Thread {
-    private static final String TAG = "Queue";
-    private LinkedBlockingQueue<byte[]> mQueue;
-    AServer server;
+    private LinkedBlockingQueue<byte[]> queue;
+    Server server;
+
     public ProcessWithQueue(LinkedBlockingQueue<byte[]> frameQueue) {
-        mQueue = frameQueue;
+        queue = frameQueue;
         start();
     }
 
     @Override
     public void run() {
         while (true) {
-
-            while(mQueue.size()>0){
+            while (queue.size() > 0) {
                 byte[] frameData = null;
                 try {
-                    frameData = mQueue.take();
+                    frameData = queue.take();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -28,12 +27,10 @@ public class ProcessWithQueue extends Thread {
     }
 
     private void processFrame(byte[] frameData) {
-        //System.out.println("Procesando Frame");
-        synchronized (server.sub_video) {
-            for (int i = 0; i < AServer.sub_video.size() ; i ++) {
-                AServer.sub_video.get(i).add_data(frameData);
+        synchronized (Server.subscribers) {
+            for (int i = 0; i < Server.subscribers.size(); i++) {
+                Server.subscribers.get(i).addData(frameData);
             }
         }
-       // Log.i(TAG, "test");
     }
 }
