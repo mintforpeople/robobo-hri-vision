@@ -107,11 +107,6 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-
-//                    // Colorspace conversion
-
-
 //            processing = false;
 //
 //
