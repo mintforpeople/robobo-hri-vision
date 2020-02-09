@@ -11,19 +11,20 @@ import java.util.ArrayList;
 public class Server extends Thread {
 
     public static volatile ArrayList<ServerThread> subscribers = new ArrayList<>();
+    private boolean isOpen;
 
 
     public void run() {
 
         int port = 3434; // Port chosen for the streaming service
-
+        isOpen = true;
         try {
 
             ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
             serverSocketChannel.socket().bind(new InetSocketAddress(port));
 
             // Server is running now
-            while (true) {
+            while (isOpen) {
 
                 SocketChannel socketChannel = serverSocketChannel.accept();
                 try {
@@ -44,6 +45,16 @@ public class Server extends Thread {
 
         } catch (Exception e) {
             System.out.println(e.toString());
+        }
+    }
+
+    public void close() {
+
+        isOpen = false;
+
+        for (ServerThread t :
+                subscribers) {
+            t.close();
         }
     }
 }

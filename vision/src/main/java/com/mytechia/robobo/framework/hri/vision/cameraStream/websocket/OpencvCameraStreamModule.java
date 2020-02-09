@@ -10,11 +10,13 @@ import com.mytechia.robobo.framework.hri.vision.cameraStream.ACameraStreamModule
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class OpencvCameraStreamModule extends ACameraStreamModule implements ICameraListener {
@@ -27,11 +29,15 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
     private boolean processing = false;
 
     ExecutorService executor;
+    Server server;
+
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
 
         m = manager;
+        executor = Executors.newFixedThreadPool(1);
+
 
         // Load camera and remote control modules
         try {
@@ -53,7 +59,7 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
         cameraModule.suscribe(this);
 
 
-        Server server = new Server();
+        server = new Server();
         server.start();
 
         frameQueue = new LinkedBlockingQueue<>();
@@ -62,7 +68,7 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
 
     @Override
     public void shutdown() throws InternalErrorException {
-
+        server.close();
     }
 
     @Override
@@ -83,34 +89,39 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
     @Override
     public void onNewMat(final Mat mat) {
 
-//        if (!processing) {
-//            // Execute on its own thread to avoid locking the camera callback
-//
-//            processing = true;
+        if (!processing) {
+            processing = true;
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
 
+                        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2RGB);
+                        MatOfByte bytemat = new MatOfByte();
 
-        // If the camera is the frontal the image is mirrored
-//                    if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
-//                        Core.flip(mat, mat, 1);
-//
-//                    }
+                        Imgcodecs.imencode(".jpg", mat, bytemat);
 
-        try {
-            if (frameQueue.size() == 30) {
-                frameQueue.take();
-            }
-            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2RGB);
-            MatOfByte bytemat = new MatOfByte();
-            Imgcodecs.imencode(".jpg", mat, bytemat);
-            byte[] bytes = bytemat.toArray();
-            frameQueue.put(bytes);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+                        // You can use something like this to lower the quality of the jpegs
+                        //MatOfInt props = new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 30);
+                        //Imgcodecs.imencode(".jpg", mat, bytemat, props);
+
+                        byte[] bytes = bytemat.toArray();
+
+                        if (frameQueue.size() == 30)
+                            frameQueue.take();
+
+                        frameQueue.put(bytes);
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    processing = false;
+                }
+            });
+
         }
-//            processing = false;
-//
-//
-//        }
+
 
     }
 

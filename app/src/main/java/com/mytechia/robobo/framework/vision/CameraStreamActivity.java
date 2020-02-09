@@ -24,12 +24,14 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
@@ -52,16 +54,16 @@ public class CameraStreamActivity extends AppCompatActivity implements ICameraLi
     private CameraBridgeViewBase bridgeBase;
 
     private ImageView imageView = null;
-    private TextureView textureView = null;
+    private TextView textView = null;
 
     boolean detected = false;
+    private GestureDetectorCompat mDetector;
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG, "TouchEvent");
-
         return true;
-
     }
 
 
@@ -70,7 +72,7 @@ public class CameraStreamActivity extends AppCompatActivity implements ICameraLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_test);
 
-//Request permissions
+        //Request permissions
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) ||
                 (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
@@ -92,7 +94,6 @@ public class CameraStreamActivity extends AppCompatActivity implements ICameraLi
         this.bridgeBase = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
         this.textView = (TextView) findViewById(R.id.textView2);
 
-//        this.textureView = (TextureView) findViewById(R.id.textureView);
         roboboHelper = new RoboboServiceHelper(this, new RoboboServiceHelper.Listener() {
             @Override
             public void onRoboboManagerStarted(RoboboManager robobo) {
@@ -116,6 +117,7 @@ public class CameraStreamActivity extends AppCompatActivity implements ICameraLi
     }
 
     private void startRoboboApplication() {
+        mDetector = new GestureDetectorCompat(getApplicationContext(), this);
 
         try {
             this.camModule = this.roboboManager.getModuleInstance(ICameraModule.class);
@@ -133,12 +135,8 @@ public class CameraStreamActivity extends AppCompatActivity implements ICameraLi
 
             }
         });
-        //mDetector = new GestureDetectorCompat(getApplicationContext(), this);
         camModule.suscribe(this);
-        //camModule.changeCamera();
-        //streamModule.suscribe(this);
         camModule.setFps(30);
-
 
     }
 
@@ -148,14 +146,14 @@ public class CameraStreamActivity extends AppCompatActivity implements ICameraLi
     }
 
     @Override
-    public void onNewMat(Mat mat) {
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
-
-        final Frame frame = new Frame(mat);
+    public void onNewMat(final Mat mat) {
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                final Frame frame = new Frame(mat);
+                Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
+
                 imageView.setImageBitmap(frame.getBitmap());
             }
         });
@@ -167,10 +165,7 @@ public class CameraStreamActivity extends AppCompatActivity implements ICameraLi
     }
 
     @Override
-    public void onOpenCVStartup() {
-
-    }
-
+    public void onOpenCVStartup() { }
 
     @Override
     public boolean onDown(MotionEvent motionEvent) {
@@ -178,9 +173,7 @@ public class CameraStreamActivity extends AppCompatActivity implements ICameraLi
     }
 
     @Override
-    public void onShowPress(MotionEvent motionEvent) {
-
-    }
+    public void onShowPress(MotionEvent motionEvent) {}
 
     @Override
     public boolean onSingleTapUp(MotionEvent motionEvent) {
@@ -188,19 +181,14 @@ public class CameraStreamActivity extends AppCompatActivity implements ICameraLi
     }
 
     @Override
-    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
-        return false;
-    }
+    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) { return false; }
 
     @Override
-    public void onLongPress(MotionEvent motionEvent) {
-
-    }
+    public void onLongPress(MotionEvent motionEvent) {}
 
     @Override
     public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
         camModule.changeCamera();
-
         return false;
     }
 
