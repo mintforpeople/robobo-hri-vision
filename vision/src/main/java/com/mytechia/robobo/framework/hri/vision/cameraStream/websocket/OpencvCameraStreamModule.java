@@ -99,9 +99,8 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
         startServer();
     }
 
-    private void setFps(int fps) {
+    public void setFps(int fps) {
         deltaTimeThreshold = 1000/fps;
-
     }
 
     private void startServer() {
