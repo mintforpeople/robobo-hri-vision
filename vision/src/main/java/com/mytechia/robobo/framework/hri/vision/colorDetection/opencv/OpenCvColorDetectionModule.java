@@ -36,6 +36,8 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.colorDetection.AColorDetectionModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
+import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -102,8 +104,23 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
 
         cameraModule = manager.getModuleInstance(ICameraModule.class);
         rcmodule = manager.getModuleInstance(IRemoteControlModule.class);
-        cameraModule.suscribe(this);
 
+        rcmodule.registerCommand("START-COLOR-DETECTION", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                startDetection();
+            }
+        });
+
+        rcmodule.registerCommand("STOP-COLOR-DETECTION", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                pauseDetection();
+
+            }
+        });
+
+        startDetection();
 
     }
 
@@ -287,12 +304,14 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
 
     @Override
     public void startDetection() {
+        cameraModule.suscribe(this);
         paused = false;
     }
 
     @Override
     public void pauseDetection() {
         paused = true;
+        cameraModule.unsuscribe(this);
     }
 
     @Override

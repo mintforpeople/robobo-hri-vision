@@ -19,9 +19,7 @@
  *   along with Robobo HRI Modules.  If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-package com.mytechia.robobo.framework.hri.vision.colorMesaurement.opencv;
-
-import android.util.Log;
+package com.mytechia.robobo.framework.hri.vision.colorMeasurement.opencv;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
 
@@ -29,14 +27,14 @@ import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
-import com.mytechia.robobo.framework.hri.vision.colorMesaurement.AColorMesaurementModule;
+import com.mytechia.robobo.framework.hri.vision.colorMeasurement.AColorMesaurementModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
+import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 /**
@@ -56,8 +54,32 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
         //TODO Put inside a try catch block
         cameraModule = manager.getModuleInstance(ICameraModule.class);
         rcmodule = manager.getModuleInstance(IRemoteControlModule.class);
+
+        rcmodule.registerCommand("START-COLOR-MEASUREMENT", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                startMeasurement();
+            }
+        });
+
+        rcmodule.registerCommand("STOP-COLOR-MEASUREMENT", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                stopMeasurement();
+
+            }
+        });
+
+        startMeasurement();
+    }
+
+    private void startMeasurement() {
         cameraModule.suscribe(this);
 
+    }
+
+    private void stopMeasurement() {
+        cameraModule.unsuscribe(this);
     }
 
     @Override

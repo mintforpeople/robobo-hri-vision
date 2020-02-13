@@ -1,4 +1,4 @@
-package com.mytechia.robobo.framework.hri.vision.colorMesaurement;
+package com.mytechia.robobo.framework.hri.vision.colorMeasurement;
 
 import com.mytechia.robobo.framework.IModule;
 

@@ -2,6 +2,7 @@ package com.mytechia.robobo.framework.hri.vision.cameraStream.websocket;
 
 import android.os.AsyncTask;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -40,7 +41,7 @@ public class ServerThread extends AsyncTask<Void, Void, Void> {
      * Adds an image to be processed
      * @param image Image to be added
      */
-    public synchronized void addData(byte[] image) {
+    synchronized void addData(byte[] image) {
 
         try {
             if (this.queue.size() == 30) {
@@ -55,16 +56,21 @@ public class ServerThread extends AsyncTask<Void, Void, Void> {
 
     /**
      * Sets the socket channel for the communication
-     * @param channel
+     * @param channel SocketChannel to communicate with the client.
      */
-    protected void setChannel(SocketChannel channel) {
+    void setChannel(SocketChannel channel) {
         this.channel = channel;
     }
 
     /**
      * Closes the connection with the client
      */
-    protected synchronized void close() {
+    synchronized void close() {
+        try {
+            channel.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Server.subscribers.remove(this);
     }
 }

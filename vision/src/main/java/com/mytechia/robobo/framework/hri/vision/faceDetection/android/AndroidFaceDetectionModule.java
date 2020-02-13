@@ -39,6 +39,8 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.faceDetection.AFaceDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
+import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.core.Mat;
@@ -87,15 +89,29 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
-        cameraModule.suscribe(this);
         faces =  new FaceDetector.Face[5];
 
         executor = Executors.newFixedThreadPool(1);
+        rcmodule.registerCommand("START-FACE-DETECTION", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                startDetection();
+            }
+        });
 
+        rcmodule.registerCommand("STOP-FACE-DETECTION", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                pauseDetection();
+
+            }
+        });
+
+        //TODO: Evaluate if start method should be called here or on each activity
     }
 
     @Override
-    public void shutdown() throws InternalErrorException {
+    public void shutdown() {
         cameraModule.unsuscribe(this);
 
     }
@@ -225,11 +241,15 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     @Override
     public void startDetection() {
         active = true;
+        cameraModule.suscribe(this);
+
     }
 
     @Override
     public void pauseDetection() {
         active = false;
+        cameraModule.unsuscribe(this);
+
     }
 
     @Override

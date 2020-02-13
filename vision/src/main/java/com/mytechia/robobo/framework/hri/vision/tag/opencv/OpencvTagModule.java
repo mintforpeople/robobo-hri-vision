@@ -13,6 +13,8 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
 import com.mytechia.robobo.framework.hri.vision.util.CameraDistortionCalibrationData;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
+import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 
@@ -84,15 +86,40 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
         tvecs.set(1, propertyWriter.retrieveConf("tvecs_1","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"ALv/AAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
         tvecs.set(2, propertyWriter.retrieveConf("tvecs_2","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"Cs3/AAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));*/
         calibrationData = new CameraDistortionCalibrationData(cameraMatrix,distCoeffs);//,rvecs,tvecs);
-        cameraModule.suscribe(this);
+
 
         executor = Executors.newFixedThreadPool(1);
 
+        rcmodule.registerCommand("START-TAG", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                startDetection();
+            }
+        });
+
+        rcmodule.registerCommand("STOP-TAG", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                stopDetection();
+
+            }
+        });
+
+        startDetection();
+
+    }
+
+    private void stopDetection() {
+        cameraModule.unsuscribe(this);
+    }
+
+    private void startDetection() {
+        cameraModule.suscribe(this);
     }
 
     @Override
     public void shutdown() throws InternalErrorException {
-
+        stopDetection();
     }
 
     @Override

@@ -166,6 +166,20 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
                 }
             }
         });
+
+        remoteControlModule.registerCommand("START-CAMERA", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                mOpenCvCameraView.enableView();
+            }
+        });
+
+        remoteControlModule.registerCommand("STOP-CAMERA", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                mOpenCvCameraView.disableView();
+            }
+        });
         manager.subscribeToPowerModeChanges(this);
 
     }
