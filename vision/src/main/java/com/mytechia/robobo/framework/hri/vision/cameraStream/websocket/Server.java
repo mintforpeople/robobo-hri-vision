@@ -16,7 +16,7 @@ public class Server extends Thread {
 
     public void run() {
 
-        int port = 3434; // Port chosen for the streaming service
+        int port = 40405; // Port chosen for the streaming service
         isOpen = true;
         try {
 

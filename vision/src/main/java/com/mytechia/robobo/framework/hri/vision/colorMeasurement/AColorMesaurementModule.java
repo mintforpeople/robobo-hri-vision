@@ -20,9 +20,7 @@
  *
  ******************************************************************************/
 
-package com.mytechia.robobo.framework.hri.vision.colorMesaurement;
-
-import android.util.Log;
+package com.mytechia.robobo.framework.hri.vision.colorMeasurement;
 
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;

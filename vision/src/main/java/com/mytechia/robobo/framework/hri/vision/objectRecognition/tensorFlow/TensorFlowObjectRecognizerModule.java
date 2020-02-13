@@ -25,6 +25,8 @@ import com.mytechia.robobo.framework.hri.vision.objectRecognition.tensorFlow.tfl
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.tensorFlow.tflite.ImageUtils;
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.tensorFlow.tflite.TFLiteObjectDetectionAPIModel;
 import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
+import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.core.Mat;
@@ -107,12 +109,28 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
-        cameraModule.suscribe(this);
+
+        rcmodule.registerCommand("START-OBJECT-RECOGNITION", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                resumeDetection();
+            }
+        });
+
+        rcmodule.registerCommand("STOP-OBJECT-RECOGNITION", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                pauseDetection();
+
+            }
+        });
+
+        resumeDetection();
     }
 
     @Override
-    public void shutdown() throws InternalErrorException {
-
+    public void shutdown() {
+        pauseDetection();
     }
 
     @Override
@@ -213,11 +231,13 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
     @Override
     public void pauseDetection() {
         paused = true;
+        cameraModule.unsuscribe(this);
     }
 
     @Override
     public void resumeDetection() {
         paused = false;
+        cameraModule.suscribe(this);
     }
 
     // Which detection model to use: by default uses Tensorflow Object Detection API frozen

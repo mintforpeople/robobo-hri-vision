@@ -2,7 +2,7 @@
 
 The Robobo camera streaming module uses the OpenCV camera to get images from the camera, encode them in the JPEG format and send them via a Websocket.
 
-By default the WebSocket uses the port 3434, which can be changed in the Server class.  
+By default the WebSocket uses the port 40405, which can be changed in the Server class.
 You can change the quality of the image by adding properties to the encoding method, for example to set the quality to 30 (very low) you should add as follows:  
 
 ```

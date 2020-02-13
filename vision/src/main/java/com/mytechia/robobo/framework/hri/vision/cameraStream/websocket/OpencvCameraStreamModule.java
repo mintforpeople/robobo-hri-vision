@@ -1,5 +1,7 @@
 package com.mytechia.robobo.framework.hri.vision.cameraStream.websocket;
 
+import android.util.Log;
+
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
@@ -7,6 +9,9 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.cameraStream.ACameraStreamModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
+import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
+import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -20,6 +25,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class OpencvCameraStreamModule extends ACameraStreamModule implements ICameraListener {
+    private static final String TAG = "OpenCVCameraStreamModule";
+
+    IRemoteControlModule rcmodule;
 
     //Queue
     private ProcessWithQueue processFrameQueue;
@@ -42,10 +50,12 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
         // Load camera and remote control modules
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
+            rcmodule = m.getModuleInstance(IRemoteControlModule.class);
 
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
+
 
         Properties defaults = new Properties();
         try {
@@ -58,8 +68,25 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
 
         cameraModule.suscribe(this);
 
+        rcmodule.registerCommand("START-STREAM", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                cameraModule.suscribe(OpencvCameraStreamModule.this);
+            }
+        });
+
+        rcmodule.registerCommand("STOP-STREAM", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                cameraModule.unsuscribe(OpencvCameraStreamModule.this);
+            }
+        });
 
         server = new Server();
+        startServer();
+    }
+
+    private void startServer() {
         server.start();
 
         frameQueue = new LinkedBlockingQueue<>();
@@ -67,8 +94,9 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
     }
 
     @Override
-    public void shutdown() throws InternalErrorException {
+    public void shutdown() {
         server.close();
+        cameraModule.unsuscribe(this);
     }
 
     @Override
