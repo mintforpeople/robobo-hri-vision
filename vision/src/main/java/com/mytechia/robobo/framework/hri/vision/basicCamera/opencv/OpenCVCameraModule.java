@@ -180,6 +180,15 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
                 mOpenCvCameraView.disableView();
             }
         });
+
+        remoteControlModule.registerCommand("SET-CAMERA-FPS", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                if(c.getParameters().containsKey("fps")){
+                    setFps(Integer.parseInt(c.getParameters().get("fps")));
+                }
+            }
+        });
         manager.subscribeToPowerModeChanges(this);
 
     }
