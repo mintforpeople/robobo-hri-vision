@@ -34,6 +34,10 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
     private LinkedBlockingQueue<byte[]> frameQueue;
 
 
+    // FPS control variables
+    private long lastFrameTime = 0;
+    private long deltaTimeThreshold = 17;
+
     private boolean processing = false;
 
     ExecutorService executor;
@@ -82,8 +86,21 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
             }
         });
 
+        rcmodule.registerCommand("SET-STREAM-FPS", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                if(c.getParameters().containsKey("fps")){
+                    setFps(Integer.parseInt(c.getParameters().get("fps")));
+                }
+            }
+        });
+
         server = new Server();
         startServer();
+    }
+
+    public void setFps(int fps) {
+        deltaTimeThreshold = 1000/fps;
     }
 
     private void startServer() {
@@ -116,9 +133,13 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
 
     @Override
     public void onNewMat(final Mat mat) {
+        long millis = System.currentTimeMillis();
 
-        if (!processing) {
+        if (!processing && millis-lastFrameTime>=deltaTimeThreshold) {
+
+            lastFrameTime = millis;
             processing = true;
+
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
