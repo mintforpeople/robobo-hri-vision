@@ -193,7 +193,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         });
         mDetector = new GestureDetectorCompat(getApplicationContext(),this);
         camModule.suscribe(this);
-        //camModule.changeCamera();
+        camModule.changeCamera();
         arucoModule.suscribe(this);
         camModule.setFps(40);
 

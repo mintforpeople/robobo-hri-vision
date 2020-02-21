@@ -105,7 +105,6 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
 
     private void startServer() {
         server.start();
-
         frameQueue = new LinkedBlockingQueue<>();
         processFrameQueue = new ProcessWithQueue(frameQueue);
     }

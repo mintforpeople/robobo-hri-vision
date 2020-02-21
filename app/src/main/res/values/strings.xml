@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">robobo-hri-vision</string>
     <string name="msg_custom_activity">Default message</string>
+    <string name="title_activity_tag_calibration_settings">Calibration Settings</string>
 </resources>
