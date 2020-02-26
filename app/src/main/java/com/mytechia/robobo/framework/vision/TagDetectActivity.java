@@ -37,18 +37,17 @@ import android.widget.TextView;
 
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
-import com.mytechia.robobo.framework.hri.vision.tag.Tag;
-import com.mytechia.robobo.framework.hri.vision.tag.ITagListener;
-import com.mytechia.robobo.framework.hri.vision.tag.ITagModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.IObjectRecognitionModule;
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.RecognizedObject;
+import com.mytechia.robobo.framework.hri.vision.tag.ITagListener;
+import com.mytechia.robobo.framework.hri.vision.tag.ITagModule;
+import com.mytechia.robobo.framework.hri.vision.tag.Tag;
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -60,7 +59,7 @@ import java.util.List;
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class TagDetectActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, ITagListener {
-    private static final String TAG="CameraFaceTestActivity";
+    private static final String TAG = "CameraFaceTestActivity";
 
 
     private GestureDetectorCompat mDetector;
@@ -80,7 +79,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     private SurfaceView surfaceView = null;
     private ImageView imageView = null;
     private TextureView textureView = null;
-    private Frame actualFrame ;
+    private Frame actualFrame;
 
     private Frame lastFrame;
     private boolean paused = true;
@@ -92,14 +91,14 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     List<Tag> markers;
     Mat ids;
     boolean detected = false;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d(TAG,"TouchEvent");
+        Log.d(TAG, "TouchEvent");
 
         return true;
 
     }
-
 
 
     @Override
@@ -110,14 +109,13 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
 
 //Request permissions
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED)||
+                != PackageManager.PERMISSION_GRANTED) ||
                 (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                        != PackageManager.PERMISSION_GRANTED)||
+                        != PackageManager.PERMISSION_GRANTED) ||
                 (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED)||
+                        != PackageManager.PERMISSION_GRANTED) ||
                 (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED))
-        {
+                        != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.CAMERA,
                             Manifest.permission.RECORD_AUDIO,
@@ -128,7 +126,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         }
 
         //this.surfaceView = (SurfaceView) findViewById(R.id.testSurfaceView);
-        this.imageView = (ImageView) findViewById(R.id.testImageView) ;
+        this.imageView = (ImageView) findViewById(R.id.testImageView);
         this.bridgeBase = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
         this.textView = (TextView) findViewById(R.id.textView2);
 
@@ -163,6 +161,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         Bundle options = new Bundle();
         roboboHelper.bindRoboboService(options);
     }
+
     private void startRoboboApplication() {
 
         try {
@@ -174,10 +173,10 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
-//        ballTrackingModule.configureDetection(true,false, false);
 
+        camModule.suscribe(this);
+        arucoModule.suscribe(this);
 
-        //camModule.passSurfaceView(surfaceView);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -191,13 +190,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
 
             }
         });
-        mDetector = new GestureDetectorCompat(getApplicationContext(),this);
-        camModule.suscribe(this);
-        camModule.changeCamera();
-        arucoModule.suscribe(this);
-        camModule.setFps(40);
-
-
+        mDetector = new GestureDetectorCompat(getApplicationContext(), this);
 
 
     }
@@ -209,17 +202,17 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
 
     @Override
     public void onNewMat(Mat mat) {
-        Imgproc.cvtColor(mat,mat,Imgproc.COLOR_BGRA2BGR);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
         Mat newmat = mat.clone();
 
-        if (detected){
+        if (detected) {
             //Aruco.drawDetectedMarkers(newmat, corners, ids);
 
-            if (camModule.getCameraCode() == CAMERA_ID_FRONT){
+            if (camModule.getCameraCode() == CAMERA_ID_FRONT) {
                 newmat = drawArucos(markers, newmat);
 
 
-            }else {
+            } else {
                 newmat = drawArucos(markers, newmat);
 
             }
@@ -232,9 +225,6 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
-
-
                 imageView.setImageBitmap(frame.getBitmap());
 
             }
@@ -242,13 +232,13 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     }
 
 
-    private  Mat drawArucos(List<Tag> tags, Mat image){
+    private Mat drawArucos(List<Tag> tags, Mat image) {
 
-        for (Tag tag : tags){
-            for (int i = 0; i < 4; i++){
-                Imgproc.line(image, new Point(tag.getCorner(i).x,tag.getCorner(i).y),new Point(tag.getCorner((i+1)%4).x,tag.getCorner((i+1)%4).y),new Scalar(255,0,0));
+        for (Tag tag : tags) {
+            for (int i = 0; i < 4; i++) {
+                Imgproc.line(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), new Point(tag.getCorner((i + 1) % 4).x, tag.getCorner((i + 1) % 4).y), new Scalar(255, 0, 0));
 
-                Imgproc.circle(image,new Point(tag.getCorner(i).x,tag.getCorner(i).y),3, new Scalar(0,255,0));
+                Imgproc.circle(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), 3, new Scalar(0, 255, 0));
             }
         }
 
@@ -256,7 +246,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     }
 
     @Override
-    public void onDebugFrame(final Frame frame,final String frameId) {
+    public void onDebugFrame(final Frame frame, final String frameId) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -269,6 +259,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
 
     @Override
     public void onOpenCVStartup() {
+        camModule.setFps(40);
 
     }
 

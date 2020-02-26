@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:opencv="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_camera_test"
+    android:id="@+id/activity_calibration"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -11,6 +11,15 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.mytechia.robobo.framework.vision.CameraTestActivity">
+
+    <TextView
+        android:id="@+id/imagesCounter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Images captured: 0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/testImageView"
@@ -21,10 +30,10 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:rotation="0"
-        app:layout_constraintBottom_toTopOf="@+id/linearHorizonal"
+        app:layout_constraintBottom_toTopOf="@+id/linearHorizonal1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imagesCounter"
         app:srcCompat="@drawable/robobo_logo" />
 
 
@@ -40,32 +49,24 @@
         android:alpha="0"
         android:visibility="invisible"
         app:camera_id="front"
-        app:layout_constraintBottom_toTopOf="@+id/linearHorizonal"
+        app:layout_constraintBottom_toTopOf="@+id/linearHorizonal1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         opencv:show_fps="true" />
 
     <LinearLayout
-        android:id="@+id/linearHorizonal"
+        android:id="@+id/linearHorizonal1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/linearHorizonal2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <Button
-            android:id="@+id/calibrateButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="Calibrate"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -90,6 +91,22 @@
 
         </LinearLayout>
 
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearHorizonal2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
         <Button
             android:id="@+id/captureButton"
             android:layout_width="wrap_content"
@@ -97,8 +114,22 @@
             android:layout_marginStart="8dp"
             android:layout_marginBottom="8dp"
             android:text="Capture" />
+        <Button
+            android:id="@+id/changeCameraButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="Change\ncamera" />
 
+        <Button
+            android:id="@+id/calibrateButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+
+            android:text="Calibrate" />
     </LinearLayout>
-
 
 </android.support.constraint.ConstraintLayout>

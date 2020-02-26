@@ -39,6 +39,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mytechia.robobo.framework.RoboboManager;
@@ -56,6 +57,7 @@ import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.CharucoBoard;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -64,7 +66,8 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+
+import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class TagCalibrationActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, ITagListener {
     private static final String TAG = "CameraFaceTestActivity";
@@ -82,7 +85,9 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     private ImageView imageView = null;
     private Button captureButton;
     private Button calibrateButton;
+    private Button changeCameraButton;
     private Switch visualizeSwitch;
+    private TextView imagesCounter;
 
 
     List<Tag> markers;
@@ -141,6 +146,8 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         this.calibrateButton = (Button) findViewById(R.id.calibrateButton);
         this.captureButton = (Button) findViewById(R.id.captureButton);
         this.visualizeSwitch = (Switch) findViewById(R.id.visualizeSwitch);
+        this.imagesCounter = (TextView) findViewById(R.id.imagesCounter);
+        this.changeCameraButton = (Button) findViewById(R.id.changeCameraButton);
 
         // Set buttons actions
 
@@ -151,6 +158,15 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             }
         });
 
+
+        this.changeCameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                camModule.changeCamera();
+                capturedList.clear();
+                updateImageCounter();
+            }
+        });
 
         this.visualizeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -209,8 +225,8 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         for (Mat image : capturedList) {
             ArrayList<Mat> tagCorners = new ArrayList<Mat>();
             Mat tagIds = new Mat();
-            Mat rejectedCorners = new Mat();
-            Mat rejectedIds = new Mat();
+//            Mat rejectedCorners = new Mat();
+//            Mat rejectedIds = new Mat();
             Mat charucoCorners = new Mat();
             Mat charucoIds = new Mat();
 
@@ -233,19 +249,19 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         try {
             Aruco.calibrateCameraCharuco(corners, ids, board, imagesize, cameraMatrix, distCoeffs, rvecs, tvecs);
             distortionData = new CameraDistortionCalibrationData(cameraMatrix, distCoeffs);//,rvecs,tvecs);
-            propertyWriter.storeConf("distCoeffs", distortionData.getDistCoeffs());
-            propertyWriter.storeConf("cameraMatrix", distortionData.getCameraMatrix());
+            propertyWriter.storeConf("distCoeffs"+camModule.getCameraCode(), distortionData.getDistCoeffs());
+            propertyWriter.storeConf("cameraMatrix"+camModule.getCameraCode(), distortionData.getCameraMatrix());
             propertyWriter.commitConf();
 
             Toast.makeText(getApplicationContext(), "Calibration successful!", Toast.LENGTH_SHORT).show();
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        }
+        catch (Exception e) {
             Toast.makeText(getApplicationContext(), "Error calibrating!", Toast.LENGTH_SHORT).show();
         }
 
-        capturedList = new ArrayList<Mat>();
-    }
+        capturedList.clear();
+        updateImageCounter();    }
 
 
     @Override
@@ -276,6 +292,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
     private void startRoboboApplication() {
 
+
         try {
 
             this.camModule = this.roboboManager.getModuleInstance(ICameraModule.class);
@@ -286,20 +303,8 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             e.printStackTrace();
         }
 
-        roboboManager.setPowerManagementEnabled(false);
-
-        Properties defaults = new Properties();
-        try {
-
-            defaults.load(roboboManager.getApplicationContext().getAssets().open("camproperties.properties"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        distortionData = new CameraDistortionCalibrationData(
-                propertyWriter.retrieveConf("cameraMatrix", defaults.getProperty("cameraMatrix")),
-                propertyWriter.retrieveConf("distCoeffs", defaults.getProperty("distCoeffs")));
-
+        camModule.suscribe(this);
+        arucoModule.suscribe(this);
 
         runOnUiThread(new Runnable() {
             @Override
@@ -310,22 +315,20 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
             }
         });
-        camModule.suscribe(this);
-        camModule.changeCamera();
-        camModule.setFps(40);
-        arucoModule.suscribe(this);
+
 
 
     }
 
     @Override
-    public void onNewFrame(final Frame frame) {
-
-    }
+    public void onNewFrame(final Frame frame) {}
 
     @Override
     public void onNewMat(Mat mat) {
         if (mat.cols() > 0 && mat.rows() > 0) {
+            if (camModule.getCameraCode()==CAMERA_ID_FRONT)
+                Core.flip(mat,mat,1);
+
             Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
             Mat newmat = mat.clone();
 
@@ -339,10 +342,28 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
             if (capturing) {
                 capturing = false;
+
                 Mat mat_aux = new Mat();
                 //capturedImage = new Mat();
                 mat.copyTo(mat_aux);
-                capturedList.add(mat_aux);
+
+                ArrayList<Mat> tagCorners = new ArrayList<Mat>();
+                Mat tagIds = new Mat();
+                Aruco.detectMarkers(mat, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000), tagCorners, tagIds);
+                final String msg;
+                if(tagCorners.size()>0){
+                    capturedList.add(mat_aux);
+                    updateImageCounter();
+                    msg = "Image added";
+                } else {
+                    msg = "Corner not detected, try again";
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
             final Frame frame = new Frame(newmat);
@@ -356,6 +377,15 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             });
         }
 
+    }
+
+    private void updateImageCounter() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                imagesCounter.setText("Images captured: "+capturedList.size());
+            }
+        });
     }
 
 
@@ -422,6 +452,14 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
     @Override
     public void onOpenCVStartup() {
+        roboboManager.setPowerManagementEnabled(false);
+
+        camModule.changeCamera();
+        camModule.setFps(40);
+
+        distortionData = new CameraDistortionCalibrationData(
+                propertyWriter.retrieveConf("cameraMatrix"+camModule.getCameraCode(),""),
+                propertyWriter.retrieveConf("distCoeffs"+camModule.getCameraCode(), ""));
 
     }
 
