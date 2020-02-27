@@ -1,5 +1,8 @@
 package com.mytechia.robobo.framework.hri.vision.util;
 
+import android.support.annotation.NonNull;
+
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import java.util.ArrayList;
@@ -7,13 +10,15 @@ import java.util.List;
 
 public class CameraDistortionCalibrationData {
 
-    private String cameraMatrix;
-    private String distCoeffs;
+    private Mat cameraMatrix;
+    private Mat distCoeffs;
+
     //private List<String> rvecs;
     //private List<String> tvecs;
-    public CameraDistortionCalibrationData(Mat cameraMatrix, Mat distCoeffs){//}, List<Mat> rvecs, List<Mat> tvecs){
-        this.cameraMatrix = GsonConverter.matToJson(cameraMatrix);
-        this.distCoeffs = GsonConverter.matToJson(distCoeffs);
+    public CameraDistortionCalibrationData(@NonNull String cameraMatrix,@NonNull String distCoeffs) {//}, List<Mat> rvecs, List<Mat> tvecs){
+
+        this.cameraMatrix = cameraMatrix.isEmpty() ? Mat.eye(3,3, CvType.CV_64F) : GsonConverter.matFromJson(cameraMatrix);
+        this.distCoeffs = distCoeffs.isEmpty()? new Mat() : GsonConverter.matFromJson(distCoeffs);
         /*this.rvecs = new ArrayList<>();
         this.tvecs = new ArrayList<>();
 
@@ -26,7 +31,7 @@ public class CameraDistortionCalibrationData {
     }
 
 
-    public CameraDistortionCalibrationData(String cameraMatrix, String distCoeffs){//, List<String> rvecs, List<String> tvecs){
+    public CameraDistortionCalibrationData(Mat cameraMatrix, Mat distCoeffs) {//, List<String> rvecs, List<String> tvecs){
         this.cameraMatrix = cameraMatrix;
         this.distCoeffs = distCoeffs;
         //this.rvecs = rvecs;
@@ -35,20 +40,21 @@ public class CameraDistortionCalibrationData {
     }
 
 
+
     public Mat getCameraMatrixMat() {
-        return GsonConverter.matFromJson(cameraMatrix);
-    }
-
-    public Mat getDistCoeffsMat() {
-        return GsonConverter.matFromJson(distCoeffs);
-    }
-
-    public String getCameraMatrix() {
         return cameraMatrix;
     }
 
-    public String getDistCoeffs() {
+    public Mat getDistCoeffsMat() {
         return distCoeffs;
+    }
+
+    public String getCameraMatrix() {
+        return GsonConverter.matToJson(cameraMatrix);
+    }
+
+    public String getDistCoeffs() {
+        return GsonConverter.matToJson(distCoeffs);
     }
 
     /*public List<String> getRvecs() {
@@ -75,7 +81,6 @@ public class CameraDistortionCalibrationData {
         return tvecMat;
     }
     */
-
 
 
 }

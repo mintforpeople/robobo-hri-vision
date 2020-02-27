@@ -276,9 +276,10 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
 
     @Override
     public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        Log.w(TAG,"Fling!");
         camModule.changeCamera();
 
-        return false;
+        return true;
     }
 
 

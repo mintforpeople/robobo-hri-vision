@@ -20,14 +20,18 @@
 package com.mytechia.robobo.framework.vision;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
@@ -36,14 +40,13 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
-import com.mytechia.robobo.framework.hri.vision.objectRecognition.IObjectRecognitionModule;
-import com.mytechia.robobo.framework.hri.vision.objectRecognition.RecognizedObject;
 import com.mytechia.robobo.framework.hri.vision.tag.ITagListener;
 import com.mytechia.robobo.framework.hri.vision.tag.ITagModule;
 import com.mytechia.robobo.framework.hri.vision.tag.Tag;
@@ -53,7 +56,6 @@ import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.aruco.Aruco;
-import org.opencv.aruco.Board;
 import org.opencv.aruco.CharucoBoard;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -68,8 +70,7 @@ import java.util.List;
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class TagCalibrationActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, ITagListener {
-    private static final String TAG="CameraFaceTestActivity";
-
+    private static final String TAG = "CameraFaceTestActivity";
 
 
     private RoboboServiceHelper roboboHelper;
@@ -84,7 +85,9 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     private ImageView imageView = null;
     private Button captureButton;
     private Button calibrateButton;
+    private Button changeCameraButton;
     private Switch visualizeSwitch;
+    private TextView imagesCounter;
 
 
     List<Tag> markers;
@@ -92,38 +95,42 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     boolean preview = false;
     boolean capturing = false;
 
+    int squaresX = 11, squaresY = 8;
+    //    int squaresX = 18, squaresY = 12;
+    float squareLength = 25f, markerLength = 14.5f;
+//    float squareLength = 14f, markerLength = 10f;
 
     private AuxPropertyWriter propertyWriter;
     private CameraDistortionCalibrationData distortionData;
 
-    List <Mat> capturedList;
+    List<Mat> capturedList;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d(TAG,"TouchEvent");
+        Log.d(TAG, "TouchEvent");
 
         return true;
 
     }
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calibration_test);
+
         capturedList = new ArrayList<Mat>();
         propertyWriter = new AuxPropertyWriter();
+
         //Request permissions
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED)||
+                != PackageManager.PERMISSION_GRANTED) ||
                 (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                        != PackageManager.PERMISSION_GRANTED)||
+                        != PackageManager.PERMISSION_GRANTED) ||
                 (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED)||
+                        != PackageManager.PERMISSION_GRANTED) ||
                 (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED))
-        {
+                        != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.CAMERA,
                             Manifest.permission.RECORD_AUDIO,
@@ -133,14 +140,16 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
                     4);
         }
 
-
-        this.imageView = (ImageView) findViewById(R.id.testImageView) ;
+        // Set view variables with the layout
+        this.imageView = (ImageView) findViewById(R.id.testImageView);
         this.bridgeBase = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
         this.calibrateButton = (Button) findViewById(R.id.calibrateButton);
         this.captureButton = (Button) findViewById(R.id.captureButton);
         this.visualizeSwitch = (Switch) findViewById(R.id.visualizeSwitch);
+        this.imagesCounter = (TextView) findViewById(R.id.imagesCounter);
+        this.changeCameraButton = (Button) findViewById(R.id.changeCameraButton);
 
-
+        // Set buttons actions
 
         this.captureButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -150,97 +159,51 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         });
 
 
+        this.changeCameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                camModule.changeCamera();
+                capturedList.clear();
+                updateImageCounter();
+            }
+        });
 
         this.visualizeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 preview = isChecked;
 
-                if (isChecked){
+                if (isChecked) {
                     arucoModule.resumeDetection();
-                }else{
+                } else {
                     arucoModule.pauseDetection();
                 }
             }
         });
 
 
-
         this.calibrateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<Mat> ids = new ArrayList<Mat>();
-                List<Mat> corners = new ArrayList<Mat>();
-                CharucoBoard board = CharucoBoard.create(11,8,25,14.5f, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000));
-                boolean first = true;
+                calibrateCamera();
 
-                for (Mat image : capturedList){
-                    ArrayList<Mat> tagCorners = new ArrayList<Mat>();
-                    Mat tagIds = new Mat();
-                    Mat charucoCorners = new Mat();
-                    Mat charucoIds = new Mat();
-
-                    Aruco.detectMarkers(image,Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000),tagCorners, tagIds);
-                    Aruco.interpolateCornersCharuco(tagCorners,tagIds,image,board,charucoCorners,charucoIds);
-                    Mat auxmat = new Mat(1,44,tagCorners.get(0).type());
-                    corners.add(charucoCorners);
-                    ids.add(charucoIds);
-                }
-
-                Size imagesize = new Size(capturedList.get(0).cols(),capturedList.get(0).rows());
-
-
-
-
-
-
-                Mat cameraMatrix = new Mat();
-                Mat distCoeffs = new Mat();
-                List<Mat> rvecs = new ArrayList<Mat>();
-                List<Mat> tvecs = new ArrayList<Mat>();
-                Aruco.calibrateCameraCharuco(corners,ids,board,imagesize,cameraMatrix,distCoeffs,rvecs,tvecs);
-                distortionData = new CameraDistortionCalibrationData(cameraMatrix,distCoeffs);//,rvecs,tvecs);
-                propertyWriter.storeConf("distCoeffs",distortionData.getDistCoeffs());
-                propertyWriter.storeConf("cameraMatrix",distortionData.getCameraMatrix());
-                int i = 0;
-                /*for (String element : distortionData.getRvecs()){
-                    propertyWriter.storeConf("rvecs_"+i,element);
-                    i++;
-                }
-                i = 0;
-                for (String element : distortionData.getTvecs()){
-                    propertyWriter.storeConf("tvecs_"+i,element);
-                    i++;
-                }*/
-                propertyWriter.commitConf();
             }
         });
-
 
 
         roboboHelper = new RoboboServiceHelper(this, new RoboboServiceHelper.Listener() {
             @Override
             public void onRoboboManagerStarted(RoboboManager robobo) {
-
                 //the robobo service and manager have been started up
                 roboboManager = robobo;
 
-
-                //dismiss the wait dialog
-
-
                 //start the "custom" robobo application
                 startRoboboApplication();
-
             }
 
             @Override
             public void onError(Throwable errorMsg) {
-
                 final String error = errorMsg.getLocalizedMessage();
-
-
             }
-
         });
 
         //start & bind the Robobo service
@@ -248,9 +211,87 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         roboboHelper.bindRoboboService(options);
     }
 
+    private void calibrateCamera() {
+        if (capturedList.size() == 0) {
+            Toast.makeText(getApplicationContext(), "Please, take at least one calibration picture!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        List<Mat> ids = new ArrayList<Mat>();
+        List<Mat> corners = new ArrayList<Mat>();
 
+        CharucoBoard board = CharucoBoard.create(squaresX, squaresY, squareLength, markerLength, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000));
+        boolean first = true;
+
+        for (Mat image : capturedList) {
+            ArrayList<Mat> tagCorners = new ArrayList<Mat>();
+            Mat tagIds = new Mat();
+//            Mat rejectedCorners = new Mat();
+//            Mat rejectedIds = new Mat();
+            Mat charucoCorners = new Mat();
+            Mat charucoIds = new Mat();
+
+            Aruco.detectMarkers(image, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000), tagCorners, tagIds);
+            //Aruco.refineDetectedMarkers(image,board,tagCorners,tagIds);
+            if (tagCorners.size() > 0)
+                Aruco.interpolateCornersCharuco(tagCorners, tagIds, image, board, charucoCorners, charucoIds);
+            //Mat auxmat = new Mat(1, 44, tagCorners.get(0).type());
+            corners.add(charucoCorners);
+            ids.add(charucoIds);
+        }
+
+        Size imagesize = new Size(capturedList.get(0).cols(), capturedList.get(0).rows());
+
+
+        Mat cameraMatrix = new Mat();
+        Mat distCoeffs = new Mat();
+        List<Mat> rvecs = new ArrayList<Mat>();
+        List<Mat> tvecs = new ArrayList<Mat>();
+        try {
+            Aruco.calibrateCameraCharuco(corners, ids, board, imagesize, cameraMatrix, distCoeffs, rvecs, tvecs);
+            distortionData = new CameraDistortionCalibrationData(cameraMatrix, distCoeffs);//,rvecs,tvecs);
+            propertyWriter.storeConf("distCoeffs"+camModule.getCameraCode(), distortionData.getDistCoeffs());
+            propertyWriter.storeConf("cameraMatrix"+camModule.getCameraCode(), distortionData.getCameraMatrix());
+            propertyWriter.commitConf();
+
+            Toast.makeText(getApplicationContext(), "Calibration successful!", Toast.LENGTH_SHORT).show();
+
+        }
+        catch (Exception e) {
+            Toast.makeText(getApplicationContext(), "Error calibrating!", Toast.LENGTH_SHORT).show();
+        }
+
+        capturedList.clear();
+        updateImageCounter();    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.tag_calibration_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.calibSettings) {
+            openSettingsPopUp();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void openSettingsPopUp() {
+        Intent intent = new Intent(this, TagCalibrationSettingsActivity.class);
+        intent.putExtra("squaresX", squaresX);
+        intent.putExtra("squaresY", squaresY);
+        intent.putExtra("squareLength", squareLength);
+        intent.putExtra("markerLength", markerLength);
+        startActivityForResult(intent, 1);
+
+    }
 
     private void startRoboboApplication() {
+
 
         try {
 
@@ -262,6 +303,9 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             e.printStackTrace();
         }
 
+        camModule.suscribe(this);
+        arucoModule.suscribe(this);
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -271,88 +315,131 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
             }
         });
-        camModule.suscribe(this);
-        camModule.changeCamera();
-        arucoModule.suscribe(this);
-        camModule.setFps(40);
 
-        roboboManager.setPowerManagementEnabled(false);
+
 
     }
 
     @Override
-    public void onNewFrame(final Frame frame) {
-
-    }
+    public void onNewFrame(final Frame frame) {}
 
     @Override
     public void onNewMat(Mat mat) {
-        Imgproc.cvtColor(mat,mat,Imgproc.COLOR_BGRA2BGR);
-        Mat newmat = mat.clone();
+        if (mat.cols() > 0 && mat.rows() > 0) {
+            if (camModule.getCameraCode()==CAMERA_ID_FRONT)
+                Core.flip(mat,mat,1);
 
-        if (preview){
-            //newmat = drawArucos(markers, newmat);
-            newmat = drawCharuco(newmat);
+            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
+            Mat newmat = mat.clone();
 
-            detected = false;
+            if (preview) {
+                //newmat = drawArucos(markers, newmat);
+                newmat = drawCharuco(mat);
 
+                detected = false;
+
+            }
+
+            if (capturing) {
+                capturing = false;
+
+                Mat mat_aux = new Mat();
+                //capturedImage = new Mat();
+                mat.copyTo(mat_aux);
+
+                ArrayList<Mat> tagCorners = new ArrayList<Mat>();
+                Mat tagIds = new Mat();
+                Aruco.detectMarkers(mat, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000), tagCorners, tagIds);
+                final String msg;
+                if(tagCorners.size()>0){
+                    capturedList.add(mat_aux);
+                    updateImageCounter();
+                    msg = "Image added";
+                } else {
+                    msg = "Corner not detected, try again";
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            final Frame frame = new Frame(newmat);
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    imageView.setImageBitmap(frame.getBitmap());
+
+                }
+            });
         }
 
-        if (capturing) {
-            capturing = false;
-            Mat mat_aux = new Mat();
-            //capturedImage = new Mat();
-            mat.copyTo(mat_aux);
-            capturedList.add(mat_aux);
-        }
+    }
 
-        final Frame frame = new Frame(newmat);
-
+    private void updateImageCounter() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                imageView.setImageBitmap(frame.getBitmap());
-
+                imagesCounter.setText("Images captured: "+capturedList.size());
             }
         });
     }
 
 
-    private  Mat drawArucos(List<Tag> tags, Mat image){
+    private Mat drawArucos(List<Tag> tags, Mat image) {
 
-        for (Tag tag : tags){
-            for (int i = 0; i < 4; i++){
-                Imgproc.line(image, new Point(tag.getCorner(i).x,tag.getCorner(i).y),new Point(tag.getCorner((i+1)%4).x,tag.getCorner((i+1)%4).y),new Scalar(255,0,0));
+        for (Tag tag : tags) {
+            for (int i = 0; i < 4; i++) {
+                Imgproc.line(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), new Point(tag.getCorner((i + 1) % 4).x, tag.getCorner((i + 1) % 4).y), new Scalar(255, 0, 0));
 
-                Imgproc.circle(image,new Point(tag.getCorner(i).x,tag.getCorner(i).y),3, new Scalar(0,255,0));
+                Imgproc.circle(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), 3, new Scalar(0, 255, 0));
             }
         }
 
         return image;
     }
-    private  Mat drawCharuco(Mat image){
+
+    private Mat drawCharuco(Mat image) {
 
         ArrayList<Mat> tagCorners = new ArrayList<Mat>();
         Mat tagIds = new Mat();
         Mat charucoCorners = new Mat();
         Mat charucoIds = new Mat();
-        CharucoBoard board = CharucoBoard.create(11,8,25,14.5f, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000));
-        Aruco.detectMarkers(image,Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000),tagCorners, tagIds);
+        //Todo: add a dropdown to select the type of aruco
+        CharucoBoard board = CharucoBoard.create(squaresX, squaresY, squareLength, markerLength, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000));
+        Aruco.detectMarkers(image, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000), tagCorners, tagIds);
         Mat rvecs = new Mat();
         Mat tvecs = new Mat();
         //Aruco.estimatePoseSingleMarkers(markerCorners,14.5f,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(), tvecs, rvecs);
-        Aruco.estimatePoseBoard(tagCorners,tagIds,board,distortionData.getCameraMatrixMat(),distortionData.getDistCoeffsMat(),rvecs,tvecs);
-        Log.w("TAG","Corners"+tagCorners.size()+ " Ids"+ tagIds.size());
-        if ((tagCorners.size()>0)&&(tagIds.size().height >0)&&(tagIds.size().width >0)) {
+        Aruco.estimatePoseBoard(tagCorners, tagIds, board, distortionData.getCameraMatrixMat(), distortionData.getDistCoeffsMat(), rvecs, tvecs);
+        if ((tagCorners.size() > 0) && (tagIds.size().height > 0) && (tagIds.size().width > 0)) {
+            Log.w("TAG", "Corners" + tagCorners.size() + " Ids" + tagIds.size());
             Aruco.interpolateCornersCharuco(tagCorners, tagIds, image, board, charucoCorners, charucoIds);
-            Aruco.drawDetectedCornersCharuco(image, charucoCorners);
+            if (charucoIds.total() > 0)
+                Aruco.drawDetectedCornersCharuco(image, charucoCorners);
             //Aruco.drawAxis(image,distortionData.getCameraMatrixMat(), distortionData.getDistCoeffsMat(),rvecs,tvecs,25);
         }
         return image;
     }
 
     @Override
-    public void onDebugFrame(final Frame frame,final String frameId) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == Activity.RESULT_OK) {
+                squaresX = data.getIntExtra("squaresX", squaresX);
+                squaresY = data.getIntExtra("squaresY", squaresY);
+                squareLength = data.getFloatExtra("squareLength", squareLength);
+                markerLength = data.getFloatExtra("markerLength", markerLength);
+                Toast.makeText(getApplicationContext(), "Settings updated", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
+    public void onDebugFrame(final Frame frame, final String frameId) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -365,6 +452,14 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
     @Override
     public void onOpenCVStartup() {
+        roboboManager.setPowerManagementEnabled(false);
+
+        camModule.changeCamera();
+        camModule.setFps(40);
+
+        distortionData = new CameraDistortionCalibrationData(
+                propertyWriter.retrieveConf("cameraMatrix"+camModule.getCameraCode(),""),
+                propertyWriter.retrieveConf("distCoeffs"+camModule.getCameraCode(), ""));
 
     }
 
@@ -407,12 +502,4 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         detected = true;
     }
 
-
-   /* @Override
-    public void onAruco(List<Mat> corners, Mat ids) {
-        this.corners = corners;
-
-        this.ids = ids;
-        this.detected = true;
-    }*/
 }

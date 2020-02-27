@@ -40,8 +40,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
 
     private RoboboManager m;
     private ICameraModule cameraModule;
-    private String distCoeffs;// = "{\"rows\":1,\"cols\":5,\"type\":0,\"data\":\"AQAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\u003d\\\\u003d\\\\n\"}";
-    private String cameraMatrix;// = "{\"rows\"\\:3,\"cols\"\\:3,\"type\"\\:0,\"data\"\\:\"/wDtAP//AAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\nAAAAAAAAAAAAAAAAAAAA\\\\n\"}";
     //private List<String> rvecs;
     //private List<String> tvecs;
     private int currentTagDict = Aruco.DICT_4X4_1000;
@@ -76,17 +74,12 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
             e.printStackTrace();
         }
 
-
-        distCoeffs = propertyWriter.retrieveConf("distCoeffs", defaults.getProperty("distCoeffs"));
-        cameraMatrix = propertyWriter.retrieveConf("cameraMatrix", defaults.getProperty("cameraMatrix"));
         /*rvecs.set(0, propertyWriter.retrieveConf("rvecs_0","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
         rvecs.set(1, propertyWriter.retrieveConf("rvecs_1","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
         rvecs.set(2, propertyWriter.retrieveConf("rvecs_2","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
         tvecs.set(0, propertyWriter.retrieveConf("tvecs_0","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"ALv/AAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
         tvecs.set(1, propertyWriter.retrieveConf("tvecs_1","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"ALv/AAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
         tvecs.set(2, propertyWriter.retrieveConf("tvecs_2","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"Cs3/AAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));*/
-        calibrationData = new CameraDistortionCalibrationData(cameraMatrix,distCoeffs);//,rvecs,tvecs);
-
 
         executor = Executors.newFixedThreadPool(1);
 
@@ -240,8 +233,9 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
 
     @Override
     public void onOpenCVStartup() {
-        //board = CharucoBoard.create(11,8,25,14.5f, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000));
-
+        calibrationData = new CameraDistortionCalibrationData(
+                propertyWriter.retrieveConf("distCoeffs"+cameraModule.getCameraCode(), ""),
+                propertyWriter.retrieveConf("cameraMatrix"+cameraModule.getCameraCode(), ""));
     }
 
     @Override
