@@ -2,4 +2,6 @@
     <string name="app_name">robobo-hri-vision</string>
     <string name="msg_custom_activity">Default message</string>
     <string name="title_activity_tag_calibration_settings">Calibration Settings</string>
+    <string name="txtErrorCalibrating">Error calibrating, please read the wiki for instructions and tips.</string>
+    <string name="urlCalibrationAppWiki">https://github.com/mintforpeople/robobo-hri-vision/blob/module_tensorflow/app/src/main/java/com/mytechia/robobo/framework/vision/TagCalibrationApp.md</string>
 </resources>

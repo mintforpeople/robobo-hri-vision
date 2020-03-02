@@ -23,7 +23,9 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -257,7 +259,16 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
         }
         catch (Exception e) {
-            Toast.makeText(getApplicationContext(), "Error calibrating!", Toast.LENGTH_SHORT).show();
+            Snackbar.make(getWindow().getDecorView(), R.string.txtErrorCalibrating, Snackbar.LENGTH_LONG).setAction("Wiki", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent browserIntent = new
+                            Intent(Intent.ACTION_VIEW,
+                            Uri.parse(getString(R.string.urlCalibrationAppWiki)));
+                    startActivity(browserIntent);
+                }
+            }).show();
+//            Toast.makeText(getApplicationContext(), "Error calibrating! Make sure that the board it's clear on all pictures and from different angles.", Toast.LENGTH_SHORT).show();
         }
 
         capturedList.clear();
