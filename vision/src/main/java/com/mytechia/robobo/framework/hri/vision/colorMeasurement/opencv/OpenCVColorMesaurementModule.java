@@ -46,6 +46,7 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
     private int lastr = 0;
     private int lastg = 0;
     private int lastb = 0;
+    private boolean processing = false;
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
@@ -104,6 +105,8 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
 
     @Override
     public void onNewMat(Mat mat) {
+        if (!processing) {
+            processing = true;
 
 //        Scalar results = Core.mean(mat);
 //
@@ -112,62 +115,59 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
 //        Log.d(TAG,results.val[2]+"B");
 //        mat.release();
 
-        int r = 0;
-        int g = 0;
-        int b = 0;
-        // Use only 1/4 of the image pixels
-        long pixels = mat.rows()/4* mat.cols()/4;
-        long count =0;
+            int r = 0;
+            int g = 0;
+            int b = 0;
+            // Use only 1/4 of the image pixels
+            long pixels = mat.rows() / 4 * mat.cols() / 4;
+            long count = 0;
 
-        // Convert mat to hsv color space
-        Mat hsvMat = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC3);
-        Imgproc.cvtColor(mat, hsvMat, Imgproc.COLOR_RGB2HSV, 3);
-
-
-
-        // Iterate each fourth row in the image
-        for (int row = 0; row<(hsvMat.rows()); row+=4){
-            // Iterate each fourth column in the image
-            for (int col = 0; col<(hsvMat.cols()); col+=4) {
-                //Log.d(TAG, "Row: "+row+" Col: "+col);
-                double[] pixel = hsvMat.get(row,col);
+            // Convert mat to hsv color space
+            Mat hsvMat = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC3);
+            Imgproc.cvtColor(mat, hsvMat, Imgproc.COLOR_RGB2HSV, 3);
 
 
+            // Iterate each fourth row in the image
+            for (int row = 0; row < (hsvMat.rows()); row += 4) {
+                // Iterate each fourth column in the image
+                for (int col = 0; col < (hsvMat.cols()); col += 4) {
+                    //Log.d(TAG, "Row: "+row+" Col: "+col);
+                    double[] pixel = hsvMat.get(row, col);
 
 
-                int hue = (int) Math.round(pixel[0]);
-                int saturation = (int) Math.round(pixel[1]);
-                int value = (int) Math.round(pixel[2]);
+                    int hue = (int) Math.round(pixel[0]);
+                    int saturation = (int) Math.round(pixel[1]);
+                    int value = (int) Math.round(pixel[2]);
 
-                // Discard too dark colors
-                if ((value > 120) && (saturation > 160)){
+                    // Discard too dark colors
+                    if ((value > 120) && (saturation > 160)) {
 //                    Log.d(TAG,"Saturation:"+saturation);
 //                    Log.d(TAG,"Value:"+value);
 //                    Log.d(TAG,"Hue:"+hue);
 
-                    // Shift color wheel
-                    hue = hue - 8;
-                    count = count +1;
+                        // Shift color wheel
+                        hue = hue - 8;
+                        count = count + 1;
 
-                    // Classify color and add to color count
-                    if (hue < 0) {
-                        hue = 171 + Math.abs(hue);
-                    }
+                        // Classify color and add to color count
+                        if (hue < 0) {
+                            hue = 171 + Math.abs(hue);
+                        }
 
 
-                    if ((hue > 166) && (hue <= 179)) {
-    //                    Log.d(TAG, "RED" + hue);
-                        r = r + 1;
-                    }
+                        if ((hue > 166) && (hue <= 179)) {
+                            //                    Log.d(TAG, "RED" + hue);
+                            r = r + 1;
+                        }
 
-                    if ((hue > 0) && (hue <= 29)) {
-    //                    Log.d(TAG, "YELLOW" + hue);
-                        count = count -1;
-                    }
-                    if ((hue > 30) && (hue <= 89)) {
-    //                    Log.d(TAG, "GREEN" + hue);
-                        g = g + 1;
-                    }
+                        if ((hue > 0) && (hue <= 29)) {
+                            //                    Log.d(TAG, "YELLOW" + hue);
+                            count = count - 1;
+                        }
+                        if ((hue > 30) && (hue <= 89)) {
+                            //                    Log.d(TAG, "GREEN" + hue);
+                            g = g + 1;
+                        }
 //                    if ((hue > 67) && (hue <= 96)) {
 //    //                    Log.d(TAG, "CYAN" + hue);
 //
@@ -175,56 +175,57 @@ public class OpenCVColorMesaurementModule extends AColorMesaurementModule implem
 //
 //
 //                    }
-                    if ((hue > 90) && (hue <= 141)) {
-    //                    Log.d(TAG, "BLUE" + hue);
-                        b = b + 1;
+                        if ((hue > 90) && (hue <= 141)) {
+                            //                    Log.d(TAG, "BLUE" + hue);
+                            b = b + 1;
 
-                    }
-                    if ((hue > 142) && (hue <= 165)) {
-    //                    Log.d(TAG, "MAGENTA" + hue);
+                        }
+                        if ((hue > 142) && (hue <= 165)) {
+                            //                    Log.d(TAG, "MAGENTA" + hue);
 
-                        r = r + 1;
+                            r = r + 1;
+                        }
                     }
+
                 }
-
             }
-        }
 
-        int sum = r+g+b;
-        //sum = (hsvMat.cols()*hsvMat.rows())/8;
+            int sum = r + g + b;
+            //sum = (hsvMat.cols()*hsvMat.rows())/8;
 //        Log.d(TAG,"Count: "+count);
 
-        // Calculate the percentage of each color in the image
-        if((sum!=0)&&(count>3)) {
-            r = Math.round(((float)r / (float)sum) * 100);
-            g = Math.round(((float)g / (float)sum) * 100);
-            b = Math.round(((float)b / (float)sum) * 100);
+            // Calculate the percentage of each color in the image
+            if ((sum != 0) && (count > 3)) {
+                r = Math.round(((float) r / (float) sum) * 100);
+                g = Math.round(((float) g / (float) sum) * 100);
+                b = Math.round(((float) b / (float) sum) * 100);
 
 //            Log.d(TAG, "R: " + r + " G: " + g + " B: " + b+" Covered: "+(float)count/(float)pixels);
 
-            // Only notify if the values had changed from the last time notificated
-            if ((lastb!=b)||(lastg!=g)||(lastr!=r)) {
-                notifyColorMesaured(r, g, b);
-                lastb = b;
-                lastg = g;
-                lastr = r;
+                // Only notify if the values had changed from the last time notificated
+                if ((lastb != b) || (lastg != g) || (lastr != r)) {
+                    notifyColorMesaured(r, g, b);
+                    lastb = b;
+                    lastg = g;
+                    lastr = r;
+                }
             }
-        }
-        // Notify no color detected
-        else {
+            // Notify no color detected
+            else {
 //            Log.d(TAG, "R: " + 0 + " G: " + 0 + " B: " + 0);
-            if ((lastb!=b)||(lastg!=g)||(lastr!=r)) {
-                notifyColorMesaured(0, 0, 0);
-                lastb = 0;
-                lastg = 0;
-                lastr = 0;
+                if ((lastb != b) || (lastg != g) || (lastr != r)) {
+                    notifyColorMesaured(0, 0, 0);
+                    lastb = 0;
+                    lastg = 0;
+                    lastr = 0;
+                }
+
             }
 
+            hsvMat.release();
+
+            processing = false;
         }
-
-        hsvMat.release();
-
-
     }
 
     @Override
