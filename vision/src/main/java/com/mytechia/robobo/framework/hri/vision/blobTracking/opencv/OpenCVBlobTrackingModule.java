@@ -128,7 +128,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     @Override
     public void onNewMat(Mat mat) {
-
+        //TODO: add a "processing" flag to discard new mats if processing one already
         if(mat.empty()){
             return;
         }
