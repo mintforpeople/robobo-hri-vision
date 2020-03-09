@@ -68,6 +68,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
@@ -463,14 +464,23 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
     @Override
     public void onOpenCVStartup() {
+
+        Properties defaults = new Properties();
+        try{
+
+            defaults.load(getApplicationContext().getAssets().open("camproperties.properties"));
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
         roboboManager.setPowerManagementEnabled(false);
 
         camModule.changeCamera();
         camModule.setFps(40);
 
         distortionData = new CameraDistortionCalibrationData(
-                propertyWriter.retrieveConf("cameraMatrix"+camModule.getCameraCode(),""),
-                propertyWriter.retrieveConf("distCoeffs"+camModule.getCameraCode(), ""));
+                propertyWriter.retrieveConf("cameraMatrix"+camModule.getCameraCode(),defaults.getProperty("cameraMatrix")),
+                propertyWriter.retrieveConf("distCoeffs"+camModule.getCameraCode(), defaults.getProperty("distCoeffs")));
 
     }
 

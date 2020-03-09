@@ -51,6 +51,9 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
 
     ExecutorService executor;
 
+    Properties defaults;
+
+
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
 
@@ -66,20 +69,13 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
-        Properties defaults = new Properties();
+        defaults = new Properties();
         try{
 
             defaults.load(manager.getApplicationContext().getAssets().open("camproperties.properties"));
         }catch(Exception e){
             e.printStackTrace();
         }
-
-        /*rvecs.set(0, propertyWriter.retrieveConf("rvecs_0","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
-        rvecs.set(1, propertyWriter.retrieveConf("rvecs_1","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
-        rvecs.set(2, propertyWriter.retrieveConf("rvecs_2","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
-        tvecs.set(0, propertyWriter.retrieveConf("tvecs_0","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"ALv/AAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
-        tvecs.set(1, propertyWriter.retrieveConf("tvecs_1","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"ALv/AAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));
-        tvecs.set(2, propertyWriter.retrieveConf("tvecs_2","{\"rows\"\\:3,\"cols\"\\:1,\"type\"\\:0,\"data\"\\:\"Cs3/AAAAAAAAAAAAAAAAAAAAAAAAAAAA\\\\n\"}"));*/
 
         executor = Executors.newFixedThreadPool(1);
 
@@ -234,8 +230,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
     @Override
     public void onOpenCVStartup() {
         calibrationData = new CameraDistortionCalibrationData(
-                propertyWriter.retrieveConf("distCoeffs"+cameraModule.getCameraCode(), ""),
-                propertyWriter.retrieveConf("cameraMatrix"+cameraModule.getCameraCode(), ""));
+                propertyWriter.retrieveConf("distCoeffs"+cameraModule.getCameraCode(), defaults.getProperty("distCoeffs")),
+                propertyWriter.retrieveConf("cameraMatrix"+cameraModule.getCameraCode(), defaults.getProperty("cameraMatrix")));
     }
 
     @Override
