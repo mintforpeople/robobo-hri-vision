@@ -221,6 +221,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         }
         List<Mat> ids = new ArrayList<Mat>();
         List<Mat> corners = new ArrayList<Mat>();
+        int corners_count = 0;
 
         CharucoBoard board = CharucoBoard.create(squaresX, squaresY, squareLength, markerLength, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000));
         boolean first = true;
@@ -240,6 +241,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             //Mat auxmat = new Mat(1, 44, tagCorners.get(0).type());
             corners.add(charucoCorners);
             ids.add(charucoIds);
+            corners_count += charucoCorners.rows();
         }
 
         Size imagesize = new Size(capturedList.get(0).cols(), capturedList.get(0).rows());
@@ -249,17 +251,22 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         Mat distCoeffs = new Mat();
         List<Mat> rvecs = new ArrayList<Mat>();
         List<Mat> tvecs = new ArrayList<Mat>();
-        try {
+
+
+        //try {
+        if (corners_count > 4) {
+
             Aruco.calibrateCameraCharuco(corners, ids, board, imagesize, cameraMatrix, distCoeffs, rvecs, tvecs);
             distortionData = new CameraDistortionCalibrationData(cameraMatrix, distCoeffs);//,rvecs,tvecs);
-            propertyWriter.storeConf("distCoeffs"+camModule.getCameraCode(), distortionData.getDistCoeffs());
-            propertyWriter.storeConf("cameraMatrix"+camModule.getCameraCode(), distortionData.getCameraMatrix());
+            propertyWriter.storeConf("distCoeffs" + camModule.getCameraCode(), distortionData.getDistCoeffs());
+            propertyWriter.storeConf("cameraMatrix" + camModule.getCameraCode(), distortionData.getCameraMatrix());
             propertyWriter.commitConf();
 
             Toast.makeText(getApplicationContext(), "Calibration successful!", Toast.LENGTH_SHORT).show();
 
         }
-        catch (Exception e) {
+//        catch (Exception e) {
+        else {
             Snackbar.make(getWindow().getDecorView(), R.string.txtErrorCalibrating, Snackbar.LENGTH_LONG).setAction("Wiki", new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -273,7 +280,8 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         }
 
         capturedList.clear();
-        updateImageCounter();    }
+        updateImageCounter();
+    }
 
 
     @Override
@@ -329,17 +337,17 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         });
 
 
-
     }
 
     @Override
-    public void onNewFrame(final Frame frame) {}
+    public void onNewFrame(final Frame frame) {
+    }
 
     @Override
     public void onNewMat(Mat mat) {
         if (mat.cols() > 0 && mat.rows() > 0) {
-            if (camModule.getCameraCode()==CAMERA_ID_FRONT)
-                Core.flip(mat,mat,1);
+            if (camModule.getCameraCode() == CAMERA_ID_FRONT)
+                Core.flip(mat, mat, 1);
 
             Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
             Mat newmat = mat.clone();
@@ -359,11 +367,14 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
                 //capturedImage = new Mat();
                 mat.copyTo(mat_aux);
 
+
                 ArrayList<Mat> tagCorners = new ArrayList<Mat>();
                 Mat tagIds = new Mat();
                 Aruco.detectMarkers(mat, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000), tagCorners, tagIds);
+
+
                 final String msg;
-                if(tagCorners.size()>0){
+                if (tagCorners.size() > 0) {
                     capturedList.add(mat_aux);
                     updateImageCounter();
                     msg = "Image added";
@@ -395,7 +406,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                imagesCounter.setText("Images captured: "+capturedList.size());
+                imagesCounter.setText("Images captured: " + capturedList.size());
             }
         });
     }
@@ -466,10 +477,10 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     public void onOpenCVStartup() {
 
         Properties defaults = new Properties();
-        try{
+        try {
 
             defaults.load(getApplicationContext().getAssets().open("camproperties.properties"));
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -479,8 +490,8 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         camModule.setFps(40);
 
         distortionData = new CameraDistortionCalibrationData(
-                propertyWriter.retrieveConf("cameraMatrix"+camModule.getCameraCode(),defaults.getProperty("cameraMatrix")),
-                propertyWriter.retrieveConf("distCoeffs"+camModule.getCameraCode(), defaults.getProperty("distCoeffs")));
+                propertyWriter.retrieveConf("cameraMatrix" + camModule.getCameraCode(), defaults.getProperty("cameraMatrix")),
+                propertyWriter.retrieveConf("distCoeffs" + camModule.getCameraCode(), defaults.getProperty("distCoeffs")));
 
     }
 
