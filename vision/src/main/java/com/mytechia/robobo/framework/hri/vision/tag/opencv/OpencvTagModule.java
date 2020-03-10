@@ -45,7 +45,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
     private int currentTagDict = Aruco.DICT_4X4_1000;
     private CameraDistortionCalibrationData calibrationData;
     private AuxPropertyWriter propertyWriter;
-    private CharucoBoard board ;
 
     private boolean processing = false;
 
@@ -70,10 +69,10 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
             e.printStackTrace();
         }
         defaults = new Properties();
-        try{
+        try {
 
             defaults.load(manager.getApplicationContext().getAssets().open("camproperties.properties"));
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -163,54 +162,48 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
                         // Translation vector
                         Mat tvecs = new Mat();
 
-                        // rvecs, tvecs, 3x1 CV_64FC3 matrix
-                        // Marker pose detection
-                        Aruco.estimatePoseSingleMarkers(markerCorners, 100, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), tvecs, rvecs);
-
-                        // rvecs, tvecs, 3x1 CV_64FC1 matrix
-                        //Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
-                    /*if (tvecs.rows()>0){
-
-                        Log.w("RVECS", (float)rvecs.get(0,0)[0]+" "+(float)rvecs.get(1,0)[0]+ " "+(float) rvecs.get(2,0)[0]);
-                    }*/
-
-                        // List of detected tags
-                        List<Tag> tags = new ArrayList<>();
-
-                        // Individual vectors for the tags
-                        float[] tagRvecs = new float[3];
-                        float[] tagTvecs = new float[3];
-
-                        for (int i = 0; i < markerIds.rows(); i++) {
-                            Tag tag;
-
-                            tagRvecs[0] = (float) rvecs.get(i, 0)[0];
-                            tagRvecs[1] = (float) rvecs.get(i, 0)[1];
-                            tagRvecs[2] = (float) rvecs.get(i, 0)[2];
-                            tagTvecs[0] = (float) tvecs.get(i, 0)[0];
-                            tagTvecs[1] = (float) tvecs.get(i, 0)[1];
-                            tagTvecs[2] = (float) tvecs.get(i, 0)[2];
-
-                            // Check the camera before creating the tags
-                            if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
-                                //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX());
-                                // TODO: Revisar si se van a espejar las coordenadas o así está bien
-                                tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX(), tagRvecs, tagTvecs);
-
-
-                            } else {
-                                //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX());
-                                tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX(), tagRvecs, tagTvecs);
-                            }
-                            //Log.w("ARUCO", tag.toString());
-                            tags.add(tag);
-                        }
-
-                        // Notify to the remote control module
                         if (markerIds.rows() > 0) {
+                            // rvecs, tvecs, 3x1 CV_64FC3 matrix
+                            // Marker pose detection
+                            Aruco.estimatePoseSingleMarkers(markerCorners, 100, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), tvecs, rvecs);
+
+                            // rvecs, tvecs, 3x1 CV_64FC1 matrix
+                            //Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
+
+                            // List of detected tags
+                            List<Tag> tags = new ArrayList<>();
+
+                            // Individual vectors for the tags
+                            float[] tagRvecs = new float[3];
+                            float[] tagTvecs = new float[3];
+
+                            for (int i = 0; i < markerIds.rows(); i++) {
+                                Tag tag;
+
+                                tagRvecs[0] = (float) rvecs.get(i, 0)[0];
+                                tagRvecs[1] = (float) rvecs.get(i, 0)[1];
+                                tagRvecs[2] = (float) rvecs.get(i, 0)[2];
+                                tagTvecs[0] = (float) tvecs.get(i, 0)[0];
+                                tagTvecs[1] = (float) tvecs.get(i, 0)[1];
+                                tagTvecs[2] = (float) tvecs.get(i, 0)[2];
+
+                                // Check the camera before creating the tags
+                                if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
+                                    //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX());
+                                    // TODO: Revisar si se van a espejar las coordenadas o así está bien
+                                    tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX(), tagRvecs, tagTvecs);
+                                } else {
+                                    //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX());
+                                    tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX(), tagRvecs, tagTvecs);
+                                }
+                                //Log.w("ARUCO", tag.toString());
+                                tags.add(tag);
+                            }
+
+                            // Notify to the remote control module
                             notifyMarkersDetected(tags);
                         }
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
 
@@ -230,8 +223,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
     @Override
     public void onOpenCVStartup() {
         calibrationData = new CameraDistortionCalibrationData(
-                propertyWriter.retrieveConf("distCoeffs"+cameraModule.getCameraCode(), defaults.getProperty("distCoeffs")),
-                propertyWriter.retrieveConf("cameraMatrix"+cameraModule.getCameraCode(), defaults.getProperty("cameraMatrix")));
+                propertyWriter.retrieveConf("cameraMatrix" + cameraModule.getCameraCode(), defaults.getProperty("cameraMatrix")),
+                propertyWriter.retrieveConf("distCoeffs" + cameraModule.getCameraCode(), defaults.getProperty("distCoeffs")));
     }
 
     @Override
