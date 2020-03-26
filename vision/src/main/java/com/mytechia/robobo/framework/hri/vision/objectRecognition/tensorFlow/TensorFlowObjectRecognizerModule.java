@@ -40,7 +40,7 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
     // Configuration values for the prepackaged SSD model.
     private static final int TF_OD_API_INPUT_SIZE = 300;
-    private static final boolean TF_OD_API_IS_QUANTIZED = true;
+    private static final boolean TF_OD_API_IS_QUANTIZED = false;
     private static final String TF_OD_API_MODEL_FILE = "detect.tflite";
     //private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/labelmap.txt";
     private static final String TF_OD_API_LABELS_FILE = "labelmap.txt";
