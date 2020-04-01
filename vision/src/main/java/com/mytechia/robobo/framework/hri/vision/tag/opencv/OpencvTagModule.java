@@ -50,7 +50,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
 
     ExecutorService executor;
 
-    Properties defaults;
 
 
     @Override
@@ -58,7 +57,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
 
 
         m = manager;
-        propertyWriter = new AuxPropertyWriter();
+        propertyWriter = new AuxPropertyWriter("camera.properties", manager);
         // Load camera and remote control modules
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
@@ -66,13 +65,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
 
 
         } catch (ModuleNotFoundException e) {
-            e.printStackTrace();
-        }
-        defaults = new Properties();
-        try {
-
-            defaults.load(manager.getApplicationContext().getAssets().open("camproperties.properties"));
-        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -223,8 +215,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
     @Override
     public void onOpenCVStartup() {
         calibrationData = new CameraDistortionCalibrationData(
-                propertyWriter.retrieveConf("cameraMatrix" + cameraModule.getCameraCode(), defaults.getProperty("cameraMatrix")),
-                propertyWriter.retrieveConf("distCoeffs" + cameraModule.getCameraCode(), defaults.getProperty("distCoeffs")));
+                propertyWriter.retrieveConf("cameraMatrix" + cameraModule.getCameraCode(), propertyWriter.retrieveConf("cameraMatrix")),
+                propertyWriter.retrieveConf("distCoeffs" + cameraModule.getCameraCode(), propertyWriter.retrieveConf("distCoeffs")));
     }
 
     @Override

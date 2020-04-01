@@ -123,7 +123,6 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         setContentView(R.layout.activity_calibration_test);
 
         capturedList = new ArrayList<Mat>();
-        propertyWriter = new AuxPropertyWriter();
 
         //Request permissions
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -198,6 +197,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             public void onRoboboManagerStarted(RoboboManager robobo) {
                 //the robobo service and manager have been started up
                 roboboManager = robobo;
+                propertyWriter = new AuxPropertyWriter("camera.properties", robobo);
 
                 //start the "custom" robobo application
                 startRoboboApplication();
@@ -476,13 +476,6 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     @Override
     public void onOpenCVStartup() {
 
-        Properties defaults = new Properties();
-        try {
-
-            defaults.load(getApplicationContext().getAssets().open("camproperties.properties"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         roboboManager.setPowerManagementEnabled(false);
 
@@ -490,8 +483,8 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         camModule.setFps(40);
 
         distortionData = new CameraDistortionCalibrationData(
-                propertyWriter.retrieveConf("cameraMatrix" + camModule.getCameraCode(), defaults.getProperty("cameraMatrix")),
-                propertyWriter.retrieveConf("distCoeffs" + camModule.getCameraCode(), defaults.getProperty("distCoeffs")));
+                propertyWriter.retrieveConf("cameraMatrix" + camModule.getCameraCode(), propertyWriter.retrieveConf("cameraMatrix")),
+                propertyWriter.retrieveConf("distCoeffs" + camModule.getCameraCode(), propertyWriter.retrieveConf("distCoeffs")));
 
     }
 
