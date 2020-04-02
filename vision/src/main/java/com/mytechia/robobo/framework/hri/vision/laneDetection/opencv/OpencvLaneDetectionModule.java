@@ -122,8 +122,8 @@ public class OpencvLaneDetectionModule extends ALaneDetectionModule implements I
         }
         if (count1==0||count2==0)
             return;
-        else
-            res = new Mat(2, 4, lines.type());
+//        else
+//            res = new Mat(2, 4, lines.type());
 
 
         slope1_avg /= count1;
@@ -131,17 +131,19 @@ public class OpencvLaneDetectionModule extends ALaneDetectionModule implements I
         slope2_avg /= count2;
         yinter2 /= count2;
 
-        // Bottom of the line
-        y1 = (int) lineModule.getMatSize().height;
+//        // Bottom of the line
+//        y1 = (int) lineModule.getMatSize().height;
+//
+//        // Top of the line
+//        y2 = (int) (y1 - (y1 * 0.3125));
+//
+//        //Todo: move this to other function
+//
+//        res.put(0, 0, (int) ((y1 - yinter1) / slope1_avg), y1, (int) ((y2 - yinter1) / slope1_avg), y2);
+//        res.put(1, 0, (int) ((y1 - yinter2) / slope2_avg), y1, (int) ((y2 - yinter2) / slope2_avg), y2);
+//        res.put(0, 0, (int) ((y1 - yinter1) / slope1_avg), y1, (int) ((y2 - yinter1) / slope1_avg), y2);
+//        res.put(1, 0, (int) ((y1 - yinter2) / slope2_avg), y1, (int) ((y2 - yinter2) / slope2_avg), y2);
 
-        // Top of the line
-        y2 = (int) (y1 - (y1 * 0.3125));
-
-        //Todo: move this to other function
-
-        res.put(0, 0, (int) ((y1 - yinter1) / slope1_avg), y1, (int) ((y2 - yinter1) / slope1_avg), y2);
-        res.put(1, 0, (int) ((y1 - yinter2) / slope2_avg), y1, (int) ((y2 - yinter2) / slope2_avg), y2);
-
-        notifyLinesDetected( res);
+        notifyLinesDetected( slope1_avg, yinter1, slope2_avg, yinter2);
     }
 }
