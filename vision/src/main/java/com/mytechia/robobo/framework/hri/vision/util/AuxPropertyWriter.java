@@ -1,65 +1,77 @@
 package com.mytechia.robobo.framework.hri.vision.util;
 
 import android.os.Environment;
+import android.util.Log;
+
+import com.mytechia.robobo.framework.RoboboManager;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class AuxPropertyWriter {
 
-    Properties properties;
-    File dir;
-    String fileName;
-    File propFile;
-    public AuxPropertyWriter(){
+    private static final String TAG = "AuxPropertyWriter";
+    private RoboboManager manager;
+    private Properties properties;
+    private File dir;
+    private String fileName;
+    private File propFile;
+
+    public AuxPropertyWriter(String fileName, RoboboManager manager) {
+        this.manager = manager;
+        this.fileName = fileName;
+        properties = new Properties();
+
         dir = new File(Environment.getExternalStorageDirectory() + "/properties");
-        dir.mkdirs();
-        fileName = "cameraCalibration.properties";
         propFile = new File(dir, fileName);
 
-        FileInputStream fileInputStream = null;
-        try {
-            fileInputStream = new FileInputStream(propFile);
-        } catch (FileNotFoundException e) {
-            createPropFile();
+        dir.mkdirs();
+
+//        fileName = "cameraCalibration.properties";
+
+        if (!propFile.exists()) {
+            loadDefaults();
+        } else {
             try {
-                fileInputStream = new FileInputStream(propFile);
-            } catch (FileNotFoundException e1) {
-                e1.printStackTrace();
+                properties.load(new FileInputStream(propFile));
+            } catch (IOException e) {
+                Log.e(TAG, "Unable to access file " + fileName);
+                e.printStackTrace();
             }
-
         }
 
 
-        properties = new Properties();
+    }
+
+    private boolean loadDefaults() {
+
+
         try {
-
-            //FIXME Puede saltar un NullPointerException por culpa del fileInputStream
-            if (fileInputStream == null){
-                throw new FileNotFoundException();
-            }else {
-                properties.load(fileInputStream);
-            }
+            InputStream inputStream = manager.getApplicationContext().getAssets().open(fileName);
+            properties.load(inputStream);
         } catch (IOException e) {
+            Log.e(TAG, "Error loading default values of " + fileName);
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     public void storeConf(String key, String value) {
 
-        properties.setProperty(key,value);
+        properties.setProperty(key, value);
 
     }
 
-    public String retrieveConf(String key,String defValue) {
-        String prop = properties.getProperty(key,defValue);
-        return prop;
-
-
+    public String retrieveConf(String key, String defValue) {
+        return properties.getProperty(key, defValue);
+    }
+    public String retrieveConf(String key) {
+        return properties.getProperty(key);
     }
 
     public void removeConf(String key) {
@@ -72,29 +84,28 @@ public class AuxPropertyWriter {
 
     public synchronized void commitConf() {
         FileOutputStream fos = null;
+        if (!propFile.exists())
+            createPropFile();
+
         try {
-
-            fos = new FileOutputStream(propFile,false);
-            properties.store(fos,"Shared preferences of the Robobo environment");
-
+            fos = new FileOutputStream(propFile, false);
+            properties.store(fos, "Shared preferences of the Robobo environment");
             fos.close();
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    private static void createPropFile(){
 
-        File dir = new File (Environment.getExternalStorageDirectory() + "/properties");
+    private void createPropFile() {
+
+//        File dir = new File(Environment.getExternalStorageDirectory() + "/properties");
 
         dir.mkdirs();
         dir.setWritable(true);
         dir.setReadable(true);
 
-        File file = new File(dir, "cameraCalibration.properties");
+        File file = new File(dir, fileName);
         try {
             file.createNewFile();
         } catch (IOException e) {
