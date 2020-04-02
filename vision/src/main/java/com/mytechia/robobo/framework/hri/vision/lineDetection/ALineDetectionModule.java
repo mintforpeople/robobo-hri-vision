@@ -1,6 +1,7 @@
 package com.mytechia.robobo.framework.hri.vision.lineDetection;
 
 import com.mytechia.robobo.framework.RoboboManager;
+import com.mytechia.robobo.framework.hri.vision.util.GsonConverter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 
@@ -12,7 +13,8 @@ public abstract class ALineDetectionModule implements ILineDetectionModule {
     private HashSet<ILineDetectionListener> listeners = new HashSet<ILineDetectionListener>();
     protected IRemoteControlModule rcmodule = null;
     protected RoboboManager m;
-    protected boolean status = false;
+    private int counter;
+    protected boolean status=false;
 
     @Override
     public void suscribe(ILineDetectionListener listener) {
@@ -30,18 +32,34 @@ public abstract class ALineDetectionModule implements ILineDetectionModule {
             listener.onLine(lines);
         }
         if (rcmodule != null && status) { // USE CAREFULLY, GENERATES A LOT OF LAN TRAFFIC!!!
-            for (int x = 0; x < lines.rows(); x++) {
-                double[] l = lines.get(x, 0);
+            Status status = new Status("LINE");
 
-                Status status = new Status("LINE");
-                status.putContents("cor1x", (int) l[0] + "");
-                status.putContents("cor1y", (int) l[1] + "");
-                status.putContents("cor2x", (int) l[2] + "");
-                status.putContents("cor2y", (int) l[3] + "");
-                rcmodule.postStatus(status);
+            status.putContents("mat", formatLines(lines));
+            status.putContents("id", counter++ +"");
+            rcmodule.postStatus(status);
 
-            }
         }
+    }
+
+    private String formatLines(Mat lines) {
+        StringBuilder res= new StringBuilder("[");
+        for (int i = 0; i < lines.rows(); i++) {
+            double[] l = lines.get(i, 0);
+
+            res.append("[");
+            res.append(l[0]);
+            res.append(",");
+            res.append(l[1]);
+            res.append(",");
+            res.append(l[2]);
+            res.append(",");
+            res.append(l[3]);
+            res.append("]");
+            if (i!=lines.rows()-1)
+                res.append(",");
+        }
+        res.append("]");
+        return res.toString();
     }
 
 }
