@@ -45,13 +45,15 @@ public abstract class ALaneDetectionModule implements ILaneDetectionModule {
         }
     }
     protected void notifyLinesDetected(Line line_lt, Line line_rt, Mat minv){
+        double[] l = line_lt.last_fit_pixel;
+        double[] r = line_rt.last_fit_pixel;
+        if(l==null || r==null)
+            return;
         for (ILaneDetectionListener listener:listeners){
             listener.onLane(line_lt, line_rt, minv);
         }
         if (rcmodule != null) {
             Status status = new Status("LANE");
-            double[] l = line_lt.last_fit_pixel;
-            double[] r = line_rt.last_fit_pixel;
 
             status.putContents("left_a", (int) l[0] + "");
             status.putContents("left_b", (int) l[1] + "");
