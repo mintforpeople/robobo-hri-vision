@@ -6,8 +6,8 @@ android {
     defaultConfig {
         minSdkVersion 22
         targetSdkVersion 26
-        versionCode 42
-        versionName "1.1.6"
+        versionCode 45
+        versionName "1.1.7.3-UNQUANTIZED-SNAPSHOT"
     }
     buildTypes {
         release {
@@ -53,6 +53,7 @@ dependencies {
 
 
 }
+
 
 
 //apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'

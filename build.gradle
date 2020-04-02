@@ -30,3 +30,8 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+task javadoc(type: Javadoc) {
+    excludes = ['**/*.md'] // < ---- Exclude all markdown files from javadoc file.
+    // ...
+}
