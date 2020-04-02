@@ -15,6 +15,24 @@ A Mat containing the two lines with the x,y coordinates for the starting and end
 Two Line objects and a transformation matrix (3x3) used to transform the plane/image where the lines could be projected so it fits with the unwarped image.
 To draw the line, there's the Line.draw() function (see more at the Javadoc), or could use the last_fit_pixel member variable (double array with each coefficient).
 
+To modify the transformation on the image, the next 9 lines should be on camera.properties,
+the keys should be the same, but the values could be changed.
+
+lt_tl_x=0.2
+lt_tl_y=0.2
+lt_tr_x=0.8
+lt_tr_y=0.2
+lt_bl_x=0
+lt_bl_y=1
+lt_br_x=1
+lt_br_y=1
+lt_avg_results=false
+
+Key names follow the next pattern:
+`lt(keyword)_corner(tr=top right for example)_coordinate(x or y)`
+The last line its to average the coefficients of the lines.
+All values should be a float and represent a percentage of the total size (height or width)
+
 ## Notes
 The advanced module is recommended if possible.
 The advanced module detect white and yellow lines.

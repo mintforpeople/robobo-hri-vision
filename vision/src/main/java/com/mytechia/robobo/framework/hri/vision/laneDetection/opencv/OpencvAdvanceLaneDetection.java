@@ -9,6 +9,7 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.ALaneDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.ILaneDetectionListener;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.Line;
+import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
@@ -40,6 +41,12 @@ public class OpencvAdvanceLaneDetection extends ALaneDetectionModule implements 
     private Line line_lt = new Line(), line_rt = new Line();
     private boolean processed_frames;
     private boolean processing = false;
+    private AuxPropertyWriter propertyWriter;
+    private float[] tl = new float[2],
+            tr = new float[2],
+            bl = new float[2],
+            br = new float[2];
+    private boolean avg_results=false;
 
     @Override
     public void pauseDetection() {
@@ -54,6 +61,16 @@ public class OpencvAdvanceLaneDetection extends ALaneDetectionModule implements 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         m = manager;
+        propertyWriter = new AuxPropertyWriter("camera.properties", manager);
+        tl[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_x"));
+        tl[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_y"));
+        tr[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_tr_x"));
+        tr[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_tr_y"));
+        bl[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_bl_x"));
+        bl[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_bl_y"));
+        br[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_br_x"));
+        br[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_br_y"));
+        avg_results= Boolean.parseBoolean(propertyWriter.retrieveConf("lt_avg_results"));
         // Load camera and remote control modules
         try {
             rcmodule = m.getModuleInstance(IRemoteControlModule.class);
@@ -133,7 +150,7 @@ public class OpencvAdvanceLaneDetection extends ALaneDetectionModule implements 
                         Line[] lines = get_fits_by_sliding_windows(img_birdeye, line_lt, line_rt, 9); //todo: parameterize
                         line_lt = lines[0];
                         line_rt = lines[1];
-                        processed_frames=true;
+                        processed_frames = avg_results;
                     }
 
                     notifyLinesDetected(line_lt, line_rt, minv);
@@ -149,6 +166,7 @@ public class OpencvAdvanceLaneDetection extends ALaneDetectionModule implements 
 
     /**
      * Transforms the image to get a bird view of the street
+     *
      * @param mat original image
      * @return a Mat array with two elements: the first its the image warped, and the second its the transformation matrix to inverse the warped image
      */
@@ -160,11 +178,10 @@ public class OpencvAdvanceLaneDetection extends ALaneDetectionModule implements 
                 dst = new Mat(4, 2, CvType.CV_32F),
                 m, minv, warped = new Mat();
 
-        // todo: parameterize
-        src.put(0, 0, new float[]{w, h});
-        src.put(1, 0, new float[]{0, h});
-        src.put(2, 0, new float[]{(int) (w * .2), (int) (h * .2)});
-        src.put(3, 0, new float[]{(int) (w * .8), (int) (h * .2)});
+        src.put(0, 0, new float[]{(int) (w * br[0]), (int) (h * br[1])});
+        src.put(1, 0, new float[]{(int) (w * bl[0]), (int) (h * bl[1])});
+        src.put(2, 0, new float[]{(int) (w * tl[0]), (int) (h * tl[1])});
+        src.put(3, 0, new float[]{(int) (w * tr[0]), (int) (h * tr[1])});
 
         dst.put(0, 0, new float[]{w, h});
         dst.put(1, 0, new float[]{0, h});
