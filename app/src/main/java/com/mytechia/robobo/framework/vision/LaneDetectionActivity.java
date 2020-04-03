@@ -253,8 +253,7 @@ public class LaneDetectionActivity extends AppCompatActivity implements ICameraL
     }
 
 
-    @Override
-    public void onLane(final Mat lines) {
+    public void onLane(double a1, double b1,double  a2,double  b2) {
 //        this.lines = lines;
     }
 
