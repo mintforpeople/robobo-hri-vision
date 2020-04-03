@@ -60,16 +60,6 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
             e.printStackTrace();
         }
 
-
-        Properties defaults = new Properties();
-        try {
-
-            defaults.load(manager.getApplicationContext().getAssets().open("camproperties.properties"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
         cameraModule.suscribe(this);
 
         rcmodule.registerCommand("START-STREAM", new ICommandExecutor() {
