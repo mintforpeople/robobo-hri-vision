@@ -28,6 +28,9 @@ public abstract class ALineDetectionModule implements ILineDetectionModule {
 
 
     protected void notifyLinesDetected(Mat lines) {
+        if(lines.rows()<=0)
+            return;
+
         for (ILineDetectionListener listener : listeners) {
             listener.onLine(lines);
         }
