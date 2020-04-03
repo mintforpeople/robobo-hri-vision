@@ -21,7 +21,7 @@ It's important to remember that:
  - The calibration process should be done for each camera.
 
 ## For Devs
-The calibration its done by using a Camera Matrix and a Distortion Coefficients Vector, each calibrations saves the obtained value for that camera in the *cameraCalibration.properties* file. There would be only one matrix and vector for each camera with the names using the following format:
+The calibration its done by using a Camera Matrix and a Distortion Coefficients Vector, each calibrations saves the obtained value for that camera in the *camera.properties* file. There would be only one matrix and vector for each camera with the names using the following format:
 
 > distCoeffs# ...
 > cameraMatrix# ...
