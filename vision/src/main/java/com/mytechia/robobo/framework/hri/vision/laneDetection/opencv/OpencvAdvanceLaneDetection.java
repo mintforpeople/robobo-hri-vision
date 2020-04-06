@@ -46,7 +46,8 @@ public class OpencvAdvanceLaneDetection extends ALaneDetectionModule implements 
             tr = new float[2],
             bl = new float[2],
             br = new float[2];
-    private boolean avg_results=false;
+    private boolean avg_results = false,
+            invertColors = false;
 
     @Override
     public void pauseDetection() {
@@ -70,7 +71,7 @@ public class OpencvAdvanceLaneDetection extends ALaneDetectionModule implements 
         bl[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_bl_y"));
         br[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_br_x"));
         br[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_br_y"));
-        avg_results= Boolean.parseBoolean(propertyWriter.retrieveConf("lt_avg_results"));
+        avg_results = Boolean.parseBoolean(propertyWriter.retrieveConf("lt_avg_results"));
         // Load camera and remote control modules
         try {
             rcmodule = m.getModuleInstance(IRemoteControlModule.class);
@@ -88,6 +89,13 @@ public class OpencvAdvanceLaneDetection extends ALaneDetectionModule implements 
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
                 resumeDetection();
+            }
+        });
+
+        rcmodule.registerCommand("INVERT-COLORS-LANE", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                invertColors = !invertColors;
             }
         });
 
@@ -129,9 +137,10 @@ public class OpencvAdvanceLaneDetection extends ALaneDetectionModule implements 
                 @Override
                 public void run() {
                     processing = true;
-                    // todo: undistort
-
-//        Core.bitwise_not(mat,mat);
+                    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2RGB);
+                    // todo: undistort using camera.properties values
+                    if (invertColors)
+                        Core.bitwise_not(mat, mat);
 
                     // Binarize the image getting the white and yellow parts
                     Mat binary = binarize(mat);
@@ -301,9 +310,11 @@ public class OpencvAdvanceLaneDetection extends ALaneDetectionModule implements 
         Mat thresh = new Mat();
         Mat hsv = new Mat();
 
-        Imgproc.cvtColor(mat, hsv, Imgproc.COLOR_RGB2HSV);
-
-        //Get only colors in threshold
+        if (invertColors) {
+            Core.bitwise_not(mat, hsv);
+            Imgproc.cvtColor(hsv, hsv, Imgproc.COLOR_RGB2HSV);
+        } else
+            Imgproc.cvtColor(mat, hsv, Imgproc.COLOR_RGB2HSV);
         Core.inRange(hsv,
                 new Scalar(YELLOW_HSV_TH_MIN[0],
                         YELLOW_HSV_TH_MIN[1],
