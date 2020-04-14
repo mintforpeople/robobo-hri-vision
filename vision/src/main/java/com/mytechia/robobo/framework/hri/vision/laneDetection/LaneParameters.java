@@ -8,8 +8,11 @@ public class LaneParameters {
 
     // From a orange-ish to a yellow-green-ish
     // Avoiding very washed color of that spectrum
-    public final static int[] YELLOW_HSV_TH_MIN = {0, 70, 70};
-    public final static int[] YELLOW_HSV_TH_MAX = {50, 255, 255};
+//    public final static int[] YELLOW_HSV_TH_MIN = {0, 70, 70};
+//    public final static int[] YELLOW_HSV_TH_MAX = {50, 255, 255};
+    public final static int[] YELLOW_HSV_TH_MIN = {20, 100, 100};
+    public final static int[] YELLOW_HSV_TH_MAX = {60, 255, 255};
+
     public final static int EQUALIZED_THRESHOLD = 250;
     public final static int SOBEL_KERNEL_SIZE = 9;
     public final static int SOBEL_THRESHOLD = 50;
