@@ -121,10 +121,6 @@ public class OpencvLineDetectionModule extends ALineDetectionModule implements I
                     processing = true;
                     matSize = mat.size();
                     Mat lines = new Mat();
-                    // If the camera is the frontal the image is mirrored
-                    if (cameraModule.getCameraCode() == CAMERA_ID_FRONT)
-                        Core.flip(mat, mat, 1);
-
                     doCanny(mat);
 
                     if (useMask)

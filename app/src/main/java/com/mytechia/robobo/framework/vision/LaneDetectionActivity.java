@@ -193,7 +193,7 @@ public class LaneDetectionActivity extends AppCompatActivity implements ICameraL
 //            double[] l = lines.get(x, 0);
 //            Imgproc.line(mat, new Point(l[0], l[1]), new Point(l[2], l[3]), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
 //        }
-        Core.addWeighted(mask, 0.8, mat, 0.5, 0, mat);
+        Core.addWeighted(mask, 1., mat, 0.5, 0, mat);
 
         final Frame frame = new Frame(mat);
         runOnUiThread(new Runnable() {
@@ -253,13 +253,21 @@ public class LaneDetectionActivity extends AppCompatActivity implements ICameraL
     }
 
 
-    public void onLane(double a1, double b1,double  a2,double  b2) {
-//        this.lines = lines;
+    public void onLane(double slope_left, double bias_left, double slope_right, double bias_right) {
+        if (actualMat == null)
+            return;
+        // now separately draw solid lines to highlight them
+        Mat line_mask = Mat.zeros(actualMat.size(), actualMat.type());
+        // Left line
+        Imgproc.line(line_mask, new Point(-bias_left / slope_left, 0), new Point((line_mask.rows() - 1 - bias_left)/slope_left , line_mask.rows() - 1), new Scalar(255, 0, 0), 10);
+        // Right line
+        Imgproc.line(line_mask, new Point(-bias_right / slope_right, 0), new Point((line_mask.rows() - 1 - bias_right)/slope_right , line_mask.rows() - 1), new Scalar(0, 0, 255), 10);
+        mask = line_mask;
     }
 
     @Override
     public void onLane(Line line_lt, Line line_rt, Mat minv) {
-        if (actualMat==null)
+        if (actualMat == null)
             return;
 
         // now separately draw solid lines to highlight them
@@ -269,7 +277,7 @@ public class LaneDetectionActivity extends AppCompatActivity implements ICameraL
         if (line_rt.detected)
             line_rt.draw(line_warp, new Scalar(0, 0, 255), 20, false);// average=keep_state)
         Imgproc.warpPerspective(line_warp, line_warp, minv, actualMat.size());
-        mask=line_warp;
+        mask = line_warp;
 
     }
 
