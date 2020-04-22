@@ -35,8 +35,8 @@ public abstract class ALaneDetectionModule implements ILaneDetectionModule {
         if (rcmodule != null) {
             Status status = new Status("LANE_BASIC");
             status.putContents("a1", a1 + "");
-            status.putContents("b1", a2 + "");
-            status.putContents("a2", b1 + "");
+            status.putContents("b1", b1 + "");
+            status.putContents("a2", a2 + "");
             status.putContents("b2", b2 + "");
             status.putContents("id", counter + "");
             rcmodule.postStatus(status);

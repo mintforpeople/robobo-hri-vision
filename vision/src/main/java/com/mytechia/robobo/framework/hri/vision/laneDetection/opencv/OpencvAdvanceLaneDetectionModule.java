@@ -92,10 +92,17 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
             }
         });
 
-        rcmodule.registerCommand("INVERT-COLORS-LANE", new ICommandExecutor() {
+        rcmodule.registerCommand("INVERT-COLORS-LANE-ON", new ICommandExecutor() {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
-                invertColors = !invertColors;
+                invertColors = true;
+            }
+        });
+
+        rcmodule.registerCommand("INVERT-COLORS-LANE-OFF", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                invertColors = false;
             }
         });
 
