@@ -28,16 +28,16 @@ public abstract class ALaneDetectionModule implements ILaneDetectionModule {
         listeners.remove(listener);
     }
 
-    protected void notifyLinesDetected(double a1, double b1, double a2, double b2) {
+    protected void notifyLinesDetected(double slope_left, double bias_left, double slope_right, double bias_right) {
         for (ILaneDetectionListener listener : listeners) {
-            listener.onLane(a1, b1, a2, b2);
+            listener.onLane(slope_left, bias_left, slope_right, bias_right);
         }
         if (rcmodule != null) {
             Status status = new Status("LANE_BASIC");
-            status.putContents("a1", a1 + "");
-            status.putContents("b1", b1 + "");
-            status.putContents("a2", a2 + "");
-            status.putContents("b2", b2 + "");
+            status.putContents("a1", slope_left + "");
+            status.putContents("b1", bias_left + "");
+            status.putContents("a2", slope_right + "");
+            status.putContents("b2", bias_right + "");
             status.putContents("id", counter + "");
             rcmodule.postStatus(status);
             counter++;

@@ -253,13 +253,15 @@ public class LaneDetectionActivity extends AppCompatActivity implements ICameraL
     }
 
 
-    public void onLane(double a1, double b1, double a2, double b2) {
+    public void onLane(double slope_left, double bias_left, double slope_right, double bias_right) {
         if (actualMat == null)
             return;
         // now separately draw solid lines to highlight them
         Mat line_mask = Mat.zeros(actualMat.size(), actualMat.type());
-        Imgproc.line(line_mask, new Point(-b1 / a1, 0), new Point((line_mask.rows() - 1 - b1)/a1 , line_mask.rows() - 1), new Scalar(255, 0, 0), 10);
-        Imgproc.line(line_mask, new Point(-b2 / a2, 0), new Point((line_mask.rows() - 1 - b2)/a2 , line_mask.rows() - 1), new Scalar(0, 0, 255), 10);
+        // Left line
+        Imgproc.line(line_mask, new Point(-bias_left / slope_left, 0), new Point((line_mask.rows() - 1 - bias_left)/slope_left , line_mask.rows() - 1), new Scalar(255, 0, 0), 10);
+        // Right line
+        Imgproc.line(line_mask, new Point(-bias_right / slope_right, 0), new Point((line_mask.rows() - 1 - bias_right)/slope_right , line_mask.rows() - 1), new Scalar(0, 0, 255), 10);
         mask = line_mask;
     }
 
