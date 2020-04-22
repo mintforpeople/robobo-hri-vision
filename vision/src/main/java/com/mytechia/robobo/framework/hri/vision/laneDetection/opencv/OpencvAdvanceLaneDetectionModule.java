@@ -32,7 +32,7 @@ import static com.mytechia.robobo.framework.hri.vision.laneDetection.LaneParamet
 import static com.mytechia.robobo.framework.hri.vision.laneDetection.Line.get_fits_by_previous_fits;
 import static com.mytechia.robobo.framework.hri.vision.laneDetection.Line.get_fits_by_sliding_windows;
 
-public class OpencvAdvanceLaneDetection extends ALaneDetectionModule implements ICameraListener {
+public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule implements ICameraListener {
 
     private ICameraModule cameraModule;
     private Executor executor;
