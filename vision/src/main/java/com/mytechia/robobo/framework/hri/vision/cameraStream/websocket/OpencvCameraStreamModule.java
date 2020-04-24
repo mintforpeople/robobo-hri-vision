@@ -26,13 +26,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class OpencvCameraStreamModule extends ACameraStreamModule implements ICameraListener {
     private static final String TAG = "OpenCVCameraStreamModule";
+    static final int QUEUE_LENGTH = 60;
+
 
     IRemoteControlModule rcmodule;
 
     //Queue
-    private ProcessWithQueue processFrameQueue;
-    private LinkedBlockingQueue<byte[]> frameQueue;
-
 
     // FPS control variables
     private long lastFrameTime = 0;
@@ -79,24 +78,18 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
         rcmodule.registerCommand("SET-STREAM-FPS", new ICommandExecutor() {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
-                if(c.getParameters().containsKey("fps")){
+                if (c.getParameters().containsKey("fps")) {
                     setFps(Integer.parseInt(c.getParameters().get("fps")));
                 }
             }
         });
 
-        server = new Server();
-        startServer();
+        server = new Server(QUEUE_LENGTH);
+        server.start();
     }
 
     public void setFps(int fps) {
-        deltaTimeThreshold = 1000/fps;
-    }
-
-    private void startServer() {
-        server.start();
-        frameQueue = new LinkedBlockingQueue<>();
-        processFrameQueue = new ProcessWithQueue(frameQueue);
+        deltaTimeThreshold = 1000 / fps;
     }
 
     @Override
@@ -124,35 +117,31 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
     public void onNewMat(final Mat mat) {
         long millis = System.currentTimeMillis();
 
-        if (!processing && millis-lastFrameTime>=deltaTimeThreshold) {
+        if (!processing && millis - lastFrameTime >= deltaTimeThreshold) {
 
             lastFrameTime = millis;
-            processing = true;
 
+            processing = true;
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    try {
 
-                        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2RGB);
-                        MatOfByte bytemat = new MatOfByte();
+                    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2RGB);
+                    MatOfByte bytemat = new MatOfByte();
 
-                        Imgcodecs.imencode(".jpg", mat, bytemat);
+                    Imgcodecs.imencode(".jpg", mat, bytemat);
 
-                        // You can use something like this to lower the quality of the jpegs
-                        //MatOfInt props = new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 30);
-                        //Imgcodecs.imencode(".jpg", mat, bytemat, props);
+                    // You can use something like this to lower the quality of the jpegs
+                    //MatOfInt props = new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 30);
+                    //Imgcodecs.imencode(".jpg", mat, bytemat, props);
 
-                        byte[] bytes = bytemat.toArray();
+                    byte[] bytes = bytemat.toArray();
 
-                        if (frameQueue.size() == 30)
-                            frameQueue.take();
-
-                        frameQueue.put(bytes);
-
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    server.addData(bytes);
+//                        if (frameQueue.size() == 30)
+//                            frameQueue.take();
+//
+//                        frameQueue.put(bytes);
 
                     processing = false;
                 }

@@ -11,23 +11,27 @@ import java.util.concurrent.LinkedBlockingQueue;
  * ServerThread is the class that handles the communication of the socket subscribers
  */
 public class ServerThread extends AsyncTask<Void, Void, Void> {
+    private final int maxQueueLength;
     private volatile SocketChannel channel = null; //The comunication channel
-    private LinkedBlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>(); //Queue of images
+    private LinkedBlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>(); //Queue of images, this is thread-safe
+
+    ServerThread(SocketChannel socketChannel, int queueLength) {
+        this.channel = socketChannel;
+        this.maxQueueLength=queueLength;
+    }
 
     protected Void doInBackground(Void... urls) {
         try {
 
-            while (true) {
-                synchronized (queue) {
-                    if (queue.size() > 0) {
-                        byte[] temp = queue.take();
-                        ByteBuffer buffer = ByteBuffer.allocate(temp.length + 4).putInt(temp.length);
-                        buffer.put(temp);
-                        buffer.rewind();
-                        while (buffer.hasRemaining())
-                            channel.write(buffer);
-                    }
-                }
+            while (channel != null) {
+
+                byte[] temp = queue.take(); //Take waits until it can be done
+                ByteBuffer buffer = ByteBuffer.allocate(temp.length + 4).putInt(temp.length);
+                buffer.put(temp);
+                buffer.rewind();
+                while (buffer.hasRemaining())
+                    channel.write(buffer);
+
             }
 
         } catch (Exception e) {
@@ -39,12 +43,13 @@ public class ServerThread extends AsyncTask<Void, Void, Void> {
 
     /**
      * Adds an image to be processed
+     *
      * @param image Image to be added
      */
     synchronized void addData(byte[] image) {
 
         try {
-            if (this.queue.size() == 30) {
+            if (this.queue.size() == maxQueueLength) {
                 this.queue.take();
             }
             this.queue.put(image);
@@ -54,13 +59,6 @@ public class ServerThread extends AsyncTask<Void, Void, Void> {
 
     }
 
-    /**
-     * Sets the socket channel for the communication
-     * @param channel SocketChannel to communicate with the client.
-     */
-    void setChannel(SocketChannel channel) {
-        this.channel = channel;
-    }
 
     /**
      * Closes the connection with the client
@@ -71,6 +69,7 @@ public class ServerThread extends AsyncTask<Void, Void, Void> {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        channel = null;
         Server.subscribers.remove(this);
     }
 }
