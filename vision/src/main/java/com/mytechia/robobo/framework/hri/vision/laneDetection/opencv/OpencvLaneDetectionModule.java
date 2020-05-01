@@ -137,8 +137,6 @@ public class OpencvLaneDetectionModule extends ALaneDetectionModule implements I
 //        // Top of the line
 //        y2 = (int) (y1 - (y1 * 0.3125));
 //
-//        //Todo: move this to other function
-//
 //        res.put(0, 0, (int) ((y1 - y_intercept_left) / slope_left_avg), y1, (int) ((y2 - y_intercept_left) / slope_left_avg), y2);
 //        res.put(1, 0, (int) ((y1 - y_intercept_right) / slope_right_avg), y1, (int) ((y2 - y_intercept_right) / slope_right_avg), y2);
 //        res.put(0, 0, (int) ((y1 - y_intercept_left) / slope_left_avg), y1, (int) ((y2 - y_intercept_left) / slope_left_avg), y2);
