@@ -7,6 +7,7 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.lineDetection.ALineDetectionModule;
+import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
@@ -29,13 +30,26 @@ import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 public class OpencvLineDetectionModule extends ALineDetectionModule implements ICameraListener {
 
     private ICameraModule cameraModule;
-    private boolean processing = false, useMask = false;
+    private boolean processing = false;
     private Size matSize = null;
     private ExecutorService executor;
+    private AuxPropertyWriter propertyWriter;
+    private float[] tl = new float[2],
+            tr = new float[2],
+            bl = new float[2],
+            br = new float[2];
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
-
+        propertyWriter = new AuxPropertyWriter("camera.properties", manager);
+        tl[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_x"));
+        tl[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_y"));
+        tr[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_tr_x"));
+        tr[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_tr_y"));
+        bl[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_bl_x"));
+        bl[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_bl_y"));
+        br[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_br_x"));
+        br[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_br_y"));
 
         m = manager;
         // Load camera and remote control modules
@@ -60,13 +74,13 @@ public class OpencvLineDetectionModule extends ALineDetectionModule implements I
         rcmodule.registerCommand("START-LINE-STATS", new ICommandExecutor() {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
-                status=true;
+                status = true;
             }
         });
         rcmodule.registerCommand("STOP-LINE-STATS", new ICommandExecutor() {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
-                status=false;
+                status = false;
             }
         });
 
@@ -123,13 +137,13 @@ public class OpencvLineDetectionModule extends ALineDetectionModule implements I
                     Mat lines = new Mat();
                     doCanny(mat);
 
-                    if (useMask)
-                        doSegment(mat);
+//                    if (useMask)
+                    doSegment(mat);
 
                     Imgproc.HoughLinesP(mat,
                             lines,
                             2,
-                            Math.PI/180,
+                            Math.PI / 180,
                             100,
                             100,
                             50);
@@ -145,24 +159,25 @@ public class OpencvLineDetectionModule extends ALineDetectionModule implements I
     }
 
     private void doSegment(Mat mat) {
-        int height = mat.rows(), width=mat.cols();
+        int height = mat.rows(), width = mat.cols();
         Mat mask = Mat.zeros(mat.rows(), mat.cols(), mat.type());
 
         MatOfPoint mPoints = new MatOfPoint();
         List<MatOfPoint> polygons = new ArrayList<>();
-        Point[] points = new Point[3];
+        Point[] points = new Point[4];
 
 
-        points[0]=new Point(0, height);
-        points[1]=new Point(width, height);
-        points[2]=new Point(width*0.5, height*0.4);
+        points[0] = new Point((int) (width * bl[0]), (int) (height * bl[1]));
+        points[1] = new Point((int) (width * br[0]), (int) (height * br[1]));
+        points[2] = new Point((int) (width * tr[0]), (int) (height * tr[1]));
+        points[3] = new Point((int) (width * tl[0]), (int) (height * tl[1]));
 
 
         mPoints.fromArray(points);
         polygons.add(mPoints);
 
-        Imgproc.fillPoly(mask, polygons,new Scalar(255,255,255));
-        Core.bitwise_and(mat,mask,mat);
+        Imgproc.fillPoly(mask, polygons, new Scalar(255, 255, 255));
+        Core.bitwise_and(mat, mask, mat);
     }
 
     private void doCanny(Mat mat) {
@@ -190,12 +205,7 @@ public class OpencvLineDetectionModule extends ALineDetectionModule implements I
         cameraModule.suscribe(this);
     }
 
-    @Override
-    public void useMask(boolean b) {
-        useMask = b;
-    }
-
-    public Size getMatSize(){
+    public Size getMatSize() {
         return matSize;
     }
 }
