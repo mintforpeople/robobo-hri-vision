@@ -34,10 +34,10 @@ public abstract class ALaneDetectionModule implements ILaneDetectionModule {
         }
         if (rcmodule != null) {
             Status status = new Status("LANE_BASIC");
-            status.putContents("a1", slope_left + "");
-            status.putContents("b1", bias_left + "");
-            status.putContents("a2", slope_right + "");
-            status.putContents("b2", bias_right + "");
+            status.putContents("a1", String.valueOf(slope_left));
+            status.putContents("b1", String.valueOf(bias_left));
+            status.putContents("a2", String.valueOf(slope_right));
+            status.putContents("b2", String.valueOf(bias_right));
             status.putContents("id", counter + "");
             rcmodule.postStatus(status);
             counter++;

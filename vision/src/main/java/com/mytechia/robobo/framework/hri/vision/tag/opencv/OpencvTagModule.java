@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -166,18 +167,18 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
                             List<Tag> tags = new ArrayList<>();
 
                             // Individual vectors for the tags
-                            float[] tagRvecs = new float[3];
-                            float[] tagTvecs = new float[3];
+                            double[] tagRvecs = new double[3];
+                            double[] tagTvecs = new double[3];
 
                             for (int i = 0; i < markerIds.rows(); i++) {
                                 Tag tag;
 
-                                tagRvecs[0] = (float) rvecs.get(i, 0)[0];
-                                tagRvecs[1] = (float) rvecs.get(i, 0)[1];
-                                tagRvecs[2] = (float) rvecs.get(i, 0)[2];
-                                tagTvecs[0] = (float) tvecs.get(i, 0)[0];
-                                tagTvecs[1] = (float) tvecs.get(i, 0)[1];
-                                tagTvecs[2] = (float) tvecs.get(i, 0)[2];
+                                tagRvecs[0] = rvecs.get(i, 0)[0];
+                                tagRvecs[1] = rvecs.get(i, 0)[1];
+                                tagRvecs[2] = rvecs.get(i, 0)[2];
+                                tagTvecs[0] = tvecs.get(i, 0)[0];
+                                tagTvecs[1] = tvecs.get(i, 0)[1];
+                                tagTvecs[2] = tvecs.get(i, 0)[2];
 
                                 // Check the camera before creating the tags
                                 if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
@@ -188,7 +189,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
                                     //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX());
                                     tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX(), tagRvecs, tagTvecs);
                                 }
-                                //Log.w("ARUCO", tag.toString());
+//                                Log.w("ARUCO", Arrays.toString(tag.getRMat()));
                                 tags.add(tag);
                             }
 

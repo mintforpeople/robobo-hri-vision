@@ -45,11 +45,12 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.ILaneDetectionListener;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.ILaneDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.Line;
+import com.mytechia.robobo.framework.hri.vision.laneDetection.opencv.OpencvLaneDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.lineDetection.ILineDetectionListener;
 import com.mytechia.robobo.framework.hri.vision.lineDetection.ILineDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
-import com.mytechia.robobo.rob.BluetoothRobInterfaceModule;
+//import com.mytechia.robobo.rob.BluetoothRobInterfaceModule;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Core;
@@ -211,9 +212,7 @@ public class LaneDetectionActivity extends AppCompatActivity implements ICameraL
     @Override
     public void onOpenCVStartup() {
         lines = new Mat();
-//        laneModule.useMask(true);
-
-//        camModule.changeCamera();
+        camModule.changeCamera();
 //        Log.e(TAG,"Camera changed");
 
     }
@@ -259,9 +258,9 @@ public class LaneDetectionActivity extends AppCompatActivity implements ICameraL
         // now separately draw solid lines to highlight them
         Mat line_mask = Mat.zeros(actualMat.size(), actualMat.type());
         // Left line
-        Imgproc.line(line_mask, new Point(-bias_left / slope_left, 0), new Point((line_mask.rows() - 1 - bias_left)/slope_left , line_mask.rows() - 1), new Scalar(255, 0, 0), 10);
+        Imgproc.line(line_mask, new Point(-bias_left / slope_left, 0), new Point((line_mask.rows() - 1 - bias_left) / slope_left, line_mask.rows() - 1), new Scalar(255, 0, 0), 10);
         // Right line
-        Imgproc.line(line_mask, new Point(-bias_right / slope_right, 0), new Point((line_mask.rows() - 1 - bias_right)/slope_right , line_mask.rows() - 1), new Scalar(0, 0, 255), 10);
+        Imgproc.line(line_mask, new Point(-bias_right / slope_right, 0), new Point((line_mask.rows() - 1 - bias_right) / slope_right, line_mask.rows() - 1), new Scalar(0, 0, 255), 10);
         mask = line_mask;
     }
 
