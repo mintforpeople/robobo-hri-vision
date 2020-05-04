@@ -10,8 +10,14 @@ import java.util.ArrayList;
  */
 public class Server extends Thread {
 
-    public static volatile ArrayList<ServerThread> subscribers = new ArrayList<>();
+    static volatile ArrayList<ServerThread> subscribers = new ArrayList<>();
+    private final int queueLength;
     private boolean isOpen;
+
+
+    public Server(int queueLength) {
+        this.queueLength=queueLength;
+    }
 
 
     public void run() {
@@ -26,18 +32,13 @@ public class Server extends Thread {
             // Server is running now
             while (isOpen) {
 
-                SocketChannel socketChannel = serverSocketChannel.accept();
                 try {
-                    if (socketChannel != null) {
-                        synchronized (subscribers) {
-                            //socketChannel.socket().setKeepAlive(true);
-                            ServerThread serverThread = new ServerThread();
-                            serverThread.setChannel(socketChannel);
-                            serverThread.execute();
-                            subscribers.add(serverThread);
+                    SocketChannel socketChannel = serverSocketChannel.accept();
+                    //socketChannel.socket().setKeepAlive(true);
+                    ServerThread serverThread = new ServerThread(socketChannel, queueLength);
+                    serverThread.execute();
+                    subscribers.add(serverThread);
 
-                        }
-                    }
                 } catch (Exception e) {
                     System.out.println(e.toString());
                 }
@@ -48,13 +49,20 @@ public class Server extends Thread {
         }
     }
 
-    public void close() {
+    void close() {
 
         isOpen = false;
 
         for (ServerThread t :
                 subscribers) {
             t.close();
+        }
+    }
+
+    void addData(byte[] bytes) {
+        for (ServerThread st :
+                subscribers) {
+            st.addData(bytes);
         }
     }
 }

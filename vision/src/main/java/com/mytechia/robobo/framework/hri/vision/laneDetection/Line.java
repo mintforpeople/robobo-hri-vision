@@ -66,8 +66,8 @@ public class Line {
 //        plot_y = np.linspace(0, h - 1, h)
 
         for (int i = 0; i < h; i++)
-            points.add(new Point(i,
-                    coeffs[0] * (i * i) + coeffs[1] * i + coeffs[2]));
+            points.add(new Point(coeffs[0] * (i * i) + coeffs[1] * i + coeffs[2],
+                    i));
         mop.fromList(points);
         list.add(mop);
 //        line_center = coeffs[0] * plot_y ** 2 + coeffs[1] * plot_y + coeffs[2]
@@ -271,7 +271,6 @@ public class Line {
 
         }
 
-
 //      Extract left and right line pixel positions
 
         line_lt.all_points = left_lane_points;
@@ -287,8 +286,8 @@ public class Line {
             left_fit_meter = line_lt.last_fit_meter;
             detected = false;
         } else {
-            left_fit_pixel = polyRegression(line_lt.all_points.toArray(), 1, 1);
-            left_fit_meter = polyRegression(line_lt.all_points.toArray(), xm_per_pix, ym_per_pix);
+            left_fit_pixel = invertedPolyRegression(line_lt.all_points.toArray(), 1, 1);
+            left_fit_meter = invertedPolyRegression(line_lt.all_points.toArray(), xm_per_pix, ym_per_pix);
         }
 
         if (line_rt.all_points.size() == 0) {
@@ -296,8 +295,8 @@ public class Line {
             right_fit_meter = line_rt.last_fit_meter;
             detected = false;
         } else {
-            right_fit_pixel = polyRegression(line_rt.all_points.toArray(), 1, 1);
-            right_fit_meter = polyRegression(line_rt.all_points.toArray(), xm_per_pix, ym_per_pix);
+            right_fit_pixel = invertedPolyRegression(line_rt.all_points.toArray(), 1, 1);
+            right_fit_meter = invertedPolyRegression(line_rt.all_points.toArray(), xm_per_pix, ym_per_pix);
         }
         line_lt.update_line(left_fit_pixel, left_fit_meter, detected, false);
         line_rt.update_line(right_fit_pixel, right_fit_meter, detected, false);
@@ -308,21 +307,22 @@ public class Line {
 
     /**
      * A function to get the coefficients of a 2nd degree polynomial that fits the observations
+     * NOTE: it takes points but flips the x and y
      *
      * @param objects Array of Point with the "observations"
      * @param alfa    Weight on the X axis
      * @param beta    Weight on the Y axis
      * @return Array of double with the 3 coefficients in the order of {a b c} (where ax^2 + bx + c)
      */
-    private static double[] polyRegression(Object[] objects, double alfa, double beta) {
+    private static double[] invertedPolyRegression(Object[] objects, double alfa, double beta) {
         int n = 2;                       //degree of polynomial to fit the data
         int N = objects.length;                       //no. of data points
         double[] x = new double[N];         //array to store x-axis data points
         double[] y = new double[N];
         for (int i = 0; i < N; i++) {
             Point p = (Point) objects[i];
-            x[i] = p.x * alfa;
-            y[i] = p.y * beta;
+            x[i] = p.y * beta;
+            y[i] = p.x * alfa;
         }
         double X[] = new double[2 * n + 1];
         for (int i = 0; i < 2 * n + 1; i++) {
@@ -427,8 +427,8 @@ public class Line {
             left_fit_meter = line_lt.last_fit_meter;
             detected = false;
         } else {
-            left_fit_pixel = polyRegression(line_lt.all_points.toArray(), 1, 1);
-            left_fit_meter = polyRegression(line_lt.all_points.toArray(), xm_per_pix, ym_per_pix);
+            left_fit_pixel = invertedPolyRegression(line_lt.all_points.toArray(), 1, 1);
+            left_fit_meter = invertedPolyRegression(line_lt.all_points.toArray(), xm_per_pix, ym_per_pix);
         }
 
         if (line_rt.all_points.size() == 0) {
@@ -436,8 +436,8 @@ public class Line {
             right_fit_meter = line_rt.last_fit_meter;
             detected = false;
         } else {
-            right_fit_pixel = polyRegression(line_rt.all_points.toArray(), 1, 1);
-            right_fit_meter = polyRegression(line_rt.all_points.toArray(), xm_per_pix, ym_per_pix);
+            right_fit_pixel = invertedPolyRegression(line_rt.all_points.toArray(), 1, 1);
+            right_fit_meter = invertedPolyRegression(line_rt.all_points.toArray(), xm_per_pix, ym_per_pix);
         }
         line_lt.update_line(left_fit_pixel, left_fit_meter, detected, false);
         line_rt.update_line(right_fit_pixel, right_fit_meter, detected, false);

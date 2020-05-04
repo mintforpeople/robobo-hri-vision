@@ -11,7 +11,7 @@ public interface ILineDetectionModule extends IModule {
     void pauseDetection();
     void resumeDetection();
 
-    void useMask(boolean b);
+//    void useMask(boolean b);
 
     Size getMatSize();
 }

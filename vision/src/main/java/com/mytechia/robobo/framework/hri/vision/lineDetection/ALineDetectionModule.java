@@ -13,7 +13,7 @@ public abstract class ALineDetectionModule implements ILineDetectionModule {
     private HashSet<ILineDetectionListener> listeners = new HashSet<ILineDetectionListener>();
     protected IRemoteControlModule rcmodule = null;
     protected RoboboManager m;
-    private int counter;
+    private int counter=0;
     protected boolean status=false;
 
     @Override
@@ -50,16 +50,16 @@ public abstract class ALineDetectionModule implements ILineDetectionModule {
             double[] l = lines.get(i, 0);
 
             res.append("[");
-            res.append(l[0]);
-            res.append(",");
-            res.append(l[1]);
-            res.append(",");
-            res.append(l[2]);
-            res.append(",");
-            res.append(l[3]);
+            res.append((int) l[0]);
+            res.append(", ");
+            res.append((int) l[1]);
+            res.append(", ");
+            res.append((int) l[2]);
+            res.append(", ");
+            res.append((int) l[3]);
             res.append("]");
             if (i!=lines.rows()-1)
-                res.append(",");
+                res.append(", ");
         }
         res.append("]");
         return res.toString();

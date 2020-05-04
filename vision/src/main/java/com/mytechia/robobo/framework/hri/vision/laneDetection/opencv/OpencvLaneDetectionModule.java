@@ -95,12 +95,12 @@ public class OpencvLaneDetectionModule extends ALaneDetectionModule implements I
 
     @Override
     public void onLine(Mat lines) {
-        double slope1_avg = 0,
-                slope2_avg = 0,
-                yinter1 = 0,
-                yinter2 = 0,
-                count1 = 0,
-                count2 = 0;
+        double slope_left_avg = 0,
+                slope_right_avg = 0,
+                y_intercept_left = 0,
+                y_intercept_right = 0,
+                count_left = 0,
+                count_right = 0;
         int y1, y2;
         Mat res;
         for (int x = 0; x < lines.rows(); x++) {
@@ -111,25 +111,25 @@ public class OpencvLaneDetectionModule extends ALaneDetectionModule implements I
             double y_intercept = l[1] - slope * l[0];
 
             if (slope < 0) {
-                slope1_avg += slope;
-                yinter1 += y_intercept;
-                count1++;
+                slope_left_avg += slope;
+                y_intercept_left += y_intercept;
+                count_left++;
             } else {
-                slope2_avg += slope;
-                yinter2 += y_intercept;
-                count2++;
+                slope_right_avg += slope;
+                y_intercept_right += y_intercept;
+                count_right++;
             }
         }
-        if (count1==0||count2==0)
+        if (count_left==0||count_right==0)
             return;
 //        else
 //            res = new Mat(2, 4, lines.type());
 
 
-        slope1_avg /= count1;
-        yinter1 /= count1;
-        slope2_avg /= count2;
-        yinter2 /= count2;
+        slope_left_avg /= count_left;
+        y_intercept_left /= count_left;
+        slope_right_avg /= count_right;
+        y_intercept_right /= count_right;
 
 //        // Bottom of the line
 //        y1 = (int) lineModule.getMatSize().height;
@@ -137,13 +137,11 @@ public class OpencvLaneDetectionModule extends ALaneDetectionModule implements I
 //        // Top of the line
 //        y2 = (int) (y1 - (y1 * 0.3125));
 //
-//        //Todo: move this to other function
-//
-//        res.put(0, 0, (int) ((y1 - yinter1) / slope1_avg), y1, (int) ((y2 - yinter1) / slope1_avg), y2);
-//        res.put(1, 0, (int) ((y1 - yinter2) / slope2_avg), y1, (int) ((y2 - yinter2) / slope2_avg), y2);
-//        res.put(0, 0, (int) ((y1 - yinter1) / slope1_avg), y1, (int) ((y2 - yinter1) / slope1_avg), y2);
-//        res.put(1, 0, (int) ((y1 - yinter2) / slope2_avg), y1, (int) ((y2 - yinter2) / slope2_avg), y2);
+//        res.put(0, 0, (int) ((y1 - y_intercept_left) / slope_left_avg), y1, (int) ((y2 - y_intercept_left) / slope_left_avg), y2);
+//        res.put(1, 0, (int) ((y1 - y_intercept_right) / slope_right_avg), y1, (int) ((y2 - y_intercept_right) / slope_right_avg), y2);
+//        res.put(0, 0, (int) ((y1 - y_intercept_left) / slope_left_avg), y1, (int) ((y2 - y_intercept_left) / slope_left_avg), y2);
+//        res.put(1, 0, (int) ((y1 - y_intercept_right) / slope_right_avg), y1, (int) ((y2 - y_intercept_right) / slope_right_avg), y2);
 
-        notifyLinesDetected( slope1_avg, yinter1, slope2_avg, yinter2);
+        notifyLinesDetected( slope_left_avg, y_intercept_left, slope_right_avg, y_intercept_right);
     }
 }
