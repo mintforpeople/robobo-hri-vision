@@ -33,11 +33,13 @@ import java.util.HashSet;
 public abstract class ACameraModule implements ICameraModule{
 
     private HashSet<ICameraListener> listeners ;
+    private HashSet<ICameraListenerV2> listenersV2;
 
     protected RoboboManager roboboManager;
 
     public ACameraModule(){
         listeners = new HashSet<>();
+        listenersV2 = new HashSet<>();
     }
 
     /**
@@ -77,12 +79,32 @@ public abstract class ACameraModule implements ICameraModule{
     }
 
     /**
+     * To notify when a frame is captured
+     * @param mat the captured frame in opencv mat
+     * @param seqnum sequence number
+     */
+    protected void notifyMat(Mat mat, int seqnum) {
+        synchronized (listenersV2){
+            for (ICameraListenerV2 listener :
+                    listenersV2) {
+                listener.onNewMatV2(mat.clone(), seqnum);
+            }
+        }
+    }
+
+    /**
      * To notify when the opencv library is loaded
      *
      */
     protected void notifyOpenCVStartup(){
         synchronized (listeners) {
             for (ICameraListener listener : listeners) {
+                listener.onOpenCVStartup();
+            }
+        }
+        synchronized (listenersV2){
+            for (ICameraListenerV2 listener:
+                    listenersV2) {
                 listener.onOpenCVStartup();
             }
         }
@@ -97,6 +119,17 @@ public abstract class ACameraModule implements ICameraModule{
     public void unsuscribe(ICameraListener listener){
         synchronized (listeners) {
             listeners.remove(listener);
+        }
+    }
+    public void suscribe(ICameraListenerV2 listener){
+        synchronized (listenersV2) {
+            roboboManager.log("Cam_module", "Suscribed:" + listener.toString());
+            listenersV2.add(listener);
+        }
+    }
+    public void unsuscribe(ICameraListenerV2 listener){
+        synchronized (listenersV2) {
+            listenersV2.remove(listener);
         }
     }
 }

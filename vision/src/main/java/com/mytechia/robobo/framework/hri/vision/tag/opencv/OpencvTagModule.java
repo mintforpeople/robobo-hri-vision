@@ -1,15 +1,11 @@
 package com.mytechia.robobo.framework.hri.vision.tag.opencv;
 
-import android.os.Environment;
-import android.util.Log;
-
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
+import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListenerV2;
 import com.mytechia.robobo.framework.hri.vision.tag.ATagModule;
 import com.mytechia.robobo.framework.hri.vision.tag.Tag;
-import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
-import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
 import com.mytechia.robobo.framework.hri.vision.util.CameraDistortionCalibrationData;
@@ -19,25 +15,19 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlM
 
 
 import org.opencv.aruco.Aruco;
-import org.opencv.aruco.CharucoBoard;
 import org.opencv.aruco.DetectorParameters;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
-public class OpencvTagModule extends ATagModule implements ICameraListener {
+public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     private RoboboManager m;
     private ICameraModule cameraModule;
@@ -114,12 +104,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
     }
 
     @Override
-    public void onNewFrame(Frame frame) {
-
-    }
-
-    @Override
-    public void onNewMat(final Mat mat) {
+    public void onNewMatV2(final Mat mat, final int frameId) {
 
         if (!processing && mat.cols() > 0 && mat.rows() > 0) {
             // Execute on its own thread to avoid locking the camera callback
@@ -194,7 +179,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
                             }
 
                             // Notify to the remote control module
-                            notifyMarkersDetected(tags);
+                            notifyMarkersDetected(tags, frameId);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -205,11 +190,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListener {
             });
 
         }
-
-    }
-
-    @Override
-    public void onDebugFrame(Frame frame, String frameId) {
 
     }
 

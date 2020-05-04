@@ -348,6 +348,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
             if (notifyMat) {
                 notifyMat(mat);
+                notifyMat(mat,seqnum);
             }
 
             // Update frame counter
@@ -367,6 +368,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         }
 
     }
+
     //endregion
 
     //region OpenCV Methods
