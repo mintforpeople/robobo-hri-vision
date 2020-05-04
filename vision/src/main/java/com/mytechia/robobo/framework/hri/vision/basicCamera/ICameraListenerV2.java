@@ -27,25 +27,14 @@ import org.opencv.core.Mat;
 /**
  * Listener for the frame notifications
  */
-public interface ICameraListener {
-    /**
-     * Called when a new frame (in jpeg) arrives
-     * @param frame The frame
-     */
-    void onNewFrame(Frame frame);
+public interface ICameraListenerV2 {
 
     /**
      * Called when a new frame (in OpenCV Mat format) arrives
      * @param mat The frame
+     * @param frameId identifier of the frame
      */
-    void onNewMat(Mat mat);
-
-    /**
-     * Used for debuging the vision modules
-     * @param frame Frame
-     * @param frameId Tag of the frame
-     */
-    void onDebugFrame(Frame frame, String frameId);
+    void onNewMatV2(Mat mat, int frameId);
 
     /**
      * Called when the opencv library is loaded
