@@ -40,7 +40,7 @@ public abstract class AQRTrackingModule implements IQRTrackingModule {
      * Notify all the suscribed listeners of a detected QR code
      * @param qr Detected QR
      */
-    protected void notifyQR(QRInfo qr){
+    protected void notifyQR(QRInfo qr, String frame_id){
         for (IQRListener listener:listeners){
             listener.onQRDetected(qr);
         }
@@ -57,6 +57,7 @@ public abstract class AQRTrackingModule implements IQRTrackingModule {
             status.putContents("p2y",qr.getRp2().getY()+"");
             status.putContents("p3x",qr.getRp3().getX()+"");
             status.putContents("p3y",qr.getRp3().getY()+"");
+            status.putContents("frame_id", frame_id);
             rcmodule.postStatus(status);
         }
     }

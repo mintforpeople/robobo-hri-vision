@@ -5,6 +5,7 @@ import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
+import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListenerV2;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.lineDetection.ALineDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
@@ -27,7 +28,7 @@ import java.util.concurrent.Executors;
 
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
-public class OpencvLineDetectionModule extends ALineDetectionModule implements ICameraListener {
+public class OpencvLineDetectionModule extends ALineDetectionModule implements ICameraListenerV2 {
 
     private ICameraModule cameraModule;
     private boolean processing = false;
@@ -120,12 +121,7 @@ public class OpencvLineDetectionModule extends ALineDetectionModule implements I
     }
 
     @Override
-    public void onNewFrame(Frame frame) {
-
-    }
-
-    @Override
-    public void onNewMat(final Mat mat) {
+    public void onNewMatV2(final Mat mat, final int frame_id) {
 
         if (!processing && mat.cols() > 0 && mat.rows() > 0) {
             // Execute on its own thread to avoid locking the camera callback
@@ -148,7 +144,7 @@ public class OpencvLineDetectionModule extends ALineDetectionModule implements I
                             100,
                             50);
 
-                    notifyLinesDetected(lines);
+                    notifyLinesDetected(lines, frame_id);
 
                     processing = false;
                 }
@@ -184,11 +180,6 @@ public class OpencvLineDetectionModule extends ALineDetectionModule implements I
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
         Imgproc.GaussianBlur(mat, mat, new Size(5, 5), 0);
         Imgproc.Canny(mat, mat, 50, 150);
-    }
-
-    @Override
-    public void onDebugFrame(Frame frame, String frameId) {
-
     }
 
     @Override
