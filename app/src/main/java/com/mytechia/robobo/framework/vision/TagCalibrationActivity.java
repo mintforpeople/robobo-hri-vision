@@ -68,22 +68,18 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class TagCalibrationActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, ITagListener {
     private static final String TAG = "CameraFaceTestActivity";
 
-
     private RoboboServiceHelper roboboHelper;
     private RoboboManager roboboManager;
-
 
     private ICameraModule camModule;
     private ITagModule arucoModule;
     private CameraBridgeViewBase bridgeBase;
-
 
     private ImageView imageView = null;
     private Button captureButton;
@@ -111,9 +107,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG, "TouchEvent");
-
         return true;
-
     }
 
 
@@ -150,47 +144,6 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         this.visualizeSwitch = (Switch) findViewById(R.id.visualizeSwitch);
         this.imagesCounter = (TextView) findViewById(R.id.imagesCounter);
         this.changeCameraButton = (Button) findViewById(R.id.changeCameraButton);
-
-        // Set buttons actions
-
-        this.captureButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                capturing = true;
-            }
-        });
-
-
-        this.changeCameraButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                camModule.changeCamera();
-                capturedList.clear();
-                updateImageCounter();
-            }
-        });
-
-        this.visualizeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                preview = isChecked;
-
-                if (isChecked) {
-                    arucoModule.resumeDetection();
-                } else {
-                    arucoModule.pauseDetection();
-                }
-            }
-        });
-
-
-        this.calibrateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                calibrateCamera();
-
-            }
-        });
-
 
         roboboHelper = new RoboboServiceHelper(this, new RoboboServiceHelper.Listener() {
             @Override
@@ -463,19 +416,50 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
     @Override
     public void onDebugFrame(final Frame frame, final String frameId) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-                //imageView.setImageDrawable(new BitmapDrawable(getResources(), frame.getBitmap()));
-
-            }
-        });
     }
 
     @Override
     public void onOpenCVStartup() {
 
+        // Set buttons actions
+
+        this.captureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                capturing = true;
+            }
+        });
+
+
+        this.changeCameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                camModule.changeCamera();
+                capturedList.clear();
+                updateImageCounter();
+            }
+        });
+
+        this.visualizeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                preview = isChecked;
+
+                if (isChecked) {
+                    arucoModule.resumeDetection();
+                } else {
+                    arucoModule.pauseDetection();
+                }
+            }
+        });
+
+
+        this.calibrateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                calibrateCamera();
+
+            }
+        });
 
         roboboManager.setPowerManagementEnabled(false);
 
