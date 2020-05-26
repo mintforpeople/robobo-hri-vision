@@ -4,18 +4,18 @@ import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListenerV2;
+import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.tag.ATagModule;
 import com.mytechia.robobo.framework.hri.vision.tag.Tag;
-import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
 import com.mytechia.robobo.framework.hri.vision.util.CameraDistortionCalibrationData;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
-
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.DetectorParameters;
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
@@ -29,6 +29,8 @@ import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
+    ExecutorService executor;
+    private float markerLength = 100;
     private RoboboManager m;
     private ICameraModule cameraModule;
     //private List<String> rvecs;
@@ -36,19 +38,13 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     private int currentTagDict = Aruco.DICT_4X4_1000;
     private CameraDistortionCalibrationData calibrationData;
     private AuxPropertyWriter propertyWriter;
-
     private boolean processing = false;
-
-    ExecutorService executor;
-
-
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
 
 
         m = manager;
-        propertyWriter = new AuxPropertyWriter("camera.properties", manager);
         // Load camera and remote control modules
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
@@ -73,6 +69,12 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
                 stopDetection();
 
+            }
+        });
+        rcmodule.registerCommand("CHANGE-SIZE-TAG", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                markerLength = Integer.parseInt(c.getParameters().get("size"));
             }
         });
 
@@ -112,6 +114,9 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                 @Override
                 public void run() {
                     processing = true;
+                    if (cameraModule.getCameraCode() != calibrationData.cameraCode)
+                        loadCalibrationData();
+
                     try {
                         Mat markerIds = new Mat();
 
@@ -126,11 +131,12 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
                         // Colorspace conversion
                         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
-
+                        Mat undis = new Mat();
+                        Calib3d.undistort(mat, undis, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat());
                         // Detection parameters
                         DetectorParameters parameters = DetectorParameters.create();
                         parameters.set_minDistanceToBorder(0);
-                        parameters.set_adaptiveThreshWinSizeMax(100);
+//                        parameters.set_adaptiveThreshWinSizeMax(100);
 
                         // Marker detection
                         Aruco.detectMarkers(mat, Aruco.getPredefinedDictionary(currentTagDict), markerCorners, markerIds, parameters, rejectedCandidates, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat());
@@ -143,7 +149,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                         if (markerIds.rows() > 0) {
                             // rvecs, tvecs, 3x1 CV_64FC3 matrix
                             // Marker pose detection
-                            Aruco.estimatePoseSingleMarkers(markerCorners, 100, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), tvecs, rvecs);
+                            Aruco.estimatePoseSingleMarkers(markerCorners, markerLength, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), rvecs, tvecs);
 
                             // rvecs, tvecs, 3x1 CV_64FC1 matrix
                             //Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
@@ -195,9 +201,16 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     @Override
     public void onOpenCVStartup() {
+        propertyWriter = new AuxPropertyWriter("camera.properties", m);
+        loadCalibrationData();
+    }
+
+    private void loadCalibrationData() {
         calibrationData = new CameraDistortionCalibrationData(
                 propertyWriter.retrieveConf("cameraMatrix" + cameraModule.getCameraCode(), propertyWriter.retrieveConf("cameraMatrix")),
                 propertyWriter.retrieveConf("distCoeffs" + cameraModule.getCameraCode(), propertyWriter.retrieveConf("distCoeffs")));
+        calibrationData.cameraCode = cameraModule.getCameraCode();
+
     }
 
     @Override

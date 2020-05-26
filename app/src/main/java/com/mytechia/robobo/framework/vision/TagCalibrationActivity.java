@@ -68,22 +68,18 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class TagCalibrationActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, ITagListener {
     private static final String TAG = "CameraFaceTestActivity";
 
-
     private RoboboServiceHelper roboboHelper;
     private RoboboManager roboboManager;
-
 
     private ICameraModule camModule;
     private ITagModule arucoModule;
     private CameraBridgeViewBase bridgeBase;
-
 
     private ImageView imageView = null;
     private Button captureButton;
@@ -100,7 +96,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
     int squaresX = 11, squaresY = 8;
     //    int squaresX = 18, squaresY = 12;
-    float squareLength = 25f, markerLength = 14.5f;
+    float squareLength = 25f, markerLength = 18.75f;
 //    float squareLength = 14f, markerLength = 10f;
 
     private AuxPropertyWriter propertyWriter;
@@ -111,9 +107,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG, "TouchEvent");
-
         return true;
-
     }
 
 
@@ -151,47 +145,6 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         this.imagesCounter = (TextView) findViewById(R.id.imagesCounter);
         this.changeCameraButton = (Button) findViewById(R.id.changeCameraButton);
 
-        // Set buttons actions
-
-        this.captureButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                capturing = true;
-            }
-        });
-
-
-        this.changeCameraButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                camModule.changeCamera();
-                capturedList.clear();
-                updateImageCounter();
-            }
-        });
-
-        this.visualizeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                preview = isChecked;
-
-                if (isChecked) {
-                    arucoModule.resumeDetection();
-                } else {
-                    arucoModule.pauseDetection();
-                }
-            }
-        });
-
-
-        this.calibrateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                calibrateCamera();
-
-            }
-        });
-
-
         roboboHelper = new RoboboServiceHelper(this, new RoboboServiceHelper.Listener() {
             @Override
             public void onRoboboManagerStarted(RoboboManager robobo) {
@@ -219,6 +172,13 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             Toast.makeText(getApplicationContext(), "Please, take at least one calibration picture!", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        Mat cameraMatrix = new Mat();
+        Mat distCoeffs = new Mat();
+        List<Mat> rvecs = new ArrayList<Mat>();
+        List<Mat> tvecs = new ArrayList<Mat>();
+
+
         List<Mat> ids = new ArrayList<Mat>();
         List<Mat> corners = new ArrayList<Mat>();
         int corners_count = 0;
@@ -226,11 +186,10 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         CharucoBoard board = CharucoBoard.create(squaresX, squaresY, squareLength, markerLength, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000));
         boolean first = true;
 
+        Size imageSize = new Size(camModule.getResX(),camModule.getResY());
         for (Mat image : capturedList) {
             ArrayList<Mat> tagCorners = new ArrayList<Mat>();
             Mat tagIds = new Mat();
-//            Mat rejectedCorners = new Mat();
-//            Mat rejectedIds = new Mat();
             Mat charucoCorners = new Mat();
             Mat charucoIds = new Mat();
 
@@ -239,27 +198,22 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             if (tagCorners.size() > 0)
                 Aruco.interpolateCornersCharuco(tagCorners, tagIds, image, board, charucoCorners, charucoIds);
             //Mat auxmat = new Mat(1, 44, tagCorners.get(0).type());
+
             corners.add(charucoCorners);
             ids.add(charucoIds);
+//            imageSize=image.size();
             corners_count += charucoCorners.rows();
         }
 
-        Size imagesize = new Size(capturedList.get(0).cols(), capturedList.get(0).rows());
-
-
-        Mat cameraMatrix = new Mat();
-        Mat distCoeffs = new Mat();
-        List<Mat> rvecs = new ArrayList<Mat>();
-        List<Mat> tvecs = new ArrayList<Mat>();
-
-
         //try {
         if (corners_count > 4) {
-
-            Aruco.calibrateCameraCharuco(corners, ids, board, imagesize, cameraMatrix, distCoeffs, rvecs, tvecs);
-            distortionData = new CameraDistortionCalibrationData(cameraMatrix, distCoeffs);//,rvecs,tvecs);
-            propertyWriter.storeConf("distCoeffs" + camModule.getCameraCode(), distortionData.getDistCoeffs());
+            Log.i(TAG,"Image size: "+imageSize.height+", "+imageSize.width);
+            Log.i(TAG,"Marker length: "+markerLength);
+            Log.i(TAG,"Square length: "+squareLength);
+            Aruco.calibrateCameraCharuco(corners, ids, board, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs);
+            distortionData = new CameraDistortionCalibrationData(cameraMatrix, distCoeffs);
             propertyWriter.storeConf("cameraMatrix" + camModule.getCameraCode(), distortionData.getCameraMatrix());
+            propertyWriter.storeConf("distCoeffs" + camModule.getCameraCode(), distortionData.getDistCoeffs());
             propertyWriter.commitConf();
 
             Toast.makeText(getApplicationContext(), "Calibration successful!", Toast.LENGTH_SHORT).show();
@@ -329,9 +283,9 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                bridgeBase.setVisibility(SurfaceView.VISIBLE);
                 camModule.passOCVthings(bridgeBase);
                 camModule.signalInit();
+                bridgeBase.setVisibility(SurfaceView.VISIBLE);
 
             }
         });
@@ -463,19 +417,50 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
     @Override
     public void onDebugFrame(final Frame frame, final String frameId) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-                //imageView.setImageDrawable(new BitmapDrawable(getResources(), frame.getBitmap()));
-
-            }
-        });
     }
 
     @Override
     public void onOpenCVStartup() {
 
+        // Set buttons actions
+
+        this.captureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                capturing = true;
+            }
+        });
+
+
+        this.changeCameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                camModule.changeCamera();
+                capturedList.clear();
+                updateImageCounter();
+            }
+        });
+
+        this.visualizeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                preview = isChecked;
+
+                if (isChecked) {
+                    arucoModule.resumeDetection();
+                } else {
+                    arucoModule.pauseDetection();
+                }
+            }
+        });
+
+
+        this.calibrateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                calibrateCamera();
+
+            }
+        });
 
         roboboManager.setPowerManagementEnabled(false);
 
@@ -526,5 +511,27 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         this.markers = markers;
         detected = true;
     }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        if (bridgeBase != null)
+            bridgeBase.disableView();
+    }
+
+    public void onDestroy() {
+        super.onDestroy();
+        if (bridgeBase != null)
+            bridgeBase.disableView();
+    }
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        if (bridgeBase != null)
+            bridgeBase.enableView();
+    }
+
 
 }
