@@ -30,9 +30,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
-import android.view.TextureView;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mytechia.robobo.framework.RoboboManager;
@@ -40,8 +38,6 @@ import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
-import com.mytechia.robobo.framework.hri.vision.objectRecognition.IObjectRecognitionModule;
-import com.mytechia.robobo.framework.hri.vision.objectRecognition.RecognizedObject;
 import com.mytechia.robobo.framework.hri.vision.tag.ITagListener;
 import com.mytechia.robobo.framework.hri.vision.tag.ITagModule;
 import com.mytechia.robobo.framework.hri.vision.tag.Tag;
@@ -53,51 +49,28 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class TagDetectActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, ITagListener {
     private static final String TAG = "CameraFaceTestActivity";
-
-
+    List<Tag> markers;
+    boolean detected = false;
     private GestureDetectorCompat mDetector;
-
     private RoboboServiceHelper roboboHelper;
     private RoboboManager roboboManager;
-
-
     private ICameraModule camModule;
-    private IObjectRecognitionModule objModule;
     private ITagModule arucoModule;
     private CameraBridgeViewBase bridgeBase;
-
-
-    private RelativeLayout rellayout = null;
     private TextView textView = null;
-    private SurfaceView surfaceView = null;
     private ImageView imageView = null;
-    private TextureView textureView = null;
-    private Frame actualFrame;
-
-    private Frame lastFrame;
-    private boolean paused = true;
-    private long lastDetection = 0;
-    private int index = CAMERA_ID_FRONT;
-
-    private List<RecognizedObject> objectList;
-    List<Mat> corners;
-    List<Tag> markers;
-    Mat ids;
-    boolean detected = false;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG, "TouchEvent");
-
+        this.mDetector.onTouchEvent(event);
         return true;
-
     }
 
 
@@ -105,7 +78,6 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_test);
-        objectList = new ArrayList<RecognizedObject>();
 
 //Request permissions
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -126,33 +98,25 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         }
 
         //this.surfaceView = (SurfaceView) findViewById(R.id.testSurfaceView);
-        this.imageView = (ImageView) findViewById(R.id.testImageView);
-        this.bridgeBase = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
-        this.textView = (TextView) findViewById(R.id.textView2);
+        this.imageView = findViewById(R.id.testImageView);
+        this.bridgeBase = findViewById(R.id.HelloOpenCvView);
+        this.textView = findViewById(R.id.textView2);
 
 //        this.textureView = (TextureView) findViewById(R.id.textureView);
         roboboHelper = new RoboboServiceHelper(this, new RoboboServiceHelper.Listener() {
             @Override
             public void onRoboboManagerStarted(RoboboManager robobo) {
-
                 //the robobo service and manager have been started up
                 roboboManager = robobo;
-
-
                 //dismiss the wait dialog
-
-
                 //start the "custom" robobo application
                 startRoboboApplication();
-
             }
 
             @Override
             public void onError(Throwable errorMsg) {
-
                 final String error = errorMsg.getLocalizedMessage();
-
-
+                Log.e(TAG, error);
             }
 
         });
@@ -184,10 +148,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
                 bridgeBase.setVisibility(SurfaceView.VISIBLE);
                 camModule.passOCVthings(bridgeBase);
 
-
                 camModule.signalInit();
-
-
             }
         });
         mDetector = new GestureDetectorCompat(getApplicationContext(), this);
@@ -260,6 +221,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     @Override
     public void onOpenCVStartup() {
         camModule.setFps(40);
+//        ((ATagModule)arucoModule).useRosTypeStatus(true);
 
     }
 
@@ -302,12 +264,25 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         detected = true;
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (bridgeBase != null)
+            bridgeBase.disableView();
+    }
 
-   /* @Override
-    public void onAruco(List<Mat> corners, Mat ids) {
-        this.corners = corners;
+    public void onDestroy() {
+        super.onDestroy();
+        if (bridgeBase != null)
+            bridgeBase.disableView();
+    }
 
-        this.ids = ids;
-        this.detected = true;
-    }*/
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (bridgeBase != null)
+            bridgeBase.enableView();
+    }
+
+
 }

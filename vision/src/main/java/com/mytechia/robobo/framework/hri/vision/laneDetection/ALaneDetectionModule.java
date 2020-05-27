@@ -44,7 +44,7 @@ public abstract class ALaneDetectionModule implements ILaneDetectionModule {
         }
     }
 
-    protected void notifyLinesDetected(Line line_lt, Line line_rt, Mat minv) {
+    protected void notifyLinesDetected(Line line_lt, Line line_rt, Mat minv, int frame_id) {
         double[] l = line_lt.last_fit_pixel;
         double[] r = line_rt.last_fit_pixel;
         if (l == null || r == null)
@@ -55,14 +55,14 @@ public abstract class ALaneDetectionModule implements ILaneDetectionModule {
         if (rcmodule != null) {
             Status status = new Status("LANE_PRO");
 
-            status.putContents("left_a", l[0] + "");
-            status.putContents("left_b", l[1] + "");
-            status.putContents("left_c", l[2] + "");
-            status.putContents("right_a", r[0] + "");
-            status.putContents("right_b", r[1] + "");
-            status.putContents("right_c", r[2] + "");
-            status.putContents("minv", formatTransformationMatrix(minv) + "");
-            status.putContents("id", counter + "");
+            status.putContents("left_a", String.valueOf(l[0]));
+            status.putContents("left_b", String.valueOf(l[1]));
+            status.putContents("left_c", String.valueOf(l[2]));
+            status.putContents("right_a", String.valueOf(r[0]));
+            status.putContents("right_b", String.valueOf(r[1]));
+            status.putContents("right_c", String.valueOf(r[2]));
+            status.putContents("minv", formatTransformationMatrix(minv));
+            status.putContents("id", String.valueOf(frame_id));
             rcmodule.postStatus(status);
             counter++;
         }
@@ -79,7 +79,7 @@ public abstract class ALaneDetectionModule implements ILaneDetectionModule {
                 minv.get(1, 0)[0] + "," +
                 minv.get(1, 1)[0] + "," +
                 minv.get(1, 2)[0]
-                + "]"+ ","
+                + "]" + ","
                 + "[" +
                 minv.get(2, 0)[0] + "," +
                 minv.get(2, 1)[0] + "," +

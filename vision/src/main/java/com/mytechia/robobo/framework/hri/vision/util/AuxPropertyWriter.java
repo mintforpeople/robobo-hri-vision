@@ -25,40 +25,37 @@ public class AuxPropertyWriter {
         this.manager = manager;
         this.fileName = fileName;
         properties = new Properties();
-
         dir = new File(Environment.getExternalStorageDirectory() + "/properties");
         propFile = new File(dir, fileName);
 
         dir.mkdirs();
 
-//        fileName = "cameraCalibration.properties";
+        loadDefaults();
+        loadCustoms();
 
-        if (!propFile.exists()) {
-            loadDefaults();
-        } else {
-            try {
-                properties.load(new FileInputStream(propFile));
-            } catch (IOException e) {
-                Log.e(TAG, "Unable to access file " + fileName);
-                e.printStackTrace();
-            }
-        }
 
 
     }
 
-    private boolean loadDefaults() {
-
-
+    private void loadDefaults() {
         try {
             InputStream inputStream = manager.getApplicationContext().getAssets().open(fileName);
             properties.load(inputStream);
         } catch (IOException e) {
             Log.e(TAG, "Error loading default values of " + fileName);
             e.printStackTrace();
-            return false;
         }
-        return true;
+    }
+
+    private void loadCustoms() {
+        Properties custom_properties = new Properties();
+        try {
+            custom_properties.load(new FileInputStream(propFile));
+            properties.putAll(custom_properties);
+        } catch (IOException e) {
+            Log.e(TAG, "Unable to access file " + fileName);
+            e.printStackTrace();
+        }
     }
 
     public void storeConf(String key, String value) {
@@ -70,6 +67,7 @@ public class AuxPropertyWriter {
     public String retrieveConf(String key, String defValue) {
         return properties.getProperty(key, defValue);
     }
+
     public String retrieveConf(String key) {
         return properties.getProperty(key);
     }

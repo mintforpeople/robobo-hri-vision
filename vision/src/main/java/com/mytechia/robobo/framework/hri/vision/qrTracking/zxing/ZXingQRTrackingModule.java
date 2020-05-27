@@ -180,7 +180,7 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
                         }
 
 
-                        notifyQR(qr);
+                        notifyQR(qr, frame.getFrameId());
                         lostCount = 0;
                         formatErrorCount = 0;
 
