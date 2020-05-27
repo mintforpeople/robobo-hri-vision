@@ -131,8 +131,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
                         // Colorspace conversion
                         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
-                        Mat undis = new Mat();
-                        Calib3d.undistort(mat, undis, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat());
                         // Detection parameters
                         DetectorParameters parameters = DetectorParameters.create();
                         parameters.set_minDistanceToBorder(0);
