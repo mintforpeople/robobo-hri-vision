@@ -9,7 +9,7 @@ In any case, its fundamental that the board its **totally flat**.
 To use the App and the Caruco board, you should:
 
  - Place the Charuco board the desired surface (**always flat**)
- - Set the settings corresponding with your charuco board on the settings view (Menu -> Settings) and click "*Done*".
+ - Set the settings corresponding with your charuco board on the settings view (Menu -> Settings) and click "*Done*". Remember that the sizes should be on mm.
  - Choose the camera to be calibrated (by using the "*Change camera*" button).
  - Capture pictures of the Charuco board (by using the "*Capture*" button).
  - Calibrate the camera using the photos taken (by using the "*Calibrate*" button).

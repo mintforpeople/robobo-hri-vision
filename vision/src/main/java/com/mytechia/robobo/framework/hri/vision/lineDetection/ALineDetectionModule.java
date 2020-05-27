@@ -13,7 +13,6 @@ public abstract class ALineDetectionModule implements ILineDetectionModule {
     private HashSet<ILineDetectionListener> listeners = new HashSet<ILineDetectionListener>();
     protected IRemoteControlModule rcmodule = null;
     protected RoboboManager m;
-    private int counter=0;
     protected boolean status=false;
 
     @Override
@@ -27,7 +26,7 @@ public abstract class ALineDetectionModule implements ILineDetectionModule {
     }
 
 
-    protected void notifyLinesDetected(Mat lines) {
+    protected void notifyLinesDetected(Mat lines, int frame_id) {
         if(lines.rows()<=0)
             return;
 
@@ -38,7 +37,7 @@ public abstract class ALineDetectionModule implements ILineDetectionModule {
             Status status = new Status("LINE");
 
             status.putContents("mat", formatLines(lines));
-            status.putContents("id", counter++ +"");
+            status.putContents("id", String.valueOf(frame_id));
             rcmodule.postStatus(status);
 
         }

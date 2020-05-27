@@ -27,10 +27,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-import static org.opencv.core.CvType.CV_32FC1;
-import static org.opencv.core.CvType.CV_8U;
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 
 public class GsonConverter {
@@ -43,30 +46,56 @@ public class GsonConverter {
             int rows = mat.rows();
             int elemSize = (int) mat.elemSize();
 
-            byte[] data = new byte[cols * rows * elemSize];
-            mat.type();
-            mat.convertTo(mat,CV_8U);
-            mat.type();
-            mat.get(0, 0, data);
-
+//            byte[] data = new byte[cols * rows * elemSize];
+//            mat.type();
+//            mat.convertTo(mat,CV_32F);
+//            mat.type();
+//            mat.get(0, 0, data);
 
             obj.addProperty("rows", mat.rows());
             obj.addProperty("cols", mat.cols());
             obj.addProperty("type", mat.type());
+            int type = mat.type();
 
-            // We cannot set binary data to a json object, so:
-            // Encoding data byte array to Base64.
-            String dataString = new String(Base64.encode(data, Base64.DEFAULT));
 
+            String dataString = "ERROR";
+
+
+            if( type == CvType.CV_32S || type == CvType.CV_32SC2 || type == CvType.CV_32SC3 || type == CvType.CV_16S) {
+                int[] data = new int[cols * rows * elemSize];
+                mat.get(0, 0, data);
+                ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
+                IntBuffer intBuffer = byteBuffer.asIntBuffer();
+                intBuffer.put(data);
+                dataString = Base64.encodeToString(byteBuffer.array(),Base64.DEFAULT);
+            }
+            else if( type == CvType.CV_32F || type == CvType.CV_32FC2) {
+                float[] data = new float[cols * rows * elemSize];
+                mat.get(0, 0, data);
+                ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
+                FloatBuffer floatBuffer = byteBuffer.asFloatBuffer();
+                floatBuffer.put(data);
+                dataString = Base64.encodeToString(byteBuffer.array(),Base64.DEFAULT);
+            }
+            else if( type == CvType.CV_64F || type == CvType.CV_64FC2) {
+                double[] data = new double[cols * rows * elemSize];
+                mat.get(0, 0, data);
+                ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 8);
+                DoubleBuffer doubleBuffer= byteBuffer.asDoubleBuffer();
+                doubleBuffer.put(data);
+                dataString = Base64.encodeToString(byteBuffer.array(),Base64.DEFAULT);
+            }
+            else if( type == CvType.CV_8U ) {
+                byte[] data = new byte[cols * rows * elemSize];
+                mat.get(0, 0, data);
+                dataString = Base64.encodeToString(data,Base64.DEFAULT);
+            }
 
             obj.addProperty("data", dataString);
 
-
             Gson gson = new Gson();
-            String json = gson.toJson(obj);
 
-
-            return json;
+            return gson.toJson(obj);
         } else {
         }
         return "{}";
@@ -82,11 +111,28 @@ public class GsonConverter {
         int type = JsonObject.get("type").getAsInt();
 
         String dataString = JsonObject.get("data").getAsString();
-        byte[] data = Base64.decode(dataString.getBytes(), Base64.DEFAULT);
 
         Mat mat = new Mat(rows, cols, type);
-        mat.put(0, 0, data);
-        mat.convertTo(mat,CV_32FC1);
+        if( type == CvType.CV_32S || type == CvType.CV_32SC2 || type == CvType.CV_32SC3 || type == CvType.CV_16S) {
+            IntBuffer buffer = ByteBuffer.wrap(Base64.decode(dataString.getBytes(),Base64.DEFAULT)).asIntBuffer();
+            int[] data = new int[buffer.remaining()];
+            mat.put(0, 0, data);
+        }
+        else if( type == CvType.CV_32F || type == CvType.CV_32FC2) {
+            FloatBuffer buffer = ByteBuffer.wrap(Base64.decode(dataString.getBytes(),Base64.DEFAULT)).asFloatBuffer();
+            float[] data = new float[buffer.remaining()];
+            mat.put(0, 0, data);
+        }
+        else if( type == CvType.CV_64F || type == CvType.CV_64FC2) {
+            DoubleBuffer doubleBuffer = ByteBuffer.wrap(Base64.decode(dataString.getBytes(), Base64.DEFAULT)).asDoubleBuffer();
+            double[] data = new double[doubleBuffer.remaining()];
+            doubleBuffer.get(data);
+            mat.put(0, 0, data);
+        }
+        else if( type == CvType.CV_8U ) {
+            byte[] data = ByteBuffer.wrap(Base64.decode(dataString.getBytes(),Base64.DEFAULT)).array();
+            mat.put(0, 0, data);
+        }
 
         return mat;
     }

@@ -44,7 +44,7 @@ public class TagCalibrationSettingsActivity extends AppCompatActivity {
                 returnIntent.putExtra("squaresY", Integer.parseInt(textSquaresY.getText().toString()));
                 returnIntent.putExtra("squareLength", Float.parseFloat(textSquaresLength.getText().toString()));
                 returnIntent.putExtra("markerLength", Float.parseFloat(textMarkerLength.getText().toString()));
-                setResult(Activity.RESULT_OK,returnIntent);
+                setResult(Activity.RESULT_OK, returnIntent);
                 finish();
             }
         });

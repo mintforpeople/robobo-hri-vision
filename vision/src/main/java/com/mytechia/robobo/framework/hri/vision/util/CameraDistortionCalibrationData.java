@@ -12,6 +12,7 @@ public class CameraDistortionCalibrationData {
 
     private Mat cameraMatrix;
     private Mat distCoeffs;
+    public int cameraCode;
 
     //private List<String> rvecs;
     //private List<String> tvecs;
@@ -32,8 +33,8 @@ public class CameraDistortionCalibrationData {
 
 
     public CameraDistortionCalibrationData(Mat cameraMatrix, Mat distCoeffs) {//, List<String> rvecs, List<String> tvecs){
-        this.cameraMatrix = cameraMatrix;
-        this.distCoeffs = distCoeffs;
+        this.cameraMatrix = cameraMatrix.clone();
+        this.distCoeffs = distCoeffs.clone();
         //this.rvecs = rvecs;
         //this.tvecs = tvecs;
 

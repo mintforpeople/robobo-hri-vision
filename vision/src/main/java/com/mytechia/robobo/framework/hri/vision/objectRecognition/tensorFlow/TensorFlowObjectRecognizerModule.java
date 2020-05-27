@@ -182,7 +182,7 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
                     final RectF location = result.getLocation();
                     if (location != null && result.getConfidence() >= minConfidence) {
                         cropToFrameTransform.mapRect(location);
-                        ((LinkedList<RecognizedObject>) objectsRecognized).addFirst(new RecognizedObject(result.getTitle(), result.getConfidence(), location));
+                        ((LinkedList<RecognizedObject>) objectsRecognized).addFirst(new RecognizedObject(Integer.parseInt(result.getId()), result.getTitle(), result.getConfidence(), location));
 
                         result.setLocation(location);
                         mappedRecognitions.add(result);
@@ -192,7 +192,7 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
             //Log.d("RECOGNIZER", mappedRecognitions.toString());
             if (objectsRecognized.size() > 0){
-                notifyObjectDetected(objectsRecognized);
+                notifyObjectDetected(objectsRecognized, String.valueOf(frame.getSeqNum()));
 
             }
             isProcessing = false;
@@ -216,7 +216,8 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
     @Override
     public void onOpenCVStartup() {
-
+        imgWidth=cameraModule.getResY();
+        imgHeight=cameraModule.getResX();
     }
 
     @Override

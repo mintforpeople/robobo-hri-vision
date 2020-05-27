@@ -5,6 +5,7 @@ import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
+import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListenerV2;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.ALaneDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.ILaneDetectionListener;
@@ -32,7 +33,7 @@ import static com.mytechia.robobo.framework.hri.vision.laneDetection.LaneParamet
 import static com.mytechia.robobo.framework.hri.vision.laneDetection.Line.get_fits_by_previous_fits;
 import static com.mytechia.robobo.framework.hri.vision.laneDetection.Line.get_fits_by_sliding_windows;
 
-public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule implements ICameraListener {
+public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule implements ICameraListenerV2 {
 
     private ICameraModule cameraModule;
     private Executor executor;
@@ -133,12 +134,7 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
     }
 
     @Override
-    public void onNewFrame(Frame frame) {
-
-    }
-
-    @Override
-    public void onNewMat(final Mat mat) {
+    public void onNewMatV2(final Mat mat, final int frame_id) {
         if (!processing) {
             executor.execute(new Runnable() {
                 @Override
@@ -169,7 +165,7 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
                         processed_frames = avg_results;
                     }
 
-                    notifyLinesDetected(line_lt, line_rt, minv);
+                    notifyLinesDetected(line_lt, line_rt, minv, frame_id);
 
                     processing = false;
                 }
@@ -336,10 +332,6 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
         return thresh;
     }
 
-    @Override
-    public void onDebugFrame(Frame frame, String frameId) {
-
-    }
 
     @Override
     public void onOpenCVStartup() {
