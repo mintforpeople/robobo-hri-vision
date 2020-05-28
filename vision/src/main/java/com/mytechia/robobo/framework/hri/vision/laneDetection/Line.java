@@ -171,7 +171,8 @@ public class Line {
         line_lt.all_points = left_lane_points;
         line_rt.all_points = right_lane_points;
 
-        boolean detected = true;
+        boolean lDetected = true;
+        boolean rDetected = true;
         double[] left_fit_pixel;
         double[] left_fit_meter;
         double[] right_fit_pixel;
@@ -179,7 +180,7 @@ public class Line {
         if (line_lt.all_points.size() == 0||leftTotalEmptyCounts>=n_windows*.7) {
             left_fit_pixel = new double[]{0, 0, 0};
             left_fit_meter = new double[]{0, 0, 0};
-            detected = false;
+            lDetected = false;
         } else {
             left_fit_pixel = invertedPolyRegression(line_lt.all_points.toArray(), 1, 1);
             left_fit_meter = invertedPolyRegression(line_lt.all_points.toArray(), xm_per_pix, ym_per_pix);
@@ -188,13 +189,13 @@ public class Line {
         if (line_rt.all_points.size() == 0||rightTotalEmptyCounts>=n_windows*.7) {
             right_fit_pixel = new double[]{0, 0, 0};
             right_fit_meter = new double[]{0, 0, 0};
-            detected = false;
+            rDetected= false;
         } else {
             right_fit_pixel = invertedPolyRegression(line_rt.all_points.toArray(), 1, 1);
             right_fit_meter = invertedPolyRegression(line_rt.all_points.toArray(), xm_per_pix, ym_per_pix);
         }
-        line_lt.update_line(left_fit_pixel, left_fit_meter, detected, false);
-        line_rt.update_line(right_fit_pixel, right_fit_meter, detected, false);
+        line_lt.update_line(left_fit_pixel, left_fit_meter, lDetected, false);
+        line_rt.update_line(right_fit_pixel, right_fit_meter, rDetected, false);
 
 
         return new Line[]{line_lt, line_rt};//, out_img
