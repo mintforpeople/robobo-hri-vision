@@ -18,8 +18,9 @@ public class LaneParameters {
     public final static int SOBEL_THRESHOLD = 50;
 
 
-    public final static int WINDOW_MARGIN = 100 / 3; // Distance from the center of the window to each side
-    public final static int WINDOW_MIN_PIX = 50 / 3; // Minimum number of pixels to recenter the window
+    public final static int WINDOW_MARGIN = (int) (100 * .4); // Distance from the center of the window to each side
+    public final static int PREVIOUS_FIT_MARGIN = (int) (100 *.4); // Distance from the center of the window to each side
+    public final static int WINDOW_MIN_PIX = (int) (50 * .4); // Minimum number of pixels to recenter the window
 
 
     // Todo: move this to a file?
