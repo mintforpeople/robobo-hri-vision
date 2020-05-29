@@ -21,8 +21,8 @@ The recommended way to draw a line its using its draw() function (see more at th
 
 The transformation that the module uses to get a birdview can be modified, to achieve this the next 9 lines should be on camera.properties:
 
-    lt_tl_x=0.2
-    lt_tl_y=0.2
+    lt_tl_x=0.25
+    lt_tl_y=0.25
     lt_tr_x=0.8
     lt_tr_y=0.2
     lt_bl_x=0

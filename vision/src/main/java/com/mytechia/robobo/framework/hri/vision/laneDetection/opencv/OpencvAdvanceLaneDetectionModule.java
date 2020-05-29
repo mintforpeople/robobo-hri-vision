@@ -237,12 +237,12 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
         eqWhiteMask = getBinaryFromEqualizedGray(grey);
 
         // Extract the edges
-        sobel = thresh_frame_sobel(grey);
+//        sobel = thresh_frame_sobel(grey);
 
         // Merge all the binary images
         Core.bitwise_or(binary, hsv_yellow_mask, binary);
         Core.bitwise_or(binary, eqWhiteMask, binary);
-        Core.bitwise_or(binary, sobel, binary);
+//        Core.bitwise_or(binary, sobel, binary);
 
         // Close = erode(dilate(img))
         // Used to fill the gaps on the binary image

@@ -13,6 +13,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.mytechia.robobo.framework.hri.vision.laneDetection.LaneParameters.PREVIOUS_FIT_MARGIN;
 import static com.mytechia.robobo.framework.hri.vision.laneDetection.LaneParameters.WINDOW_MARGIN;
 import static com.mytechia.robobo.framework.hri.vision.laneDetection.LaneParameters.WINDOW_MIN_PIX;
 import static org.opencv.core.CvType.CV_32S;
@@ -23,11 +24,11 @@ public class Line {
             xm_per_pix = 3.7 / 700;  // meters per pixel in x dimension
     public boolean detected = false;
     public double[] last_fit_pixel = null;
+    LinkedList<Point> all_points;
     private double[] last_fit_meter = null;
     private Deque<double[]> recent_fits_pixel = new LinkedList<>();
     private Deque<double[]> recent_fits_meter = new LinkedList<>();
     private float radius_of_curvature;
-    LinkedList<Point> all_points;
     private int buffer_len = 10;
 
     public Line() {
@@ -47,128 +48,6 @@ public class Line {
 //        self.all_x = None
 //        self.all_y = None
     }
-
-    /*
-    Draw the line on a color mask image.
-    =(255, 0, 0)
-    =50
-    =False
-    */
-    public void draw(Mat mask, Scalar color, int line_width, boolean average) {
-        int h = mask.rows(),
-                w = mask.cols(),
-                c = mask.channels();
-
-        List<MatOfPoint> list = new ArrayList<MatOfPoint>();
-        double[] coeffs = average ? this.average_fit() : this.last_fit_pixel;
-        MatOfPoint mop = new MatOfPoint();
-        List<Point> points = new ArrayList<>();
-//        plot_y = np.linspace(0, h - 1, h)
-
-        for (int i = 0; i < h; i++)
-            points.add(new Point(coeffs[0] * (i * i) + coeffs[1] * i + coeffs[2],
-                    i));
-        mop.fromList(points);
-        list.add(mop);
-//        line_center = coeffs[0] * plot_y ** 2 + coeffs[1] * plot_y + coeffs[2]
-//        line_left_side = line_center - line_width // 2
-//        line_right_side = line_center + line_width // 2
-
-        // Some magic here to recast the x and y points into usable format for cv2.fillPoly()
-//        pts_left = np.array(list(zip(line_left_side, plot_y)))
-//        pts_right = np.array(np.flipud(list(zip(line_right_side, plot_y))))
-//        pts = np.vstack([pts_left, pts_right])
-        Imgproc.polylines(mask, list, false, color, line_width);
-
-        // Draw the lane onto the warped blank image
-//        return Imgproc.fillPoly(mask, [np.int32(pts)], color)
-    }
-
-
-    // clear buffer default is false
-    void update_line(double[] new_fit_pixel,
-                     double[] new_fit_meter,
-                     boolean detected,
-                     boolean clear_buffer) {
-        this.detected = detected;
-        if (clear_buffer) {
-            recent_fits_meter.clear();
-            recent_fits_pixel.clear();
-        }
-        if (new_fit_meter == null || new_fit_pixel == null)
-            return;
-        this.last_fit_meter = new_fit_meter;
-        this.last_fit_pixel = new_fit_pixel;
-
-        add_to_recent(recent_fits_pixel, last_fit_pixel);
-        add_to_recent(recent_fits_meter, last_fit_meter);
-    }
-
-    private void add_to_recent(Deque<double[]> recent, double[] last) {
-        if (recent.size() == buffer_len)
-            recent.removeFirst();
-        recent.add(last);
-    }
-
-
-//    def draw(self, mask, color=(255, 0, 0), line_width=50, average=False):
-//            """
-//    Draw the line on a color mask image.
-//            """
-//    h, w, c = mask.shape
-//
-//            plot_y = np.linspace(0, h - 1, h)
-//    coeffs = self.average_fit if average else self.last_fit_pixel
-//
-//            line_center = coeffs[0] * plot_y ** 2 + coeffs[1] * plot_y + coeffs[2]
-//    line_left_side = line_center - line_width // 2
-//            line_right_side = line_center + line_width // 2
-//
-//        # Some magic here to recast the x and y points into usable format for cv2.fillPoly()
-//    pts_left = np.array(list(zip(line_left_side, plot_y)))
-//    pts_right = np.array(np.flipud(list(zip(line_right_side, plot_y))))
-//    pts = np.vstack([pts_left, pts_right])
-//
-//            # Draw the lane onto the warped blank image
-//        return cv2.fillPoly(mask, [np.int32(pts)], color)
-
-    public double[] average_fit() {
-        double[] res = new double[3];
-        for (double[] o :
-                recent_fits_pixel) {
-            res[0] += o[0];
-            res[1] += o[1];
-            res[2] += o[2];
-        }
-        res[0] /= recent_fits_pixel.size();
-        res[1] /= recent_fits_pixel.size();
-        res[2] /= recent_fits_pixel.size();
-        return res;
-    }
-
-    // radius of curvature of the line (averaged)
-    double curvature() {
-        int y_eval = 0;
-        double[] coeffs = average_fit();
-        return (Math.pow(1 + Math.pow(2 * coeffs[0] * y_eval + coeffs[1], 2), 1.5)) / Math.abs(2 * coeffs[0]);
-    }
-
-    // radius of curvature of the line (averaged)
-    double curvature_meter() {
-        int y_eval = 0;
-        double[] coeffs = new double[3];
-        for (double[] o :
-                recent_fits_meter) {
-            coeffs[0] += o[0];
-            coeffs[1] += o[1];
-            coeffs[2] += o[2];
-        }
-        coeffs[0] /= recent_fits_meter.size();
-        coeffs[1] /= recent_fits_meter.size();
-        coeffs[2] /= recent_fits_meter.size();
-        return (Math.pow(1 + Math.pow(2 * coeffs[0] * y_eval + coeffs[1], 2), 1.5)) / Math.abs(2 * coeffs[0]);
-    }
-
 
     /**
      * Get polynomial coefficients for lane-lines detected in an binary image.
@@ -224,6 +103,10 @@ public class Line {
         LinkedList<Point> right_lane_points = new LinkedList<>();
         LinkedList<Point> left_lane_points = new LinkedList<>();
 
+        short leftEmptyCounts = 0,
+                rightEmptyCounts = 0,
+                leftTotalEmptyCounts = 0,
+                rightTotalEmptyCounts = 0;
         // Step through the windows one by one
         for (int window = 0; window < (n_windows); ++window) {
             // Identify window boundaries in x and y (and right and left)
@@ -258,15 +141,27 @@ public class Line {
                     rxmean += p.x;
                 }
             }
-            right_lane_points.addAll(gright_lane_points);
-            left_lane_points.addAll(gleft_lane_points);
+            if (gright_lane_points.size() > 0 && rightEmptyCounts < 2) {
 
-            // If you found > minpix pixels, recenter next window on their mean position
-            if (gleft_lane_points.size() > minpix)
-                leftx_current = (int) (lxmean / gleft_lane_points.size());
+                right_lane_points.addAll(gright_lane_points);
+                if (gright_lane_points.size() > minpix)
+                    rightx_current = (int) (rxmean / gright_lane_points.size());
+                rightEmptyCounts = 0;
+            } else {
+                rightEmptyCounts += 1;
+                rightTotalEmptyCounts += 1;
+            }
+            if (gleft_lane_points.size() > 0 && leftEmptyCounts < 2) {
+                left_lane_points.addAll(gleft_lane_points);
 
-            if (gright_lane_points.size() > minpix)
-                rightx_current = (int) (rxmean / gright_lane_points.size());
+                // If you found > minpix pixels, recenter next window on their mean position
+                if (gleft_lane_points.size() > minpix)
+                    leftx_current = (int) (lxmean / gleft_lane_points.size());
+                leftEmptyCounts = 0;
+            } else {
+                leftEmptyCounts += 1;
+                leftTotalEmptyCounts += 1;
+            }
 
 
         }
@@ -276,30 +171,31 @@ public class Line {
         line_lt.all_points = left_lane_points;
         line_rt.all_points = right_lane_points;
 
-        boolean detected = true;
+        boolean lDetected = true;
+        boolean rDetected = true;
         double[] left_fit_pixel;
         double[] left_fit_meter;
         double[] right_fit_pixel;
         double[] right_fit_meter;
-        if (line_lt.all_points.size() == 0) {
-            left_fit_pixel = line_lt.last_fit_pixel;
-            left_fit_meter = line_lt.last_fit_meter;
-            detected = false;
+        if (line_lt.all_points.size() == 0||leftTotalEmptyCounts>=n_windows*.7) {
+            left_fit_pixel = new double[]{0, 0, 0};
+            left_fit_meter = new double[]{0, 0, 0};
+            lDetected = false;
         } else {
             left_fit_pixel = invertedPolyRegression(line_lt.all_points.toArray(), 1, 1);
             left_fit_meter = invertedPolyRegression(line_lt.all_points.toArray(), xm_per_pix, ym_per_pix);
         }
 
-        if (line_rt.all_points.size() == 0) {
-            right_fit_pixel = line_rt.last_fit_pixel;
-            right_fit_meter = line_rt.last_fit_meter;
-            detected = false;
+        if (line_rt.all_points.size() == 0||rightTotalEmptyCounts>=n_windows*.7) {
+            right_fit_pixel = new double[]{0, 0, 0};
+            right_fit_meter = new double[]{0, 0, 0};
+            rDetected= false;
         } else {
             right_fit_pixel = invertedPolyRegression(line_rt.all_points.toArray(), 1, 1);
             right_fit_meter = invertedPolyRegression(line_rt.all_points.toArray(), xm_per_pix, ym_per_pix);
         }
-        line_lt.update_line(left_fit_pixel, left_fit_meter, detected, false);
-        line_rt.update_line(right_fit_pixel, right_fit_meter, detected, false);
+        line_lt.update_line(left_fit_pixel, left_fit_meter, lDetected, false);
+        line_rt.update_line(right_fit_pixel, right_fit_meter, rDetected, false);
 
 
         return new Line[]{line_lt, line_rt};//, out_img
@@ -369,7 +265,6 @@ public class Line {
         return new double[]{a[2], a[1], a[0]};
     }
 
-
     /**
      * Get polynomial coefficients for lane-lines detected in an binary image.
      * This function starts from previously detected lane-lines to speed-up the search of lane-lines in the current frame.
@@ -398,7 +293,7 @@ public class Line {
 
         Point[] nonzero = idxp.dims() > 0 ? new MatOfPoint(idxp).toArray() : new Point[0];
 
-        int margin = 100; //todo: parameterize
+        int margin = PREVIOUS_FIT_MARGIN;
 
         LinkedList<Point> right_lane_points = new LinkedList<>();
         LinkedList<Point> left_lane_points = new LinkedList<>();
@@ -412,7 +307,6 @@ public class Line {
             if ((p.x > (if2 - margin)) &&
                     (p.x < (if2 + margin)))
                 right_lane_points.add(p);
-
         }
         line_lt.all_points = left_lane_points;
         line_rt.all_points = right_lane_points;
@@ -445,6 +339,118 @@ public class Line {
 
         return new Line[]{line_lt, line_rt};//, img_fit
 
+    }
+
+
+//    def draw(self, mask, color=(255, 0, 0), line_width=50, average=False):
+//            """
+//    Draw the line on a color mask image.
+//            """
+//    h, w, c = mask.shape
+//
+//            plot_y = np.linspace(0, h - 1, h)
+//    coeffs = self.average_fit if average else self.last_fit_pixel
+//
+//            line_center = coeffs[0] * plot_y ** 2 + coeffs[1] * plot_y + coeffs[2]
+//    line_left_side = line_center - line_width // 2
+//            line_right_side = line_center + line_width // 2
+//
+//        # Some magic here to recast the x and y points into usable format for cv2.fillPoly()
+//    pts_left = np.array(list(zip(line_left_side, plot_y)))
+//    pts_right = np.array(np.flipud(list(zip(line_right_side, plot_y))))
+//    pts = np.vstack([pts_left, pts_right])
+//
+//            # Draw the lane onto the warped blank image
+//        return cv2.fillPoly(mask, [np.int32(pts)], color)
+
+    /*
+    Draw the line on a color mask image.
+    =(255, 0, 0)
+    =50
+    =False
+    */
+    public void draw(Mat mask, Scalar color, int line_width, boolean average) {
+        double[] coeffs = average ? this.average_fit() : this.last_fit_pixel;
+
+        if (coeffs[0] == 0 && coeffs[1] == 0 && coeffs[2] == 0)
+            return;
+
+        int h = mask.rows(),
+                w = mask.cols(),
+                c = mask.channels();
+
+        List<MatOfPoint> list = new ArrayList<MatOfPoint>();
+        MatOfPoint mop = new MatOfPoint();
+        List<Point> points = new ArrayList<>();
+
+        for (int i = 0; i < h; i++)
+            points.add(new Point(coeffs[0] * (i * i) + coeffs[1] * i + coeffs[2],
+                    i));
+        mop.fromList(points);
+        list.add(mop);
+        Imgproc.polylines(mask, list, false, color, line_width);
+    }
+
+    // clear buffer default is false
+    void update_line(double[] new_fit_pixel,
+                     double[] new_fit_meter,
+                     boolean detected,
+                     boolean clear_buffer) {
+        this.detected = detected;
+        if (clear_buffer) {
+            recent_fits_meter.clear();
+            recent_fits_pixel.clear();
+        }
+        if (new_fit_meter == null || new_fit_pixel == null)
+            return;
+        this.last_fit_meter = new_fit_meter;
+        this.last_fit_pixel = new_fit_pixel;
+
+        add_to_recent(recent_fits_pixel, last_fit_pixel);
+        add_to_recent(recent_fits_meter, last_fit_meter);
+    }
+
+    private void add_to_recent(Deque<double[]> recent, double[] last) {
+        if (recent.size() == buffer_len)
+            recent.removeFirst();
+        recent.add(last);
+    }
+
+    public double[] average_fit() {
+        double[] res = new double[3];
+        for (double[] o :
+                recent_fits_pixel) {
+            res[0] += o[0];
+            res[1] += o[1];
+            res[2] += o[2];
+        }
+        res[0] /= recent_fits_pixel.size();
+        res[1] /= recent_fits_pixel.size();
+        res[2] /= recent_fits_pixel.size();
+        return res;
+    }
+
+    // radius of curvature of the line (averaged)
+    double curvature() {
+        int y_eval = 0;
+        double[] coeffs = average_fit();
+        return (Math.pow(1 + Math.pow(2 * coeffs[0] * y_eval + coeffs[1], 2), 1.5)) / Math.abs(2 * coeffs[0]);
+    }
+
+    // radius of curvature of the line (averaged)
+    double curvature_meter() {
+        int y_eval = 0;
+        double[] coeffs = new double[3];
+        for (double[] o :
+                recent_fits_meter) {
+            coeffs[0] += o[0];
+            coeffs[1] += o[1];
+            coeffs[2] += o[2];
+        }
+        coeffs[0] /= recent_fits_meter.size();
+        coeffs[1] /= recent_fits_meter.size();
+        coeffs[2] /= recent_fits_meter.size();
+        return (Math.pow(1 + Math.pow(2 * coeffs[0] * y_eval + coeffs[1], 2), 1.5)) / Math.abs(2 * coeffs[0]);
     }
 
 }
