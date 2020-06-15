@@ -197,12 +197,11 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             //Aruco.refineDetectedMarkers(image,board,tagCorners,tagIds);
             if (tagCorners.size() > 0)
                 Aruco.interpolateCornersCharuco(tagCorners, tagIds, image, board, charucoCorners, charucoIds);
-            //Mat auxmat = new Mat(1, 44, tagCorners.get(0).type());
-
-            corners.add(charucoCorners);
-            ids.add(charucoIds);
-//            imageSize=image.size();
-            corners_count += charucoCorners.rows();
+            if(charucoIds.total()>0){
+                corners.add(charucoCorners);
+                ids.add(charucoIds);
+                corners_count += charucoCorners.rows();
+            }
         }
 
         //try {
