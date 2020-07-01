@@ -1,5 +1,5 @@
 # Charuco Calibration App
-The *Charuco Calibration App* can help you to get a better experience with the OpenCV camera (used in different modules*) by eliminating some distortions that could be introduced by the lens of the camera.
+The *Charuco Calibration App* (<a href="https://github.com/mintforpeople/robobo-programming/wiki/calibration-app.zip">download the app</a>) can help you to get a better experience with the OpenCV camera (used in different modules*) by eliminating some distortions that could be introduced by the lens of the camera.
 This document will serve as a guide to calibrate the camera correctly.
 > *: Right now the only module that takes advantage of this is the Tag module.
 ## Charuco Board
