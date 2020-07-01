@@ -18,89 +18,84 @@ import static com.mytechia.robobo.framework.hri.vision.laneDetection.LaneParamet
 import static com.mytechia.robobo.framework.hri.vision.laneDetection.LaneParameters.WINDOW_MIN_PIX;
 import static org.opencv.core.CvType.CV_32S;
 
+/**
+ * TODO: Add the option to calculate lanes based on previous detections
+ * Check naming convention
+ *
+ */
+
 public class Line {
     //todo: parameterize
-    static double ym_per_pix = 30 / 720,   // meters per pixel in y dimension
+    static double ym_per_pix = 30.0 / 720,   // meters per pixel in y dimension
             xm_per_pix = 3.7 / 700;  // meters per pixel in x dimension
     public boolean detected = false;
-    public double[] last_fit_pixel = null;
-    LinkedList<Point> all_points;
-    private double[] last_fit_meter = null;
-    private Deque<double[]> recent_fits_pixel = new LinkedList<>();
-    private Deque<double[]> recent_fits_meter = new LinkedList<>();
-    private float radius_of_curvature;
-    private int buffer_len = 10;
+    public double[] lastFitPixel = null;
+    LinkedList<Point> allPoints;
+    private double[] lastFitMeter = null;
+    private Deque<double[]> recentFitsPixel = new LinkedList<>();
+    private Deque<double[]> recentFitsMeter = new LinkedList<>();
+    private int bufferLen = 10;
 
     public Line() {
 
     }
 
-    public Line(int buffer_len) {
-        this.buffer_len = buffer_len;
-
-//        # list of polynomial coefficients of the last N iterations
-//        self.recent_fits_pixel = collections.deque(maxlen=buffer_len)
-//        self.recent_fits_meter = collections.deque(maxlen=2 * buffer_len)
-
-//        self.radius_of_curvature = None
-
-//        # store all pixels coords (x, y) of line detected
-//        self.all_x = None
-//        self.all_y = None
+    public Line(int bufferLen) {
+        this.bufferLen = bufferLen;
     }
 
     /**
      * Get polynomial coefficients for lane-lines detected in an binary image.
      *
-     * @param birdeye_binary: input bird's eye view binary image
+     * @param birdeyeBinary: input bird's eye view binary image
      * @param line_lt:        left lane-line previously detected
      * @param line_rt:        left lane-line previously detected
      * @param n_windows:      number of sliding windows used to search for the lines
      * @return updated lane lines
      */
-    public static Line[] get_fits_by_sliding_windows(Mat birdeye_binary,
-                                                     Line line_lt,
-                                                     Line line_rt,
-                                                     int n_windows) {
+    public static Line[] getFitsBySlidingWindows(Mat birdeyeBinary,
+                                                 Line line_lt,
+                                                 Line line_rt,
+                                                 int n_windows) {
 
 
-        int height = birdeye_binary.rows(),
-                width = birdeye_binary.cols();
+        int height = birdeyeBinary.rows(),
+                width = birdeyeBinary.cols();
 
         // Take a histogram of the bottom half of the image
-        Mat half_birdeye_binary = birdeye_binary.rowRange(height / 2, height);
+        Mat halfBirdeyeBinary = birdeyeBinary.rowRange(height / 2, height);
         Mat histogram = new Mat(new Size(width, 1), CV_32S, new Scalar(0));
-        for (int j = 0; j < half_birdeye_binary.rows(); j++)
-            Core.add(histogram, half_birdeye_binary.row(j), histogram, new Mat(), CV_32S);
+        for (int j = 0; j < halfBirdeyeBinary.rows(); j++)
+            Core.add(histogram, halfBirdeyeBinary.row(j), histogram, new Mat(), CV_32S);
         // This line may be extra, since the max will always be the max, but still, just in case
         histogram.convertTo(histogram, -1, 1.0 / 255);
 
         // Find the peak of the left and right halves of the histogram
         // These will be the starting point for the left and right lines
         int midpoint = width / 2;
-        int leftx_base = (int) Core.minMaxLoc(histogram.colRange(0, midpoint)).maxLoc.x;
-        int rightx_base = (int) Core.minMaxLoc(histogram.colRange(midpoint, width)).maxLoc.x + midpoint;
+        int leftxBase = (int) Core.minMaxLoc(histogram.colRange(0, midpoint)).maxLoc.x;
+        int rightxBase = (int) Core.minMaxLoc(histogram.colRange(midpoint, width)).maxLoc.x + midpoint;
 
         // Set height of windows
         int window_height = height / n_windows;
 
         // Identify the x and y positions of all nonzero pixels in the image
         Mat idxp = new Mat(); //MatOfPoint with nonzero pixels
-        Core.findNonZero(birdeye_binary, idxp);
+        Core.findNonZero(birdeyeBinary, idxp);
 
         // If there is no pixel then we have an empty array, else it may crash
         Point[] idx = idxp.dims() > 0 ? new MatOfPoint(idxp).toArray() : new Point[0];
 
         // Current positions to be updated for each window
-        int leftx_current = leftx_base;
-        int rightx_current = rightx_base;
+        int leftxCurrent = leftxBase;
+        int rightxCurrent = rightxBase;
 
         //todo: paramereter!
         int margin = WINDOW_MARGIN;  // width of the windows +/- margin
         int minpix = WINDOW_MIN_PIX;   // minimum number of pixels found to recenter window
 
         // Create empty lists to receive left and right lane pixel positions
-        LinkedList<Point> right_lane_points = new LinkedList<>();
+        LinkedList<Point> rightLanePoints = new LinkedList<>();
         LinkedList<Point> left_lane_points = new LinkedList<>();
 
         short leftEmptyCounts = 0,
@@ -112,16 +107,16 @@ public class Line {
             // Identify window boundaries in x and y (and right and left)
             int win_y_low = height - (window + 1) * window_height;
             int win_y_high = height - window * window_height;
-            int win_xleft_low = leftx_current - margin;
-            int win_xleft_high = leftx_current + margin;
-            int win_xright_low = rightx_current - margin;
-            int win_xright_high = rightx_current + margin;
+            int win_xleft_low = leftxCurrent - margin;
+            int win_xleft_high = leftxCurrent + margin;
+            int win_xright_low = rightxCurrent - margin;
+            int win_xright_high = rightxCurrent + margin;
 
             // Means of the pixels detected for each line
             long lxmean = 0, rxmean = 0;
 
-            List<Point> gright_lane_points = new LinkedList<>();
-            List<Point> gleft_lane_points = new LinkedList<>();
+            List<Point> grightLanePoints = new LinkedList<>();
+            List<Point> gleftLanePoints = new LinkedList<>();
 
             // Identify the nonzero pixels in x and y within the window
             for (Point p : idx) {
@@ -130,33 +125,33 @@ public class Line {
                         (p.y < win_y_high) &&
                         (p.x >= win_xleft_low) &&
                         (p.x < win_xleft_high))) {
-                    gleft_lane_points.add(p);
+                    gleftLanePoints.add(p);
                     lxmean += p.x;
                 }
                 if ((p.y >= win_y_low) &&
                         (p.y < win_y_high) &&
                         (p.x >= win_xright_low) &&
                         (p.x < win_xright_high)) {
-                    gright_lane_points.add(p);
+                    grightLanePoints.add(p);
                     rxmean += p.x;
                 }
             }
-            if (gright_lane_points.size() > 0 && rightEmptyCounts < 2) {
+            if (grightLanePoints.size() > 0 && rightEmptyCounts < 2) {
 
-                right_lane_points.addAll(gright_lane_points);
-                if (gright_lane_points.size() > minpix)
-                    rightx_current = (int) (rxmean / gright_lane_points.size());
+                rightLanePoints.addAll(grightLanePoints);
+                if (grightLanePoints.size() > minpix)
+                    rightxCurrent = (int) (rxmean / grightLanePoints.size());
                 rightEmptyCounts = 0;
             } else {
                 rightEmptyCounts += 1;
                 rightTotalEmptyCounts += 1;
             }
-            if (gleft_lane_points.size() > 0 && leftEmptyCounts < 2) {
-                left_lane_points.addAll(gleft_lane_points);
+            if (gleftLanePoints.size() > 0 && leftEmptyCounts < 2) {
+                left_lane_points.addAll(gleftLanePoints);
 
                 // If you found > minpix pixels, recenter next window on their mean position
-                if (gleft_lane_points.size() > minpix)
-                    leftx_current = (int) (lxmean / gleft_lane_points.size());
+                if (gleftLanePoints.size() > minpix)
+                    leftxCurrent = (int) (lxmean / gleftLanePoints.size());
                 leftEmptyCounts = 0;
             } else {
                 leftEmptyCounts += 1;
@@ -168,34 +163,34 @@ public class Line {
 
 //      Extract left and right line pixel positions
 
-        line_lt.all_points = left_lane_points;
-        line_rt.all_points = right_lane_points;
+        line_lt.allPoints = left_lane_points;
+        line_rt.allPoints = rightLanePoints;
 
         boolean lDetected = true;
         boolean rDetected = true;
-        double[] left_fit_pixel;
-        double[] left_fit_meter;
-        double[] right_fit_pixel;
-        double[] right_fit_meter;
-        if (line_lt.all_points.size() == 0||leftTotalEmptyCounts>=n_windows*.7) {
-            left_fit_pixel = new double[]{0, 0, 0};
-            left_fit_meter = new double[]{0, 0, 0};
+        double[] leftFitPixel;
+        double[] leftFitMeter;
+        double[] rightFitPixel;
+        double[] rightFitMeter;
+        if (line_lt.allPoints.size() == 0||leftTotalEmptyCounts>=n_windows*.7) {
+            leftFitPixel = new double[]{0, 0, 0};
+            leftFitMeter = new double[]{0, 0, 0};
             lDetected = false;
         } else {
-            left_fit_pixel = invertedPolyRegression(line_lt.all_points.toArray(), 1, 1);
-            left_fit_meter = invertedPolyRegression(line_lt.all_points.toArray(), xm_per_pix, ym_per_pix);
+            leftFitPixel = invertedPolyRegression(line_lt.allPoints.toArray(), 1, 1);
+            leftFitMeter = invertedPolyRegression(line_lt.allPoints.toArray(), xm_per_pix, ym_per_pix);
         }
 
-        if (line_rt.all_points.size() == 0||rightTotalEmptyCounts>=n_windows*.7) {
-            right_fit_pixel = new double[]{0, 0, 0};
-            right_fit_meter = new double[]{0, 0, 0};
+        if (line_rt.allPoints.size() == 0||rightTotalEmptyCounts>=n_windows*.7) {
+            rightFitPixel = new double[]{0, 0, 0};
+            rightFitMeter = new double[]{0, 0, 0};
             rDetected= false;
         } else {
-            right_fit_pixel = invertedPolyRegression(line_rt.all_points.toArray(), 1, 1);
-            right_fit_meter = invertedPolyRegression(line_rt.all_points.toArray(), xm_per_pix, ym_per_pix);
+            rightFitPixel = invertedPolyRegression(line_rt.allPoints.toArray(), 1, 1);
+            rightFitMeter = invertedPolyRegression(line_rt.allPoints.toArray(), xm_per_pix, ym_per_pix);
         }
-        line_lt.update_line(left_fit_pixel, left_fit_meter, lDetected, false);
-        line_rt.update_line(right_fit_pixel, right_fit_meter, rDetected, false);
+        line_lt.updateLine(leftFitPixel, leftFitMeter, lDetected, false);
+        line_rt.updateLine(rightFitPixel, rightFitMeter, rDetected, false);
 
 
         return new Line[]{line_lt, line_rt};//, out_img
@@ -274,19 +269,19 @@ public class Line {
      * @param line_rt:        left lane-line previously detected
      * @return updated lane lines
      **/
-    public static Line[] get_fits_by_previous_fits(Mat birdeye_binary,
-                                                   Line line_lt,
-                                                   Line line_rt) {
+    public static Line[] getFitsByPreviousFits(Mat birdeye_binary,
+                                               Line line_lt,
+                                               Line line_rt) {
 
 
         int height = birdeye_binary.rows(),
                 width = birdeye_binary.cols();
 
-        double[] left_fit_pixel;
-        double[] right_fit_pixel;
+        double[] leftFitPixel;
+        double[] rightFitPixel;
 
-        left_fit_pixel = line_lt.last_fit_pixel;
-        right_fit_pixel = line_rt.last_fit_pixel;
+        leftFitPixel = line_lt.lastFitPixel;
+        rightFitPixel = line_rt.lastFitPixel;
 
         Mat idxp = new Mat();
         Core.findNonZero(birdeye_binary, idxp);
@@ -299,8 +294,8 @@ public class Line {
         LinkedList<Point> left_lane_points = new LinkedList<>();
         for (Point p :
                 nonzero) {
-            double if1 = left_fit_pixel[0] * (p.y * p.y) + left_fit_pixel[1] * p.y + left_fit_pixel[2];
-            double if2 = right_fit_pixel[0] * (p.y * p.y) + right_fit_pixel[1] * p.y + right_fit_pixel[2];
+            double if1 = leftFitPixel[0] * (p.y * p.y) + leftFitPixel[1] * p.y + leftFitPixel[2];
+            double if2 = rightFitPixel[0] * (p.y * p.y) + rightFitPixel[1] * p.y + rightFitPixel[2];
             if ((p.x > (if1 - margin)) &&
                     (p.x < (if1 + margin)))
                 left_lane_points.add(p);
@@ -308,69 +303,41 @@ public class Line {
                     (p.x < (if2 + margin)))
                 right_lane_points.add(p);
         }
-        line_lt.all_points = left_lane_points;
-        line_rt.all_points = right_lane_points;
+        line_lt.allPoints = left_lane_points;
+        line_rt.allPoints = right_lane_points;
 
         boolean detected = true;
-//        double [] left_fit_pixel;
-//        double [] right_fit_pixel;
+//        double [] leftFitPixel;
+//        double [] rightFitPixel;
         double[] left_fit_meter;
         double[] right_fit_meter;
-        if (line_lt.all_points.size() == 0) {
-            left_fit_pixel = line_lt.last_fit_pixel;
-            left_fit_meter = line_lt.last_fit_meter;
+        if (line_lt.allPoints.size() == 0) {
+            leftFitPixel = line_lt.lastFitPixel;
+            left_fit_meter = line_lt.lastFitMeter;
             detected = false;
         } else {
-            left_fit_pixel = invertedPolyRegression(line_lt.all_points.toArray(), 1, 1);
-            left_fit_meter = invertedPolyRegression(line_lt.all_points.toArray(), xm_per_pix, ym_per_pix);
+            leftFitPixel = invertedPolyRegression(line_lt.allPoints.toArray(), 1, 1);
+            left_fit_meter = invertedPolyRegression(line_lt.allPoints.toArray(), xm_per_pix, ym_per_pix);
         }
 
-        if (line_rt.all_points.size() == 0) {
-            right_fit_pixel = line_rt.last_fit_pixel;
-            right_fit_meter = line_rt.last_fit_meter;
+        if (line_rt.allPoints.size() == 0) {
+            rightFitPixel = line_rt.lastFitPixel;
+            right_fit_meter = line_rt.lastFitMeter;
             detected = false;
         } else {
-            right_fit_pixel = invertedPolyRegression(line_rt.all_points.toArray(), 1, 1);
-            right_fit_meter = invertedPolyRegression(line_rt.all_points.toArray(), xm_per_pix, ym_per_pix);
+            rightFitPixel = invertedPolyRegression(line_rt.allPoints.toArray(), 1, 1);
+            right_fit_meter = invertedPolyRegression(line_rt.allPoints.toArray(), xm_per_pix, ym_per_pix);
         }
-        line_lt.update_line(left_fit_pixel, left_fit_meter, detected, false);
-        line_rt.update_line(right_fit_pixel, right_fit_meter, detected, false);
+        line_lt.updateLine(leftFitPixel, left_fit_meter, detected, false);
+        line_rt.updateLine(rightFitPixel, right_fit_meter, detected, false);
 
 
         return new Line[]{line_lt, line_rt};//, img_fit
 
     }
 
-
-//    def draw(self, mask, color=(255, 0, 0), line_width=50, average=False):
-//            """
-//    Draw the line on a color mask image.
-//            """
-//    h, w, c = mask.shape
-//
-//            plot_y = np.linspace(0, h - 1, h)
-//    coeffs = self.average_fit if average else self.last_fit_pixel
-//
-//            line_center = coeffs[0] * plot_y ** 2 + coeffs[1] * plot_y + coeffs[2]
-//    line_left_side = line_center - line_width // 2
-//            line_right_side = line_center + line_width // 2
-//
-//        # Some magic here to recast the x and y points into usable format for cv2.fillPoly()
-//    pts_left = np.array(list(zip(line_left_side, plot_y)))
-//    pts_right = np.array(np.flipud(list(zip(line_right_side, plot_y))))
-//    pts = np.vstack([pts_left, pts_right])
-//
-//            # Draw the lane onto the warped blank image
-//        return cv2.fillPoly(mask, [np.int32(pts)], color)
-
-    /*
-    Draw the line on a color mask image.
-    =(255, 0, 0)
-    =50
-    =False
-    */
     public void draw(Mat mask, Scalar color, int line_width, boolean average) {
-        double[] coeffs = average ? this.average_fit() : this.last_fit_pixel;
+        double[] coeffs = average ? this.average_fit() : this.lastFitPixel;
 
         if (coeffs[0] == 0 && coeffs[1] == 0 && coeffs[2] == 0)
             return;
@@ -392,26 +359,26 @@ public class Line {
     }
 
     // clear buffer default is false
-    void update_line(double[] new_fit_pixel,
-                     double[] new_fit_meter,
-                     boolean detected,
-                     boolean clear_buffer) {
+    void updateLine(double[] new_fit_pixel,
+                    double[] new_fit_meter,
+                    boolean detected,
+                    boolean clear_buffer) {
         this.detected = detected;
         if (clear_buffer) {
-            recent_fits_meter.clear();
-            recent_fits_pixel.clear();
+            recentFitsMeter.clear();
+            recentFitsPixel.clear();
         }
         if (new_fit_meter == null || new_fit_pixel == null)
             return;
-        this.last_fit_meter = new_fit_meter;
-        this.last_fit_pixel = new_fit_pixel;
+        this.lastFitMeter = new_fit_meter;
+        this.lastFitPixel = new_fit_pixel;
 
-        add_to_recent(recent_fits_pixel, last_fit_pixel);
-        add_to_recent(recent_fits_meter, last_fit_meter);
+        add_to_recent(recentFitsPixel, lastFitPixel);
+        add_to_recent(recentFitsMeter, lastFitMeter);
     }
 
     private void add_to_recent(Deque<double[]> recent, double[] last) {
-        if (recent.size() == buffer_len)
+        if (recent.size() == bufferLen)
             recent.removeFirst();
         recent.add(last);
     }
@@ -419,14 +386,14 @@ public class Line {
     public double[] average_fit() {
         double[] res = new double[3];
         for (double[] o :
-                recent_fits_pixel) {
+                recentFitsPixel) {
             res[0] += o[0];
             res[1] += o[1];
             res[2] += o[2];
         }
-        res[0] /= recent_fits_pixel.size();
-        res[1] /= recent_fits_pixel.size();
-        res[2] /= recent_fits_pixel.size();
+        res[0] /= recentFitsPixel.size();
+        res[1] /= recentFitsPixel.size();
+        res[2] /= recentFitsPixel.size();
         return res;
     }
 
@@ -442,14 +409,14 @@ public class Line {
         int y_eval = 0;
         double[] coeffs = new double[3];
         for (double[] o :
-                recent_fits_meter) {
+                recentFitsMeter) {
             coeffs[0] += o[0];
             coeffs[1] += o[1];
             coeffs[2] += o[2];
         }
-        coeffs[0] /= recent_fits_meter.size();
-        coeffs[1] /= recent_fits_meter.size();
-        coeffs[2] /= recent_fits_meter.size();
+        coeffs[0] /= recentFitsMeter.size();
+        coeffs[1] /= recentFitsMeter.size();
+        coeffs[2] /= recentFitsMeter.size();
         return (Math.pow(1 + Math.pow(2 * coeffs[0] * y_eval + coeffs[1], 2), 1.5)) / Math.abs(2 * coeffs[0]);
     }
 

@@ -3,12 +3,9 @@ package com.mytechia.robobo.framework.hri.vision.laneDetection.opencv;
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
-import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
-import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListenerV2;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.ALaneDetectionModule;
-import com.mytechia.robobo.framework.hri.vision.laneDetection.ILaneDetectionListener;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.Line;
 import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
@@ -30,8 +27,8 @@ import static com.mytechia.robobo.framework.hri.vision.laneDetection.LaneParamet
 import static com.mytechia.robobo.framework.hri.vision.laneDetection.LaneParameters.SOBEL_THRESHOLD;
 import static com.mytechia.robobo.framework.hri.vision.laneDetection.LaneParameters.YELLOW_HSV_TH_MAX;
 import static com.mytechia.robobo.framework.hri.vision.laneDetection.LaneParameters.YELLOW_HSV_TH_MIN;
-import static com.mytechia.robobo.framework.hri.vision.laneDetection.Line.get_fits_by_previous_fits;
-import static com.mytechia.robobo.framework.hri.vision.laneDetection.Line.get_fits_by_sliding_windows;
+import static com.mytechia.robobo.framework.hri.vision.laneDetection.Line.getFitsByPreviousFits;
+import static com.mytechia.robobo.framework.hri.vision.laneDetection.Line.getFitsBySlidingWindows;
 
 public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule implements ICameraListenerV2 {
 
@@ -48,7 +45,7 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
             bl = new float[2],
             br = new float[2];
     private boolean avg_results = false,
-            invertColors = false;
+            invertColors = true;
 
     @Override
     public void pauseDetection() {
@@ -155,11 +152,11 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
 
                     // Fit polynomial function
                     if (processed_frames && line_lt.detected && line_rt.detected) {
-                        Line[] lines = get_fits_by_previous_fits(img_birdeye, line_lt, line_rt);
+                        Line[] lines = getFitsByPreviousFits(img_birdeye, line_lt, line_rt);
                         line_lt = lines[0];
                         line_rt = lines[1];
                     } else {
-                        Line[] lines = get_fits_by_sliding_windows(img_birdeye, line_lt, line_rt, 9); //todo: parameterize
+                        Line[] lines = getFitsBySlidingWindows(img_birdeye, line_lt, line_rt, 9); //todo: parameterize
                         line_lt = lines[0];
                         line_rt = lines[1];
                         processed_frames = avg_results;
@@ -225,22 +222,26 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
                 closing = new Mat(),
                 ones = Mat.ones(5, 5, CvType.CV_8U),
                 grey = new Mat();
-
-        Imgproc.cvtColor(mat, grey, Imgproc.COLOR_BGR2GRAY);
-
         binary = Mat.zeros(height, width, CvType.CV_8U);
 
+
         // Extract the yellow parts
-        hsv_yellow_mask = thresh_frame_in_hsv(mat);
+        /*
+         * This line (and the line 247) is used to detect yellow lines, but it is disabled since it wont be used on an educational basis
+         */
+//        hsv_yellow_mask = threshFrameInHsv(mat);
+
+        Imgproc.cvtColor(mat, grey, Imgproc.COLOR_RGB2GRAY);
 
         // Extract white parts
         eqWhiteMask = getBinaryFromEqualizedGray(grey);
 
         // Extract the edges
-//        sobel = thresh_frame_sobel(grey);
+//        sobel = threshFrameSobel(grey);
 
         // Merge all the binary images
-        Core.bitwise_or(binary, hsv_yellow_mask, binary);
+
+//        Core.bitwise_or(binary, hsv_yellow_mask, binary);
         Core.bitwise_or(binary, eqWhiteMask, binary);
 //        Core.bitwise_or(binary, sobel, binary);
 
@@ -259,7 +260,7 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
      * @param mat a Mat object containing a black and white image
      * @return a Mat object containing the resulting binary image
      */
-    private Mat thresh_frame_sobel(Mat mat) {
+    private Mat threshFrameSobel(Mat mat) {
         Mat sobelX = new Mat(),
                 sobelY = new Mat(),
                 sobelMag = new Mat();
@@ -309,7 +310,7 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
      * @param mat Image where the yellow will be "extracted"
      * @return Mat containing the resulting binary image
      */
-    private Mat thresh_frame_in_hsv(Mat mat) {
+    private Mat threshFrameInHsv(Mat mat) {
         Mat thresh = new Mat();
         Mat hsv = new Mat();
 
