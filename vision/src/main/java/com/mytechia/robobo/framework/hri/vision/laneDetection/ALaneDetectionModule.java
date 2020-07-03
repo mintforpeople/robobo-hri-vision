@@ -2,13 +2,11 @@ package com.mytechia.robobo.framework.hri.vision.laneDetection;
 
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.lineDetection.ILineDetectionModule;
-import com.mytechia.robobo.framework.hri.vision.util.GsonConverter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 
 import org.opencv.core.Mat;
 
-import java.util.Arrays;
 import java.util.HashSet;
 
 public abstract class ALaneDetectionModule implements ILaneDetectionModule {
@@ -45,8 +43,8 @@ public abstract class ALaneDetectionModule implements ILaneDetectionModule {
     }
 
     protected void notifyLinesDetected(Line line_lt, Line line_rt, Mat minv, int frame_id) {
-        double[] l = line_lt.last_fit_pixel;
-        double[] r = line_rt.last_fit_pixel;
+        double[] l = line_lt.lastFitPixel;
+        double[] r = line_rt.lastFitPixel;
         if (l == null || r == null)
             return;
         for (ILaneDetectionListener listener : listeners) {

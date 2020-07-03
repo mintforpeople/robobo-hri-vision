@@ -43,6 +43,7 @@ import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
+import com.mytechia.robobo.framework.hri.vision.objectRecognition.AObjectRecognitionModule;
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.IObjectRecognitionModule;
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.IObjectRecognizerListener;
 import com.mytechia.robobo.framework.hri.vision.objectRecognition.RecognizedObject;
@@ -89,6 +90,7 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
     public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG,"TouchEvent");
 
+        this.mDetector.onTouchEvent(event);
         return true;
 
     }
@@ -184,12 +186,14 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
 
             }
         });
+
         mDetector = new GestureDetectorCompat(getApplicationContext(),this);
         camModule.suscribe(this);
         objModule.suscribe(this);
         objModule.setConfidence(0.5f);
         camModule.setFps(40);
 
+        ((AObjectRecognitionModule)objModule).useRosTypeStatus(true);
 
 
 
@@ -233,14 +237,6 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
 
     @Override
     public void onDebugFrame(final Frame frame,final String frameId) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-                //imageView.setImageDrawable(new BitmapDrawable(getResources(), frame.getBitmap()));
-
-            }
-        });
     }
 
     @Override
@@ -256,7 +252,6 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
 
     @Override
     public void onShowPress(MotionEvent motionEvent) {
-
     }
 
     @Override

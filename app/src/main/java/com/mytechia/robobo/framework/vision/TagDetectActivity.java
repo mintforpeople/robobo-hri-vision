@@ -41,9 +41,14 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.tag.ITagListener;
 import com.mytechia.robobo.framework.hri.vision.tag.ITagModule;
 import com.mytechia.robobo.framework.hri.vision.tag.Tag;
+import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
+import com.mytechia.robobo.framework.hri.vision.util.CameraDistortionCalibrationData;
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.aruco.Aruco;
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -65,6 +70,9 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     private CameraBridgeViewBase bridgeBase;
     private TextView textView = null;
     private ImageView imageView = null;
+    private CameraDistortionCalibrationData calibrationData;
+    AuxPropertyWriter propertyWriter;
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -169,6 +177,8 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         if (detected) {
             //Aruco.drawDetectedMarkers(newmat, corners, ids);
 
+            if (camModule.getCameraCode() != calibrationData.cameraCode)
+                loadCalibrationData();
             if (camModule.getCameraCode() == CAMERA_ID_FRONT) {
                 newmat = drawArucos(markers, newmat);
 
@@ -192,6 +202,13 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         });
     }
 
+    private void loadCalibrationData() {
+        calibrationData = new CameraDistortionCalibrationData(
+                propertyWriter.retrieveConf("cameraMatrix" + camModule.getCameraCode(), propertyWriter.retrieveConf("cameraMatrix")),
+                propertyWriter.retrieveConf("distCoeffs" + camModule.getCameraCode(), propertyWriter.retrieveConf("distCoeffs")));
+        calibrationData.cameraCode = camModule.getCameraCode();
+    }
+
 
     private Mat drawArucos(List<Tag> tags, Mat image) {
 
@@ -200,6 +217,12 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
                 Imgproc.line(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), new Point(tag.getCorner((i + 1) % 4).x, tag.getCorner((i + 1) % 4).y), new Scalar(255, 0, 0));
 
                 Imgproc.circle(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), 3, new Scalar(0, 255, 0));
+
+                Mat rvecs = new Mat(1,1,CvType.CV_64FC3);
+                Mat tvecs = new Mat(1,1,CvType.CV_64FC3);
+                rvecs.put(0,0,tag.getRvecs());
+                tvecs.put(0,0,tag.getTvecs());
+                Aruco.drawAxis(image, calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs, tvecs, 100 );
             }
         }
 
@@ -222,6 +245,8 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     public void onOpenCVStartup() {
         camModule.setFps(40);
 //        ((ATagModule)arucoModule).useRosTypeStatus(true);
+        propertyWriter = new AuxPropertyWriter("camera.properties", roboboManager);
+        loadCalibrationData();
 
     }
 
