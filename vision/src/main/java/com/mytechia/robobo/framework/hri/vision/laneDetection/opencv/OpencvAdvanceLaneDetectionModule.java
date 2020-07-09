@@ -1,6 +1,9 @@
 package com.mytechia.robobo.framework.hri.vision.laneDetection.opencv;
 
+import android.util.Log;
+
 import com.mytechia.commons.framework.exception.InternalErrorException;
+import com.mytechia.robobo.framework.LogLvl;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListenerV2;
@@ -60,6 +63,9 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         m = manager;
+        Log.w("LANE","LANE START");
+        m.log(LogLvl.INFO,"LANE","LANE START");
+
         propertyWriter = new AuxPropertyWriter("camera.properties", manager);
         tl[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_x"));
         tl[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_y"));
@@ -122,12 +128,12 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
 
     @Override
     public String getModuleInfo() {
-        return null;
+        return "Advanced Lane Detection";
     }
 
     @Override
     public String getModuleVersion() {
-        return null;
+        return "n/a";
     }
 
     @Override
@@ -141,12 +147,13 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
                     // todo: undistort using camera.properties values
                     if (invertColors)
                         Core.bitwise_not(mat, mat);
-
                     // Binarize the image getting the white and yellow parts
                     Mat binary = binarize(mat);
 
+
                     // Transform the image to get a bird view
                     Mat[] birdResults = birdeye(binary);
+
                     Mat img_birdeye = birdResults[0];
                     Mat minv = birdResults[1];
 
@@ -180,13 +187,13 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
      * @return a Mat array with two elements: the first its the image warped, and the second its the transformation matrix to inverse the warped image
      */
     private Mat[] birdeye(Mat mat) {
+
         int h = mat.rows(),
                 w = mat.cols();
 
         Mat src = new Mat(4, 2, CvType.CV_32F),
                 dst = new Mat(4, 2, CvType.CV_32F),
                 m, minv, warped = new Mat();
-
         src.put(0, 0, new float[]{(int) (w * br[0]), (int) (h * br[1])});
         src.put(1, 0, new float[]{(int) (w * bl[0]), (int) (h * bl[1])});
         src.put(2, 0, new float[]{(int) (w * tl[0]), (int) (h * tl[1])});
@@ -196,11 +203,11 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
         dst.put(1, 0, new float[]{0, h});
         dst.put(2, 0, new float[]{0, 0});
         dst.put(3, 0, new float[]{w, 0});
-
         m = Imgproc.getPerspectiveTransform(src, dst);
         minv = Imgproc.getPerspectiveTransform(dst, src);
 
-        Imgproc.warpPerspective(mat, warped, m, new Size(w, h), Imgproc.INTER_LINEAR);
+        Imgproc.warpPerspective(mat, warped, m, new Size(w, h), Imgproc.INTER_NEAREST );
+
         return new Mat[]{warped, minv};
     }
 

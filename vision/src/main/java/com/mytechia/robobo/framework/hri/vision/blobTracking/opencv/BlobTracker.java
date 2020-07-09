@@ -110,17 +110,22 @@ public class BlobTracker {
         Mat backproj = new Mat();
 
         // Convert BGR to HSV
+
         Imgproc.cvtColor(mat,hsvFrame,Imgproc.COLOR_BGR2HSV);
+
 
         //try {
             // If there is no tracking active, initialize tracking window
             if (trackWindow.area()<= 1) {
+
                 trackWindow = initTrackWindow(hsvFrame, blobcolor.getHistogramData());
 
             }
             // If the area is greates than the minimum, calculate the new tracking position
             if (trackWindow.area()> min_area) {
+
                 backproj = calcBackproj(hsvFrame, blobcolor.getHistogramData());
+
                 RotatedRect trackBox = Video.CamShift(backproj, trackWindow,
                         termCriteria);
                 trackWindow = trackBox.boundingRect();
@@ -188,10 +193,9 @@ public class BlobTracker {
         MatOfInt mChannels = new MatOfInt(0, 1);
 
         List<Mat> lHSV = Arrays.asList(input);
-
         Mat backproj = new Mat();
-        Imgproc.calcBackProject(lHSV, mChannels, hist, backproj, mRanges, 1
-        );
+        Imgproc.calcBackProject(lHSV, mChannels, hist, backproj, mRanges, 1);
+
 
         return backproj;
     }
@@ -203,10 +207,16 @@ public class BlobTracker {
      * @return Tracking window rect
      */
     private Rect initTrackWindow(Mat input, Mat hist) {
+
+
         Mat backproj = calcBackproj(input, hist);
+
+
         Imgproc.threshold(backproj, backproj, (double) 2, (double) 255, Imgproc.THRESH_BINARY);
 
+
         List<MatOfPoint> contours = new ArrayList<>();
+
 
         try {
             Imgproc.findContours(backproj, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -214,6 +224,7 @@ public class BlobTracker {
             e.printStackTrace();
             processing = false;
         }
+
 
         double maxarea = 0;
         MatOfPoint maxcontour = null;
@@ -223,10 +234,14 @@ public class BlobTracker {
                 maxarea = Imgproc.contourArea(c);
             }
         }
+
+
         Rect out = new Rect();
 
         if (maxarea > min_area)
             out = Imgproc.boundingRect(maxcontour);
+
+
         return out;
     }
 

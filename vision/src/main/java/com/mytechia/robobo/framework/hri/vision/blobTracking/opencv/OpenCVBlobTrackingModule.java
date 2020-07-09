@@ -23,6 +23,7 @@ package com.mytechia.robobo.framework.hri.vision.blobTracking.opencv;
 
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
@@ -205,6 +206,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         m = manager;
+        Log.w("BLOB","STARTUP BLOB");
         // Get instances od camera and remote modules
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
@@ -225,7 +227,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     @Override
     public String getModuleInfo() {
-        return "Ball tracking Module";
+        return "Blob tracking Module";
     }
 
     @Override
