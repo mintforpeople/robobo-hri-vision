@@ -22,10 +22,7 @@
 
 package com.mytechia.robobo.framework.hri.vision.basicCamera;
 
-import android.view.Surface;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.TextureView;
 
 import com.mytechia.robobo.framework.IModule;
 
@@ -47,6 +44,18 @@ public interface ICameraModule extends IModule {
      * @param listener The listener to be removed
      */
     void unsuscribe(ICameraListener listener);
+
+    /**
+     * Suscribes a listener to the frame notifications
+     * @param listener The listener to be added
+     */
+    void suscribe(ICameraListenerV2 listener);
+
+    /**
+     * Unsuscribes a listener from the frame notifications
+     * @param listener The listener to be removed
+     */
+    void unsuscribe(ICameraListenerV2 listener);
 
     /**
      * Starts the image capture
@@ -90,7 +99,21 @@ public interface ICameraModule extends IModule {
      */
     void setFps(int fps);
 
+    /**
+     * Returns the vertical resolution of the image
+     * @return
+     */
     int getResX();
 
+    /**
+     * Returns the horizontal resolution of the image
+     * @return
+     */
     int getResY();
+
+    /**
+     * Returns the current camera index
+     * @return Camera code
+     */
+    int getCameraCode();
 }

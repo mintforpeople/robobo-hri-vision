@@ -46,4 +46,9 @@ public interface ICameraListener {
      * @param frameId Tag of the frame
      */
     void onDebugFrame(Frame frame, String frameId);
+
+    /**
+     * Called when the opencv library is loaded
+     */
+    void onOpenCVStartup();
 }

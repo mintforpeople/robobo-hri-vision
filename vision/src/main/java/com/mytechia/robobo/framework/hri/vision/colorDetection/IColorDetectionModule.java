@@ -26,7 +26,7 @@ import android.graphics.Bitmap;
 
 import com.mytechia.robobo.framework.IModule;
 
-
+// OLD
 public interface IColorDetectionModule extends IModule {
 
     /**

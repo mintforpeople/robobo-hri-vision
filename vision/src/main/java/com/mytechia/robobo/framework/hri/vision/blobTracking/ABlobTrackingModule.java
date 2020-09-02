@@ -22,11 +22,17 @@
 package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
 import com.mytechia.robobo.framework.RoboboManager;
+import com.mytechia.robobo.framework.hri.vision.util.AverageFilter;
+import com.mytechia.robobo.framework.hri.vision.util.IFilter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 
 import java.util.HashSet;
 
+
+/**
+ * Abstract class that manages the listener subscription, unsubscription and notifications
+ */
 public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     private HashSet<IBlobListener> listeners;
     protected float resolutionX = 1;
@@ -42,23 +48,34 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
     protected Blobcolor BLUE_CAL = Blobcolor.BLUE;
     protected Blobcolor CUSTOM_CAL = Blobcolor.CUSTOM;
 
+    private IFilter filterPosX = new AverageFilter(5);
+    private IFilter filterPosY = new AverageFilter(5);
+    private IFilter filterSize = new AverageFilter(5);
 
-
+    /**
+     * Called when a blob is detected
+     * @param blob the detected blob
+     */
     public void notifyTrackingBlob(Blob blob){
         for (IBlobListener listener:listeners){
             listener.onTrackingBlob(blob);
         }
-
+        // Send status
         if (rcmodule!=null) {
 
             Status status = new Status("BLOB");
-            status.putContents("posx",(Math.round(((float)blob.getX()/resolutionX)*100))+"");
-            status.putContents("posy",(Math.round(((float)blob.getY()/resolutionY)*100))+"");
+            status.putContents("posx",Math.round(((float)blob.getX()/resolutionX)*100)+"");
+            status.putContents("posy",Math.round(((float)blob.getY()/resolutionY)*100)+"");
             status.putContents("size",blob.getSize()+"");
             status.putContents("color",colorToString(blob.getColor()));
             rcmodule.postStatus(status);
         }
     }
+
+    /**
+     * Called when a blob disappears
+     * @param c blob color
+     */
     public void notifyBlobDissapear(Blobcolor c){
 
         for (IBlobListener listener:listeners){
@@ -74,6 +91,11 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
         }
     }
 
+    /**
+     * Gets a printable name from a blobcolor
+     * @param blobcolor the color
+     * @return a String with the color name
+     */
     private String colorToString(Blobcolor blobcolor){
         if (blobcolor == BLUE_CAL){
             return "blue";

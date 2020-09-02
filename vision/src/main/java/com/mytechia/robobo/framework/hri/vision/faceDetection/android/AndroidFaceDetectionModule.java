@@ -39,9 +39,14 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.faceDetection.AFaceDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
+import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.core.Mat;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Implementation of the face detection module using the android face detection API
@@ -65,6 +70,9 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     private boolean active = false;
     private boolean firstFrame = true;
 
+    // Used to avoid blocking the onNewFrame callback thread
+    ExecutorService executor;
+
     //endregion
 
     private FrameCounter fps = new FrameCounter();
@@ -74,20 +82,36 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     @Override
     public void startup(RoboboManager manager)  {
         m = manager;
+        // Load camera module and remote module instances
         try {
             this.cameraModule = manager.getModuleInstance(ICameraModule.class);
             rcmodule = manager.getModuleInstance(IRemoteControlModule.class);
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
-        cameraModule.suscribe(this);
         faces =  new FaceDetector.Face[5];
 
+        executor = Executors.newFixedThreadPool(1);
+        rcmodule.registerCommand("START-FACE-DETECTION", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                startDetection();
+            }
+        });
 
+        rcmodule.registerCommand("STOP-FACE-DETECTION", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                pauseDetection();
+
+            }
+        });
+
+        //TODO: Evaluate if start method should be called here or on each activity
     }
 
     @Override
-    public void shutdown() throws InternalErrorException {
+    public void shutdown() {
         cameraModule.unsuscribe(this);
 
     }
@@ -106,6 +130,12 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
     //endregion
 
+    /**
+     * Converts a bitmap to another one with the desired configuration
+     * @param bitmap Bitmap to be converted
+     * @param config Configuration to be applied
+     * @return Converted bitmap
+     */
     private Bitmap convert(Bitmap bitmap, Bitmap.Config config) {
         Bitmap convertedBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), config);
         Canvas canvas = new Canvas(convertedBitmap);
@@ -118,6 +148,8 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     //region ICameraListener Methods
     @Override
     public void onNewFrame(Frame frame) {
+
+        // Get resolution and create the face detector object
         if (firstFrame){
             resolutionX = frame.getWidth();
             resolutionY = frame.getHeight();
@@ -125,11 +157,15 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
             firstFrame = false;
 
         }
+
+        // If the module is not paused
         if (active) {
 
             final Frame finalFrame = frame;
+            // If it's not already processing a frame
             if (!processing) {
-                Thread t = new Thread(new Runnable() {
+                // Execute inside a thread to avoid locking the onNewFrame callback
+                executor.execute(new Runnable() {
                     @Override
                     public void run() {
 
@@ -139,6 +175,8 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
                         //TODO Crear el detector solo una vez
                         //Log.d(TAG, "New Frame, resolution:"+convertedBitmap.getHeight()+"x"+convertedBitmap.getWidth());
                         int facenumber = faceDetector.findFaces(convertedBitmap, faces);
+
+                        // If there is faces, get the firto one and obtain infotrmation
                         if (facenumber > 0) {
 
                             PointF facecoord = new PointF();
@@ -154,8 +192,12 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
                             notifyFace(facecoord, eyesDistance);
                             noDetectionCount = 0;
 
-                        } else {
+                        }
+                        // If there is no faces update de not detection count
+                        else {
                             noDetectionCount += 1;
+                            // If the count is greater than the threshold, notify a lost face to the
+                            // listeners
                             if ((noDetectionCount > LOST_THRESHOLD) && (!lostFace)) {
                                 notifyFaceDisappear();
                                 lostFace = true;
@@ -164,6 +206,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
                         }
                         processing = false;
 
+                        // Update the frame counter
                         fps.newFrame();
 
                         if (fps.getElapsedTime() % 10 == 0) {
@@ -173,7 +216,7 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
 
                     }
                 });
-                t.start();
+
 
             }
         }
@@ -191,13 +234,22 @@ public class AndroidFaceDetectionModule extends AFaceDetectionModule implements 
     }
 
     @Override
+    public void onOpenCVStartup() {
+
+    }
+
+    @Override
     public void startDetection() {
         active = true;
+        cameraModule.suscribe(this);
+
     }
 
     @Override
     public void pauseDetection() {
         active = false;
+        cameraModule.unsuscribe(this);
+
     }
 
     @Override

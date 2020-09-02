@@ -23,8 +23,11 @@ package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
 
  import com.mytechia.robobo.framework.hri.vision.util.CameraCalibrationData;
- import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationData;
+ import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationDataHSV;
+ import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationDataHistogram;
+ import com.mytechia.robobo.framework.hri.vision.util.IColorCalibrationData;
 
+ import org.opencv.core.Mat;
  import org.opencv.core.Scalar;
 
 /**
@@ -36,17 +39,29 @@ public class Blobcolor {
     public static Blobcolor BLUE = blobColorFromColorCalibrationData(CameraCalibrationData.DEFAULT_BLUE,"BLUE");
     public static Blobcolor RED = blobColorFromColorCalibrationData(CameraCalibrationData.DEFAULT_RED,"RED");
     public static Blobcolor CUSTOM = blobColorFromColorCalibrationData(CameraCalibrationData.DEFAULT_CUSTOM,"CUSTOM");
-
+    public static int type_HSV = 0;
+    public static int type_HISTOGRAM = 0;
     private int hmin;
     private int smin;
     private int vmin;
     private int hmax;
     private int smax;
     private int vmax;
+    private Mat data;
+    private int type;
     private String name;
 
 
-
+    /**
+     * Constructor from scalar objects
+     * @param hmin H Channel min value
+     * @param smin S Channel min value
+     * @param vmin V Channel min value
+     * @param hmax H Channel max value
+     * @param smax S Channel max value
+     * @param vmax V Channel max value
+     * @param name Color name
+     */
     public Blobcolor(int hmin, int smin, int vmin, int hmax, int smax, int vmax, String name){
 
         this.hmax = hmax;
@@ -56,29 +71,96 @@ public class Blobcolor {
         this.smin = smin;
         this.vmin = vmin;
         this.name = name;
+        this.type = type_HSV;
     }
 
-    public static Scalar getLowRange(Blobcolor color){
-        return new Scalar(color.hmin, color.smin, color.vmin);
+    public Blobcolor(Mat histogram, String name){
+        this.data = histogram;
+        this.name = name;
+        this.type = type_HISTOGRAM;
     }
 
-    public static Scalar getHighRange(Blobcolor color){
-        return new Scalar(color.hmax, color.smax, color.vmax);
+    /**
+     * Gets the low hsv range from a color
+     * @param color the color
+     * @return a Scalar object with the range
+     */
+    public Scalar getLowRange(Blobcolor color){
+        if (this.type == type_HSV) {
+            return new Scalar(color.hmin, color.smin, color.vmin);
+        }else {
+            return null;
+        }
     }
 
-    public static Blobcolor blobColorFromColorCalibrationData(ColorCalibrationData color, String key) {
-        return new Blobcolor (
-                color.getMinH(),
-                color.getMinS(),
-                color.getMinV(),
-                color.getMaxH(),
-                color.getMaxS(),
-                color.getMaxV(),
-                key);
+    /**
+     * Gets the high hsv range from a color
+     * @param color the color
+     * @return a Scalar object with the range
+     */
+    public Scalar getHighRange(Blobcolor color){
+        if (this.type == type_HSV) {
+            return new Scalar(color.hmax, color.smax, color.vmax);
+        }else {
+            return null;
+        }
     }
 
+    /**
+     * Creates a blobcolor from the calibrarion data
+     * @param icolor The color
+     * @param key Key for the retrieval of the calibration data
+     * @return
+     */
+    public static Blobcolor blobColorFromColorCalibrationData(IColorCalibrationData icolor, String key) {
+
+        if (icolor.getType() == IColorCalibrationData.type_HSV) {
+            ColorCalibrationDataHSV color = (ColorCalibrationDataHSV) icolor;
+            return new Blobcolor(
+                    color.getMinH(),
+                    color.getMinS(),
+                    color.getMinV(),
+                    color.getMaxH(),
+                    color.getMaxS(),
+                    color.getMaxV(),
+                    key);
+        }
+        else {
+            ColorCalibrationDataHistogram color = (ColorCalibrationDataHistogram) icolor;
+
+            return new Blobcolor(color.getHistMat(),key);
+        }
+    }
+
+    public Mat getHistogramData(){
+        if(this.type == type_HISTOGRAM) {
+            return this.data;
+        }
+        else{
+            return null;
+        }
+    }
+
+    public int getType(){
+        return this.type;
+    }
+    /**
+     * Returns the printable name of the color
+     * @return The name
+     */
     public String name() {
         return name;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() == this.getClass()){
+            Blobcolor b = (Blobcolor) obj;
+            if (b.name.equals(this.name)){
+                return true;
+            }
+        }
+            return false;
+
+    }
 }

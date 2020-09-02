@@ -26,7 +26,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 
 /**
- * Listener to receive new color notifications
+ * Listener to receive new color notifications / OLD
  */
 public interface IColorListener {
 //    void onNewColor(int colorrgb, int nearest_color, int x, int y, int height, int width, Bitmap borders);

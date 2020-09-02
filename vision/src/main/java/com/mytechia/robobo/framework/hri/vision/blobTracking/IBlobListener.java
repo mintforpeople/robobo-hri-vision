@@ -21,8 +21,20 @@
  ******************************************************************************/
 package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
+/**
+ * Listener to perform blob tracking
+ */
 public interface IBlobListener {
+    /**
+     * Called when a blob is detected
+     * @param blob a Blob object representing the detected blob
+     */
     void onTrackingBlob(Blob blob);
+
+    /**
+     * Called when a blob dissappears
+     * @param c the color that disappears
+     */
     void onBlobDisappear(Blobcolor c);
 
 }

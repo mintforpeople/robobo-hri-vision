@@ -23,16 +23,19 @@ package com.mytechia.robobo.framework.hri.vision.blobTracking.opencv;
 
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
+import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.ABlobTrackingModule;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
 import com.mytechia.robobo.framework.hri.vision.util.CameraCalibrationData;
-import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationData;
+import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationDataHSV;
+import com.mytechia.robobo.framework.hri.vision.util.ColorCalibrationDataHistogram;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
@@ -49,11 +52,12 @@ import java.util.concurrent.Executors;
 import static android.content.ContentValues.TAG;
 
 
-//http://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
-//https://github.com/badlogic/opencv-fun/blob/master/src/pool/utils/BallDetector.java
-
+/**
+ * Opencv implementation of the blob detector
+ */
 public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICameraListener {
-
+    //http://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
+//https://github.com/badlogic/opencv-fun/blob/master/src/pool/utils/BallDetector.java
     private static final int POOL_SIZE=4;
 
     private ICameraModule cameraModule;
@@ -74,7 +78,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
 
     public OpenCVBlobTrackingModule(){
-
+        // Add workers to pool
         for (int i = 0; i <POOL_SIZE; i++) {
             workersPool.add(new BlobTrackerWorker(this));
         }
@@ -115,6 +119,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void onNewFrame(Frame frame) {
 
+        // In the first frame get the resolution of the captured images
         if (firstFrame) {
             resolutionX = frame.getWidth();
             resolutionY = frame.getHeight();
@@ -124,28 +129,30 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     @Override
     public void onNewMat(Mat mat) {
-
+        //TODO: add a "processing" flag to discard new mats if processing one already
         if(mat.empty()){
             return;
         }
 
         synchronized (lockBlockTrackings) {
 
-            for (BlobTracker blockTracking : blobTrackings) {
+            // For each color being tracked
+            for (BlobTracker blobTracking : blobTrackings) {
 
-                if(blockTracking.capturing()){
+                if(blobTracking.processing()){
                     continue;
                 }
 
-                BlobTrackerWorker blockTrackingWorker = this.popWorkerFromPool();
+                BlobTrackerWorker blobTrackingWorker = this.popWorkerFromPool();
 
-                if (blockTrackingWorker == null) {
+                if (blobTrackingWorker == null) {
                     continue;
                 }
 
-                blockTrackingWorker.configure(blockTracking, mat);
-
-                threadPool.execute(blockTrackingWorker);
+                // Configure tracker with the new mat
+                blobTrackingWorker.configure(blobTracking, mat);
+                //Execute workers
+                threadPool.execute(blobTrackingWorker);
 
             }
         }
@@ -157,42 +164,59 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void onDebugFrame(Frame frame, String frameId) {}
 
-
     @Override
-    public void startup(RoboboManager manager) throws InternalErrorException {
-        m = manager;
+    public void onOpenCVStartup() {
+
+        // Load calibration values stored in the manager options
         Bundle opts = m.getOptions();
         CameraCalibrationData data = null;
         try {
 
             data = (CameraCalibrationData) opts.getSerializable("cameraCalibrationData");
-            ColorCalibrationData col = data.getBlue();
-            BLUE_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"BLUE");
-            col = data.getGreen();
-            GREEN_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"GREEN");
-            col = data.getRed();
-            RED_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"RED");
-            col = data.getCustom();
-            CUSTOM_CAL = new Blobcolor(col.getMinH(),col.getMinS(),col.getMinV(),col.getMaxH(),col.getMaxS(),col.getMaxV(),"CUSTOM");
+
+            ColorCalibrationDataHistogram col = (ColorCalibrationDataHistogram) data.getBlue();
+            BLUE_CAL = new Blobcolor(col.getHistMat(),"BLUE");
+            col = (ColorCalibrationDataHistogram) data.getGreen();
+            GREEN_CAL = new Blobcolor(col.getHistMat(),"GREEN");
+            col = (ColorCalibrationDataHistogram) data.getRed();
+            RED_CAL = new Blobcolor(col.getHistMat(),"RED");
+            col = (ColorCalibrationDataHistogram) data.getCustom();
+            CUSTOM_CAL = new Blobcolor(col.getHistMat(),"CUSTOM");
 
         }catch (NullPointerException e){
             m.log(TAG,"No calibration data found, using defaults");
         }catch (Exception e){
             e.printStackTrace();
         }
-        cameraModule = m.getModuleInstance(ICameraModule.class);
-        rcmodule = m.getModuleInstance(IRemoteControlModule.class);
-        cameraModule.suscribe(this);
+
+        // Register remote command to configure different trackings
         rcmodule.registerCommand("CONFIGURE-BLOBTRACKING", new ICommandExecutor() {
-            @Override
-            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
-                configureDetection(
-                        Boolean.parseBoolean(c.getParameters().get("red")),
-                        Boolean.parseBoolean(c.getParameters().get("green")),
-                        Boolean.parseBoolean(c.getParameters().get("blue")),
-                        Boolean.parseBoolean(c.getParameters().get("custom")));
-            }
+                @Override
+                public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                    configureDetection(
+                            Boolean.parseBoolean(c.getParameters().get("red")),
+                            Boolean.parseBoolean(c.getParameters().get("green")),
+                            Boolean.parseBoolean(c.getParameters().get("blue")),
+                            Boolean.parseBoolean(c.getParameters().get("custom")));
+                }
         });
+    }
+
+
+    @Override
+    public void startup(RoboboManager manager) throws InternalErrorException {
+        m = manager;
+        Log.w("BLOB","STARTUP BLOB");
+        // Get instances od camera and remote modules
+        try {
+            cameraModule = m.getModuleInstance(ICameraModule.class);
+            rcmodule = m.getModuleInstance(IRemoteControlModule.class);
+
+        } catch (ModuleNotFoundException e) {
+            e.printStackTrace();
+        }
+        cameraModule.suscribe(this);
+
     }
 
     @Override
@@ -203,7 +227,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     @Override
     public String getModuleInfo() {
-        return "Ball tracking Module";
+        return "Blob tracking Module";
     }
 
     @Override
@@ -213,7 +237,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     private boolean existBlobTracking(Blobcolor blobcolor){
         for (BlobTracker blobTracker : blobTrackings) {
-                if(blobTracker.getBlobcolor()==blobcolor){
+                if(blobTracker.getBlobcolor().equals(blobcolor)){
                     return true;
                 }
         }

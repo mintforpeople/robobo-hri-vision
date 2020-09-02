@@ -24,10 +24,35 @@ package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
 import com.mytechia.robobo.framework.IModule;
 
+/**
+ * Module that allows to perform blob tracking
+ */
 public interface IBlobTrackingModule extends IModule{
+
+    /**
+     * Configures detection for the four detectable colors
+     * @param detectRed Red flag
+     * @param detectGreen Green flag
+     * @param detectBlue Blue flag
+     * @param detectCustom Custom flag
+     */
     void configureDetection(boolean detectRed, boolean detectGreen, boolean detectBlue, boolean detectCustom);
+
+    /**
+     * Suscribes a listener to the notifications stream
+     * @param listener The listener
+     */
     void suscribe(IBlobListener listener);
+    /**
+     * Unsuscribes a listener from the notifications stream
+     * @param listener The listener
+     */
     void unsuscribe(IBlobListener listener);
+
+    /**
+     * Sets the minimum number of pixels to fire a detection
+     * @param th number of pixels
+     */
     void setThreshold(int th);
 
 

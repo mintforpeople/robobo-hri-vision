@@ -31,7 +31,7 @@ import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlobT
 import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlobTracker.DETECTION_STATE.DISSAPEAR;
 
 /**
- * Created by julio on 8/08/17.
+ * Worker to be executed with a threadpool
  */
 public class BlobTrackerWorker implements Runnable {
 
@@ -61,18 +61,18 @@ public class BlobTrackerWorker implements Runnable {
 
     @Override
     public void run() {
-
+        // Check tracker state and notify listeners
         try {
 
-            this.blobTracking.capture(mat);
+            this.blobTracking.process(mat);
 
-            if (blobTracking.blodDetectionState() == DISSAPEAR) {
+            if (blobTracking.blobDetectionState() == DISSAPEAR) {
 
                 openCVBlobTrackingModule.notifyBlobDissapear(blobTracking.getBlobcolor());
 
-            } else if ((blobTracking.blodDetectionState() == DETECTED)) {
+            } else if ((blobTracking.blobDetectionState() == DETECTED)) {
 
-                openCVBlobTrackingModule.notifyTrackingBlob(blobTracking.detectedBlod());
+                openCVBlobTrackingModule.notifyTrackingBlob(blobTracking.detectedBlob());
 
             }
 

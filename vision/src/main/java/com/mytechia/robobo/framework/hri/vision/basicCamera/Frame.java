@@ -30,6 +30,9 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 
+/**
+ * Class representing a frame captured by the camera
+ */
 public class Frame {
     private int width;
     private int height;
@@ -40,6 +43,11 @@ public class Frame {
     public Frame(){
 
     }
+
+    /**
+     * New frame from a Mat object
+     * @param mat
+     */
     public Frame(Mat mat){
         Bitmap bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
 
@@ -51,44 +59,83 @@ public class Frame {
 
     }
 
+    /**
+     * Returns the sequence number
+     * @return sequence number
+     */
     public int getSeqNum() {
-        return seqNum;
+        return this.seqNum;
     }
 
+    /**
+     * Sets the sequence number
+     * @param seqNum sequence number
+     */
     public void setSeqNum(int seqNum) {
         this.seqNum = seqNum;
     }
 
+    /**
+     *Returns the frame identifier
+     * @return identifier
+     */
     public String getFrameId() {
         return frameId;
     }
 
+    /**
+     * Sets the frame identifier
+     * @param frameId frame id
+     */
     public void setFrameId(String frameId) {
         this.frameId = frameId;
     }
 
 
-
+    /**
+     * Returns the bitmap represention of the frame
+     * @return bitmap
+     */
     public Bitmap getBitmap() {
         return bitmap;
     }
 
+    /**
+     * Sets the bitmap
+     * @param bitmap bitmap
+     */
     public void setBitmap(Bitmap bitmap) {
         this.bitmap = bitmap;
     }
 
+    /**
+     * Gets vertical resolution
+     * @return resolution on Y axis
+     */
     public int getHeight() {
         return height;
     }
 
+    /**
+     * Sets vertical resolution
+     * @param height resolution on Y axis
+     */
     public void setHeight(int height) {
         this.height = height;
     }
 
+    /**
+     * Gets the horizontal resolution of the image
+     * @return resolution on X axis
+     */
     public int getWidth() {
         return width;
     }
 
+    /**
+     * Gets the horizontal resolution of the image
+     * @param width resolution on X axis
+     */
     public void setWidth(int width) {
         this.width = width;
     }

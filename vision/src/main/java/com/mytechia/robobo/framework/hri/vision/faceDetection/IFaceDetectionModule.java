@@ -40,9 +40,20 @@ public interface IFaceDetectionModule extends IModule{
      */
     void unsuscribe(IFaceListener listener);
 
+    /**
+     * Start the face detection process
+     */
     void startDetection();
+
+    /**
+     * Pause the face detection process
+     */
     void pauseDetection();
 
+    /**
+     * Set the number of frames with no faces detected to notify a lost face event
+     * @param threshold Number of frames
+     */
     void setLostThreshold(int threshold);
 
 }

@@ -22,7 +22,6 @@
 
 package com.mytechia.robobo.framework.hri.vision.colorDetection;
 
-import android.graphics.Bitmap;
 import android.graphics.Color;
 
 import com.mytechia.robobo.framework.RoboboManager;
@@ -32,7 +31,7 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 import java.util.HashSet;
 
 /**
- * Abstract class that manages the listeners and the status updates
+ * Abstract class that manages the listeners and the status updates // OLD
  */
 public abstract class AColorDetectionModule implements IColorDetectionModule {
     private HashSet<IColorListener> listeners = new HashSet<IColorListener>();
@@ -56,6 +55,11 @@ public abstract class AColorDetectionModule implements IColorDetectionModule {
 //        }
 //    }
 
+    /**
+     * Called when a color is detected
+     * @param colorrgb
+     * @param nearest_color
+     */
     protected void notifyColor(int colorrgb, int nearest_color){
         for (IColorListener listener:listeners){
             listener.onNewColor(colorrgb,nearest_color);

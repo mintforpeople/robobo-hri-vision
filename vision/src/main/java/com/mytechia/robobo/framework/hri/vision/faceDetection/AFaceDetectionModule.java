@@ -48,7 +48,7 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
     }
 
     /**
-     * Notifies the listeners when a face is detected
+     * Notifies the listeners when a face is detected (notifies each frame)
      * @param coords The coordinates of the center of the face
      * @param eyesDistance The distance between eyes
      */
@@ -65,7 +65,11 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
             rcmodule.postStatus(status);
         }
     }
-
+    /**
+     * Notifies the listeners when a face is detected (notifies only the first detected frame)
+     * @param coords The coordinates of the center of the face
+     * @param eyesDistance The distance between eyes
+     */
     protected void notifyFaceAppear(PointF coords, float eyesDistance){
         for (IFaceListener listener:listeners){
             listener.onFaceAppear(coords,eyesDistance);
@@ -80,6 +84,9 @@ public abstract class AFaceDetectionModule implements IFaceDetectionModule{
         }
     }
 
+    /**
+     * Notifies the listeners when a face is lost
+     */
     protected void notifyFaceDisappear(){
         for (IFaceListener listener:listeners){
             listener.onFaceDissapear();

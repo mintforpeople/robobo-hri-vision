@@ -12,12 +12,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.mytechia.robobo.framework.vision.CameraTestActivity">
 
-    <TextView
-        android:text="TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView2" />
-
     <TextureView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -35,7 +29,7 @@
         android:id="@+id/testImageView"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:rotation="0"
+        android:contentDescription="TODO" android:rotation="0"
          />
 
     <FrameLayout
@@ -53,5 +47,12 @@
             android:layout_width="1280dp"
             android:alpha="0" />
     </FrameLayout>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:textColor="@color/colorAccent" />
 
 </RelativeLayout>

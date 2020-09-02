@@ -200,6 +200,11 @@ public class CameraFaceTestActivity extends AppCompatActivity implements ICamera
     }
 
     @Override
+    public void onOpenCVStartup() {
+
+    }
+
+    @Override
     public void onFaceDetected(final PointF faceCoords, float eyesDistance) {
         runOnUiThread(new Runnable() {
             @Override

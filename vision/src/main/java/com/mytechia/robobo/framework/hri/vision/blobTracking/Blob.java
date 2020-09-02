@@ -23,7 +23,9 @@ package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
 import org.opencv.core.Point;
 
-
+/**
+ * Class representing the color blobs
+ */
 public class Blob {
     private Blobcolor color;
     private int x;
@@ -32,6 +34,14 @@ public class Blob {
     private boolean isBall;
     private boolean isSquare;
 
+    /**
+     * Public constructor of the Blob object
+     * @param color Color of the blob
+     * @param coords Position of the Blob
+     * @param size Size in pixels
+     * @param isBall Is a ball? flag
+     * @param isSquare IS a square? flag
+     */
     public Blob(Blobcolor color, Point coords, int size, boolean isBall, boolean isSquare) {
         this.color = color;
         this.isBall = isBall;
@@ -41,34 +51,66 @@ public class Blob {
         this.y = (int) coords.y;
     }
 
+    /**
+     * Checks if the blob is a ball
+     * @return true if it is a ball
+     */
     public boolean isBall() {
         return isBall;
     }
 
+    /**
+     * Checks if the blob is a square
+     * @return true if it is a square
+     */
     public boolean isSquare() {
         return isSquare;
     }
 
+    /**
+     * Returns the size of the blob
+     * @return size of the blob in pixels
+     */
     public int getSize() {
         return size;
     }
 
+    /**
+     * Position in X axis
+     * @return horizontal position in pixels
+     */
     public int getX() {
         return x;
     }
 
+    /**
+     * Position in Y axis
+     * @return vertical position in pixels
+     */
     public int getY() {
         return y;
     }
 
+    /**
+     * Returnd he color of the blob
+     * @return a Blobcolor object
+     */
     public Blobcolor getColor() {
         return color;
     }
 
+    /**
+     * Sets the object as a square
+     * @param square true if its a square
+     */
     public void setSquare(boolean square) {
         isSquare = square;
     }
 
+    /**
+     * Sets the object as a ball
+     * @param ball true if its a ball
+     */
     public void setBall(boolean ball) {
         isBall = ball;
     }
