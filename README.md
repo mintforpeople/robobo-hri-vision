@@ -1,5 +1,9 @@
-# robobo-hri-vision
-This repository contains the source code of the different modules that made up the ROBOBO Vision Library
+
+# ROBOBO Vision Library #
+
+Contains the source code of the different modules that made up the ROBOBO Vision Library. 
+
+This includes:
 
 * Basic Camera Module
 * Blob Tracking Module
@@ -9,6 +13,11 @@ This repository contains the source code of the different modules that made up t
 * Object Recognition Module
 * QR Tracking Module
 * Tag Detection Module
+
+NOTE: All the development happens in the develop or feature branches. The master branch contains the last stable release.
+This repository contains the source code of the different modules that made up the ROBOBO Vision Library
+
+
 
 ## Acknowledgement
 <!--
@@ -29,3 +38,4 @@ More information: <a href="http://rosin-project.eu">rosin-project.eu</a>
 
 This project has received funding from the European Union’s Horizon 2020  
 research and innovation programme under grant agreement no. 732287.
+
