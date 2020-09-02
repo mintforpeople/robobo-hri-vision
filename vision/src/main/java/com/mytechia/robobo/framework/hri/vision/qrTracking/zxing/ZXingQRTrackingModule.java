@@ -46,6 +46,8 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.qrTracking.AQRTrackingModule;
 import com.mytechia.robobo.framework.hri.vision.qrTracking.QRInfo;
 import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
+import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.core.Mat;
@@ -73,11 +75,17 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
     ExecutorService executor;
 
 
-
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
 
         m = manager;
+        // Create framecounter
+        fps = new FrameCounter();
+        // Create Qr code reader
+        reader = new QRCodeMultiReader();
+        // Create thread executor to avoid locking OnNewFrame thread
+        executor = Executors.newFixedThreadPool(1);
+
         // LOad camera and remote controlo modules
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
@@ -86,19 +94,35 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
-        // Create framecounter
-        fps = new FrameCounter();
-        cameraModule.suscribe(this);
+        rcmodule.registerCommand("START-QR-TRACKING", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                startDetection();
+            }
+        });
 
-        // Create Qr code reader
-        reader = new QRCodeMultiReader();
-        // Create thread executor to avoid locking OnNewFrame thread
-        executor = Executors.newFixedThreadPool(1);
+        rcmodule.registerCommand("STOP-QR-TRACKING", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                stopDetection();
+
+            }
+        });
+        startDetection();
+
+    }
+
+    private void stopDetection() {
+        cameraModule.unsuscribe(this);
+    }
+
+    private void startDetection() {
+        cameraModule.suscribe(this);
     }
 
     @Override
-    public void shutdown() throws InternalErrorException {
-
+    public void shutdown() {
+        stopDetection();
     }
 
     @Override
@@ -114,7 +138,7 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
     @Override
     public void onNewFrame(final Frame frame) {
         // If it not already processing a frame
-        if (!processing){
+        if (!processing) {
             // Execute on thread
             executor.execute(new Runnable() {
                 @Override
@@ -123,7 +147,7 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
                     fps.newFrame();
 
                     if (fps.getElapsedTime() % 10 == 0) {
-                        Log.v("QR", "FPS = " + fps.getFPS()+ "  "+fps.getElapsedTime() % 10 );
+                        Log.v("QR", "FPS = " + fps.getFPS() + "  " + fps.getElapsedTime() % 10);
                     }
                     Bitmap bMap = frame.getBitmap();
 
@@ -131,7 +155,7 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
                     //copy pixel data from the Bitmap into the 'intArray' array
                     bMap.getPixels(intArray, 0, bMap.getWidth(), 0, 0, bMap.getWidth(), bMap.getHeight());
 
-                    LuminanceSource source = new RGBLuminanceSource(bMap.getWidth(), bMap.getHeight(),intArray);
+                    LuminanceSource source = new RGBLuminanceSource(bMap.getWidth(), bMap.getHeight(), intArray);
 
                     BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 
@@ -139,15 +163,15 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
                         // Decode image to find QR codes
                         Result res = reader.decode(bitmap);
                         // Create a QRInfo object with the result
-                        QRInfo qr = new QRInfo(res) ;
+                        QRInfo qr = new QRInfo(res);
                         //Log.d(TAG,qr.toString());
 
 
-                        if (currentQr == null){
+                        if (currentQr == null) {
                             notifyQRAppear(qr);
                             currentQr = qr;
 
-                        }else if (!currentQr.getIdString().equals(qr.getIdString())){
+                        } else if (!currentQr.getIdString().equals(qr.getIdString())) {
                             notifyQRDisappear(currentQr);
                             notifyQRAppear(qr);
                             currentQr = qr;
@@ -156,10 +180,9 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
                         }
 
 
-                        notifyQR(qr);
+                        notifyQR(qr, frame.getFrameId());
                         lostCount = 0;
                         formatErrorCount = 0;
-
 
 
                     } catch (NotFoundException e) {
@@ -169,7 +192,7 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
 
                     }
 
-                    if (((ZXingQRTrackingModule.this.lostCount+ZXingQRTrackingModule.this.formatErrorCount/2)>ZXingQRTrackingModule.this.lostThreshold)&&(ZXingQRTrackingModule.this.currentQr!=null)){
+                    if (((ZXingQRTrackingModule.this.lostCount + ZXingQRTrackingModule.this.formatErrorCount / 2) > ZXingQRTrackingModule.this.lostThreshold) && (ZXingQRTrackingModule.this.currentQr != null)) {
                         ZXingQRTrackingModule.this.notifyQRDisappear(ZXingQRTrackingModule.this.currentQr);
                         ZXingQRTrackingModule.this.currentQr = null;
                     }
@@ -179,7 +202,6 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
 
         }
     }
-
 
 
     @Override

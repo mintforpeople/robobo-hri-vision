@@ -271,7 +271,7 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
     public void onTrackingBlob(final Blob blob) {
         final int x = blob.getX();
         final int y = blob.getY();
-        roboboManager.log(LogLvl.WARNING, "BLOBTRACK", "BLOOOOO B");
+        Log.w("BLOBTRACK", "BLOOOOO B");
 
 //        final int size = blob.getSize();
         final int size = 15;

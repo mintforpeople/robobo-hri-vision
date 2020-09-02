@@ -1,0 +1,33 @@
+???
+person
+bicycle
+car
+motorcycle
+cat
+dog
+bottle
+wine glass
+cup
+fork
+knife
+spoon
+bowl
+banana
+apple
+orange
+laptop
+mouse
+remote
+keyboard
+cell phone
+book
+clock
+vase
+scissors
+robobo
+stop sign
+speed 50 sign
+speed 120 sign
+traffic light green
+traffic light yellow
+traffic light red

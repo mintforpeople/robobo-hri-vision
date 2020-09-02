@@ -88,7 +88,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
     // Remote control module instance
     private IRemoteControlModule remoteControlModule;
-
+    private int seqnum = 0;
 
 
 
@@ -166,6 +166,29 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
                 }
             }
         });
+
+        remoteControlModule.registerCommand("START-CAMERA", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                mOpenCvCameraView.enableView();
+            }
+        });
+
+        remoteControlModule.registerCommand("STOP-CAMERA", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                mOpenCvCameraView.disableView();
+            }
+        });
+
+        remoteControlModule.registerCommand("SET-CAMERA-FPS", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                if(c.getParameters().containsKey("fps")){
+                    setFps(Integer.parseInt(c.getParameters().get("fps")));
+                }
+            }
+        });
         manager.subscribeToPowerModeChanges(this);
 
     }
@@ -213,7 +236,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
         if (!OpenCVLoader.initDebug()) {
             roboboManager.log(LogLvl.WARNING, TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, context, mLoaderCallback);
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, context, mLoaderCallback);
         } else {
             roboboManager.log(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
@@ -295,7 +318,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         long millis = System.currentTimeMillis();
-
         // Check if we want to process a new frame
         if (millis-lastFrameTime>=deltaTimeThreshold) {
            // roboboManager.log("CameraModule",millis-lastFrameTime+"");
@@ -310,7 +332,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             //Core.flip(mat.t(), mat, 1);
 
             // TODO eliminar esta linea
-            bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+            //bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
 
             //Conversión de la matriz a bitmap
 //        Utils.matToBitmap(mat, bmp);
@@ -318,12 +340,15 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 //        frame.setHeight(bmp.getHeight());
 //        frame.setWidth(bmp.getWidth());
 //        frame.setBitmap(bmp);
+            this.seqnum = this.seqnum + 1;
 
-            //TODO devolver byte[] para artoolkit???
-            notifyFrame(new Frame(mat));
+            Frame frame = new Frame(mat);
+            frame.setSeqNum(this.seqnum);
+            notifyFrame(frame);
 
             if (notifyMat) {
                 notifyMat(mat);
+                notifyMat(mat,seqnum);
             }
 
             // Update frame counter
@@ -343,6 +368,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         }
 
     }
+
     //endregion
 
     //region OpenCV Methods
@@ -370,5 +396,10 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     @Override
     public int getResY() {
         return resolution_height;
+    }
+
+    @Override
+    public int getCameraCode() {
+        return index;
     }
 }

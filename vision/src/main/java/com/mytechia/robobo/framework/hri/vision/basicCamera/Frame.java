@@ -64,7 +64,7 @@ public class Frame {
      * @return sequence number
      */
     public int getSeqNum() {
-        return seqNum;
+        return this.seqNum;
     }
 
     /**

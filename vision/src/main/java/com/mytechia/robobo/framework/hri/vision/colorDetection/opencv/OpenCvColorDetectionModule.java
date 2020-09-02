@@ -36,6 +36,8 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.colorDetection.AColorDetectionModule;
+import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
+import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -62,32 +64,34 @@ import java.util.zip.CheckedOutputStream;
 public class OpenCvColorDetectionModule extends AColorDetectionModule implements ICameraListener {
     /*
      * http://www.workwithcolor.com/orange-brown-color-hue-range-01.htm
-    */
+     */
 
-    private String TAG ="OCVColormodule";
+    private String TAG = "OCVColormodule";
     private Context context;
-    private int cuentaframes=0;
+    private int cuentaframes = 0;
     private boolean paused = true;
     private ICameraModule cameraModule;
 
     private boolean rcpresent = false;
+    private boolean processing = false;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                {
+                case LoaderCallbackInterface.SUCCESS: {
                     m.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
 
-                } break;
-                default:
-                {
+                }
+                break;
+                default: {
                     super.onManagerConnected(status);
-                } break;
+                }
+                break;
             }
         }
     };
+
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         context = manager.getApplicationContext();
@@ -102,8 +106,23 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
 
         cameraModule = manager.getModuleInstance(ICameraModule.class);
         rcmodule = manager.getModuleInstance(IRemoteControlModule.class);
-        cameraModule.suscribe(this);
 
+        rcmodule.registerCommand("START-COLOR-DETECTION", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                startDetection();
+            }
+        });
+
+        rcmodule.registerCommand("STOP-COLOR-DETECTION", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                pauseDetection();
+
+            }
+        });
+
+        startDetection();
 
     }
 
@@ -123,181 +142,183 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
     }
 
     private void processFrame(Bitmap bmp) {
-        Scalar mBlobColorHsv = new Scalar(0, 0, 0);
-        //Log.d(TAG,"Cojo un frame y lo tiro por el retrete, y ya son "+cuentaframes+" frames los que el retrete se ha tragado!");
-        //cuentaframes++;
+        if (!processing) {
+            processing = true;
+            Scalar mBlobColorHsv = new Scalar(0, 0, 0);
+            //Log.d(TAG,"Cojo un frame y lo tiro por el retrete, y ya son "+cuentaframes+" frames los que el retrete se ha tragado!");
+            //cuentaframes++;
 
 
-        Bitmap bmp32 = bmp.copy(Bitmap.Config.ARGB_8888, true);
-        Mat imageMat = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC3);
+            Bitmap bmp32 = bmp.copy(Bitmap.Config.ARGB_8888, true);
+            Mat imageMat = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC3);
 
-        Mat hsvMat = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC3);
+            Mat hsvMat = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC3);
 
-        Mat bwimage = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC1);
-        Imgproc.equalizeHist(bwimage,bwimage);
-        Utils.bitmapToMat(bmp32, imageMat);
+            Mat bwimage = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC1);
+            Imgproc.equalizeHist(bwimage, bwimage);
+            Utils.bitmapToMat(bmp32, imageMat);
 
-        Imgproc.cvtColor(imageMat, hsvMat, Imgproc.COLOR_RGB2HSV, 3);
-
-
-        Imgproc.cvtColor(imageMat, bwimage, Imgproc.COLOR_RGB2GRAY, 1);
-
-        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-        Imgproc.Canny(bwimage, bwimage, 75, 100);
-
-        //TODO Cambiar RETR_LIST por  RETR_EXTERNAL y probarlo
-        Imgproc.findContours(bwimage, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
-        bwimage.release();
+            Imgproc.cvtColor(imageMat, hsvMat, Imgproc.COLOR_RGB2HSV, 3);
 
 
+            Imgproc.cvtColor(imageMat, bwimage, Imgproc.COLOR_RGB2GRAY, 1);
 
-        double maxArea = -1;
-        int maxAreaIdx = -1;
+            List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+            Imgproc.Canny(bwimage, bwimage, 75, 100);
 
-        for (int idx = 0; idx < contours.size(); idx++) {
-            Mat contour = contours.get(idx);
-            double contourarea = Imgproc.contourArea(contour);
+            //TODO Cambiar RETR_LIST por  RETR_EXTERNAL y probarlo
+            Imgproc.findContours(bwimage, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+            bwimage.release();
 
-            if ((contourarea > maxArea)) {
-                maxArea = contourarea;
-                maxAreaIdx = idx;
+
+            double maxArea = -1;
+            int maxAreaIdx = -1;
+
+            for (int idx = 0; idx < contours.size(); idx++) {
+                Mat contour = contours.get(idx);
+                double contourarea = Imgproc.contourArea(contour);
+
+                if ((contourarea > maxArea)) {
+                    maxArea = contourarea;
+                    maxAreaIdx = idx;
+                }
             }
-        }
 
 
-
-        if (maxArea > 500) {
-            //MatOfPoint contour = contours.get(maxAreaIdx);
-            Mat contourMat = Mat.zeros(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC1);
-
-
-            Imgproc.drawContours(contourMat, contours, maxAreaIdx, new Scalar(1), -1);
+            if (maxArea > 500) {
+                //MatOfPoint contour = contours.get(maxAreaIdx);
+                Mat contourMat = Mat.zeros(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC1);
 
 
-            //Rect boundingRect = Imgproc.boundingRect(contour);
-
-            List<Mat> lHsv = new ArrayList<Mat>(3);
-            Core.split(hsvMat, lHsv);
-            Mat mH = lHsv.get(0);
-            Mat mS = lHsv.get(1);
-            Mat mV = lHsv.get(2);
-
-            double meansum = 0;
-            double means= 0;
-            double meanv =0;
+                Imgproc.drawContours(contourMat, contours, maxAreaIdx, new Scalar(1), -1);
 
 
-            double squaredsum = 0;
-            double squaredsumv = 0;
-            double count = 0;
+                //Rect boundingRect = Imgproc.boundingRect(contour);
 
-            for (int i = 0; i < contourMat.rows(); i++) {
-                for (int j = 0; j < contourMat.cols(); j++) {
-                    if (contourMat.get(i, j)[0] != 0) {
-                        count = count + 1;
-                        double pixel = mH.get(i, j)[0];
-                        double pixelv = mH.get(i, j)[0];
-                        meansum = meansum + pixel;
-                        meanv = meanv+mH.get(i, j)[0];
-                        means = means+mS.get(i, j)[0];
-                        squaredsum = squaredsum + Math.pow(pixel, 2);
-                        squaredsumv = squaredsumv + Math.pow(pixel, 2);
+                List<Mat> lHsv = new ArrayList<Mat>(3);
+                Core.split(hsvMat, lHsv);
+                Mat mH = lHsv.get(0);
+                Mat mS = lHsv.get(1);
+                Mat mV = lHsv.get(2);
 
+                double meansum = 0;
+                double means = 0;
+                double meanv = 0;
+
+
+                double squaredsum = 0;
+                double squaredsumv = 0;
+                double count = 0;
+
+                for (int i = 0; i < contourMat.rows(); i++) {
+                    for (int j = 0; j < contourMat.cols(); j++) {
+                        if (contourMat.get(i, j)[0] != 0) {
+                            count = count + 1;
+                            double pixel = mH.get(i, j)[0];
+                            double pixelv = mH.get(i, j)[0];
+                            meansum = meansum + pixel;
+                            meanv = meanv + mH.get(i, j)[0];
+                            means = means + mS.get(i, j)[0];
+                            squaredsum = squaredsum + Math.pow(pixel, 2);
+                            squaredsumv = squaredsumv + Math.pow(pixel, 2);
+
+                        }
                     }
                 }
-            }
 
-            double mean = meansum / count;
-            meanv = meanv/count;
-            means = means/count;
-            double meansquearedvalues = squaredsum / count;
-            double meansquearedvaluesv = squaredsumv / count;
+                double mean = meansum / count;
+                meanv = meanv / count;
+                means = means / count;
+                double meansquearedvalues = squaredsum / count;
+                double meansquearedvaluesv = squaredsumv / count;
 
-            double variance = meansquearedvalues / (Math.pow(mean, 2));
-            double variancev = meansquearedvaluesv/ (Math.pow(meanv,2));
-            double variances = meansquearedvalues/ (Math.pow(meanv,2));
+                double variance = meansquearedvalues / (Math.pow(mean, 2));
+                double variancev = meansquearedvaluesv / (Math.pow(meanv, 2));
+                double variances = meansquearedvalues / (Math.pow(meanv, 2));
 
-            m.log(LogLvl.TRACE, TAG, "Variance: " + variance+ " Mean: "+mean + " Variance v: " + variancev + " Mean v: " + meanv);
-            //1.02
-            if (variance < 1.03) {
-
+                m.log(LogLvl.TRACE, TAG, "Variance: " + variance + " Mean: " + mean + " Variance v: " + variancev + " Mean v: " + meanv);
+                //1.02
+                if (variance < 1.03) {
 
 
+                    //mBlobColorHsv = Core.mean(hsvMat, contourMat); //(float) sum/pointList.size();
 
-                //mBlobColorHsv = Core.mean(hsvMat, contourMat); //(float) sum/pointList.size();
-
-                hsvMat.release();
+                    hsvMat.release();
 
 
-                float[] floatHsv = new float[3];
-                floatHsv[0] = (float)mean * 2;
-                floatHsv[1] = (float)means;
-                floatHsv[2] = (float) meanv;
+                    float[] floatHsv = new float[3];
+                    floatHsv[0] = (float) mean * 2;
+                    floatHsv[1] = (float) means;
+                    floatHsv[2] = (float) meanv;
 
-                Imgproc.drawContours(imageMat, contours, maxAreaIdx, new
-                        Scalar(255));
+                    Imgproc.drawContours(imageMat, contours, maxAreaIdx, new
+                            Scalar(255));
 
-                Utils.matToBitmap(imageMat, bmp);
+                    Utils.matToBitmap(imageMat, bmp);
 
-                mBlobColorHsv.val[0] = mean*2;
-                int colorrgb = Color.HSVToColor(floatHsv);
+                    mBlobColorHsv.val[0] = mean * 2;
+                    int colorrgb = Color.HSVToColor(floatHsv);
 
-                mean = mean -8;
-                if (mean<0){
-                    mean = 171+Math.abs(mean);
-                }
-                if ((mean > 166) && (mean <= 179)) {
-                    m.log(LogLvl.TRACE, TAG, "RED" + mean);
+                    mean = mean - 8;
+                    if (mean < 0) {
+                        mean = 171 + Math.abs(mean);
+                    }
+                    if ((mean > 166) && (mean <= 179)) {
+                        m.log(LogLvl.TRACE, TAG, "RED" + mean);
 //                    notifyColor(colorrgb, Color.RED, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
-                    notifyColor(colorrgb, Color.RED);
+                        notifyColor(colorrgb, Color.RED);
 
-                }
+                    }
 
-                if ((mean > 0) && (mean <= 29)) {
-                    m.log(LogLvl.TRACE, TAG, "YELLOW" + mean);
+                    if ((mean > 0) && (mean <= 29)) {
+                        m.log(LogLvl.TRACE, TAG, "YELLOW" + mean);
 //                    notifyColor(colorrgb, Color.YELLOW, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
-                    notifyColor(colorrgb, Color.YELLOW);
-                }
-                if ((mean > 30) && (mean <= 66)) {
-                    m.log(LogLvl.TRACE, TAG, "GREEN" + mean);
+                        notifyColor(colorrgb, Color.YELLOW);
+                    }
+                    if ((mean > 30) && (mean <= 66)) {
+                        m.log(LogLvl.TRACE, TAG, "GREEN" + mean);
 //                    notifyColor(colorrgb, Color.GREEN, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
-                    notifyColor(colorrgb, Color.GREEN);
-                }
-                if ((mean > 67) && (mean <= 96)) {
-                    m.log(LogLvl.TRACE, TAG, "CYAN" + mean);
+                        notifyColor(colorrgb, Color.GREEN);
+                    }
+                    if ((mean > 67) && (mean <= 96)) {
+                        m.log(LogLvl.TRACE, TAG, "CYAN" + mean);
 //                    notifyColor(colorrgb, Color.CYAN, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
-                    notifyColor(colorrgb, Color.CYAN);
+                        notifyColor(colorrgb, Color.CYAN);
 
-                }
-                if ((mean > 97) && (mean <= 141)) {
-                    m.log(LogLvl.TRACE, TAG, "BLUE" + mean);
+                    }
+                    if ((mean > 97) && (mean <= 141)) {
+                        m.log(LogLvl.TRACE, TAG, "BLUE" + mean);
 //                    notifyColor(colorrgb, Color.BLUE, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
-                    notifyColor(colorrgb, Color.BLUE);
-                }
-                if ((mean > 142) && (mean <= 165)) {
-                    m.log(LogLvl.TRACE, TAG, "MAGENTA" + mean);
+                        notifyColor(colorrgb, Color.BLUE);
+                    }
+                    if ((mean > 142) && (mean <= 165)) {
+                        m.log(LogLvl.TRACE, TAG, "MAGENTA" + mean);
 //                    notifyColor(colorrgb, Color.MAGENTA, boundingRect.x, boundingRect.y, boundingRect.height, boundingRect.width, bmp);
-                    notifyColor(colorrgb, Color.MAGENTA);
+                        notifyColor(colorrgb, Color.MAGENTA);
+                    }
+
+
                 }
-
-
             }
+            processing = false;
         }
     }
 
     @Override
     public void startDetection() {
+        cameraModule.suscribe(this);
         paused = false;
     }
 
     @Override
     public void pauseDetection() {
         paused = true;
+        cameraModule.unsuscribe(this);
     }
 
     @Override
     public void onNewFrame(Frame frame) {
-        if (!paused){
+        if (!paused) {
             processFrame(frame.getBitmap());
         }
     }
@@ -306,6 +327,7 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
     public void onNewMat(Mat mat) {
 
     }
+
     @Override
     public void onDebugFrame(Frame frame, String frameId) {
 

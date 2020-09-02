@@ -9,6 +9,7 @@
  */
 package com.mytechia.robobo.framework.hri.vision.util;
 
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 /**
@@ -27,7 +28,10 @@ public class ColorCalibrationDataHistogram extends AColorCalibrationData {
 
     public ColorCalibrationDataHistogram(Mat histogram){
         this.type = type_HIST;
+        //FIXME Mirar por que esto es necesario convertirlo
+        histogram.convertTo(histogram, CvType.CV_8U);
         this.data = GsonConverter.matToJson(histogram);
+
     }
 
     public String getHist() {
@@ -35,7 +39,13 @@ public class ColorCalibrationDataHistogram extends AColorCalibrationData {
     }
 
     public Mat getHistMat(){
-        return GsonConverter.matFromJson(this.data);
+        //GsonConverter.matFromJson(this.data);
+
+        Mat mat = GsonConverter.matFromJson(this.data);
+
+        mat.convertTo(mat,CvType.CV_32F);
+        return mat;
+
     }
 
 

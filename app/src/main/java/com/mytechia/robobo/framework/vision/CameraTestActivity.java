@@ -1,8 +1,12 @@
 package com.mytechia.robobo.framework.vision;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Looper;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.mytechia.robobo.framework.hri.vision.blobTracking.IBlobTrackingModule;
 import com.mytechia.robobo.framework.vision.R;
 
 import com.mytechia.robobo.framework.RoboboManager;
@@ -50,6 +55,8 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
     private TextureView textureView = null;
     private Frame actualFrame ;
 
+    private IBlobTrackingModule blobModule;
+
     private Frame lastFrame;
     private boolean paused = true;
     private long lastDetection = 0;
@@ -60,16 +67,30 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_test);
 
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED)||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED)||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED)||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED))
+        {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA,
+                            Manifest.permission.RECORD_AUDIO,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                    },
+                    4);
+        }
 
 
-
-        this.surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         this.imageView = (ImageView) findViewById(R.id.testImageView) ;
         this.bridgeBase = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
-        this.textureView = (TextureView) findViewById(R.id.textureView);
-        this.surfaceView.setVisibility(View.INVISIBLE);
-        this.imageView.setVisibility(View.INVISIBLE);
-        this.textureView.setVisibility(View.VISIBLE);
+        //this.surfaceView.setVisibility(View.INVISIBLE);
+        //this.imageView.setVisibility(View.INVISIBLE);
+        //this.textureView.setVisibility(View.VISIBLE);
 
 
 
@@ -110,14 +131,13 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
         try {
 
             this.camModule = this.roboboManager.getModuleInstance(ICameraModule.class);
-
+            this.blobModule = this.roboboManager.getModuleInstance(IBlobTrackingModule.class);
 
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
 
         camModule.suscribe(this);
-        camModule.signalInit();
 
         //camModule.passSurfaceView(surfaceView);
         runOnUiThread(new Runnable() {
@@ -126,6 +146,7 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
 
                 bridgeBase.setVisibility(SurfaceView.VISIBLE);
                 camModule.passOCVthings(bridgeBase);
+                camModule.signalInit();
 
 
 
@@ -170,6 +191,6 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
 
     @Override
     public void onOpenCVStartup() {
-
+        blobModule.configureDetection(true,false,false,false);
     }
 }

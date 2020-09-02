@@ -23,6 +23,7 @@ package com.mytechia.robobo.framework.hri.vision.blobTracking.opencv;
 
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
@@ -128,7 +129,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     @Override
     public void onNewMat(Mat mat) {
-
+        //TODO: add a "processing" flag to discard new mats if processing one already
         if(mat.empty()){
             return;
         }
@@ -190,14 +191,14 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
         // Register remote command to configure different trackings
         rcmodule.registerCommand("CONFIGURE-BLOBTRACKING", new ICommandExecutor() {
-            @Override
-            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
-                configureDetection(
-                        Boolean.parseBoolean(c.getParameters().get("red")),
-                        Boolean.parseBoolean(c.getParameters().get("green")),
-                        Boolean.parseBoolean(c.getParameters().get("blue")),
-                        Boolean.parseBoolean(c.getParameters().get("custom")));
-            }
+                @Override
+                public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                    configureDetection(
+                            Boolean.parseBoolean(c.getParameters().get("red")),
+                            Boolean.parseBoolean(c.getParameters().get("green")),
+                            Boolean.parseBoolean(c.getParameters().get("blue")),
+                            Boolean.parseBoolean(c.getParameters().get("custom")));
+                }
         });
     }
 
@@ -205,6 +206,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         m = manager;
+        Log.w("BLOB","STARTUP BLOB");
         // Get instances od camera and remote modules
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
@@ -225,7 +227,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     @Override
     public String getModuleInfo() {
-        return "Ball tracking Module";
+        return "Blob tracking Module";
     }
 
     @Override
