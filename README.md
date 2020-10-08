@@ -5,14 +5,15 @@ Contains the source code of the different modules that made up the ROBOBO Vision
 
 This includes:
 
+* ArUco Tag Detection Module
 * Basic Camera Module
 * Blob Tracking Module
 * Color Detection Module
 * Color Measurement Module
 * Face Detection Module
+* Lane Detection Module
 * Object Recognition Module
 * QR Tracking Module
-* Tag Detection Module
 
 NOTE: All the development happens in the develop or feature branches. The master branch contains the last stable release.
 This repository contains the source code of the different modules that made up the ROBOBO Vision Library
