@@ -36,6 +36,9 @@ android {
 }
 
 dependencies {
+    /*
+     * Please, avoid using nightly versions
+     */
     //implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
     implementation 'com.mytechia:robobo-framework:1.3.4'
@@ -48,7 +51,8 @@ dependencies {
         changing true
     }
 
-    implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
+    implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
     //implementation files('../libs/opencv4_1_0_contrib-release.aar')
 
 
