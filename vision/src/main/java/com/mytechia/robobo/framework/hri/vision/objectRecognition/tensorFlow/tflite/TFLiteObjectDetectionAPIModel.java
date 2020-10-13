@@ -24,6 +24,8 @@ import android.os.Trace;
 import android.util.Log;
 
 import org.tensorflow.lite.Interpreter;
+import org.tensorflow.lite.gpu.CompatibilityList;
+import org.tensorflow.lite.gpu.GpuDelegate;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -76,6 +78,8 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
     private ByteBuffer imgData;
 
     private Interpreter tfLite;
+    private MappedByteBuffer tfLiteModel;
+    private Interpreter.Options tfLiteOptions;
 
     private TFLiteObjectDetectionAPIModel() {
     }
@@ -114,8 +118,7 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
         InputStream labelsInput = null;
         String actualFilename = labelFilename.split("file:///android_asset/")[1];
         labelsInput = assetManager.open(actualFilename);
-        BufferedReader br = null;
-        br = new BufferedReader(new InputStreamReader(labelsInput));
+        BufferedReader br = new BufferedReader(new InputStreamReader(labelsInput));
         String line;
         while ((line = br.readLine()) != null) {
             Log.w("TFLiteObjectDetection", line);
@@ -126,10 +129,31 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
         d.inputSize = inputSize;
 
         try {
-            d.tfLite = new Interpreter(loadModelFile(assetManager, modelFilename));
+            // Initialize interpreter with GPU delegate
+            Interpreter.Options options = new Interpreter.Options();
+            CompatibilityList compatList = new CompatibilityList();
+
+            if(compatList.isDelegateSupportedOnThisDevice()){
+                // if the device has a supported GPU, add the GPU delegate
+                GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
+                GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
+                options.addDelegate(gpuDelegate);
+            } else {
+                // if the GPU is not supported, run on threads
+                options.setNumThreads(NUM_THREADS);
+            }
+            d.tfLiteOptions = options;
+            d.tfLiteModel = loadModelFile(assetManager, modelFilename);
+            d.tfLite = new Interpreter(d.tfLiteModel, options);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+//        try {
+//            d.tfLite = new Interpreter(loadModelFile(assetManager, modelFilename));
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
 
         d.isModelQuantized = isQuantized;
         // Pre-allocate buffers.
@@ -145,7 +169,6 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
         d.imgData.order(ByteOrder.nativeOrder());
         d.intValues = new int[d.inputSize * d.inputSize];
 
-        d.tfLite.setNumThreads(NUM_THREADS);
         d.outputLocations = new float[1][NUM_DETECTIONS][4];
         d.outputClasses = new float[1][NUM_DETECTIONS];
         d.outputScores = new float[1][NUM_DETECTIONS];
@@ -170,8 +193,7 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
 
         File labelFile = new File(dir, labelFilename);
         labelsInput = new FileInputStream(labelFile);
-        BufferedReader br = null;
-        br = new BufferedReader(new InputStreamReader(labelsInput));
+        BufferedReader br = new BufferedReader(new InputStreamReader(labelsInput));
         String line;
         while ((line = br.readLine()) != null) {
             Log.w("TFLiteObjectDetection", line);
@@ -181,14 +203,34 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
 
         d.inputSize = inputSize;
 
-
-        File modelFile = new File(dir, modelFilename);
-
         try {
-            d.tfLite = new Interpreter(modelFile);
+            // Initialize interpreter with GPU delegate
+            Interpreter.Options options = new Interpreter.Options();
+            CompatibilityList compatList = new CompatibilityList();
+
+            if(compatList.isDelegateSupportedOnThisDevice()){
+                // if the device has a supported GPU, add the GPU delegate
+                GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
+                GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
+                options.addDelegate(gpuDelegate);
+            } else {
+                // if the GPU is not supported, run on threads
+                options.setNumThreads(NUM_THREADS);
+            }
+            File modelFile = new File(dir, modelFilename);
+            d.tfLiteOptions = options;
+//            File tfLiteModel = modelFile; //todo: make the field able to save this or the asset model file.
+            d.tfLite = new Interpreter(modelFile, options);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+//
+//        try {
+//            d.tfLite = new Interpreter(modelFile);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
 
         d.isModelQuantized = isQuantized;
         // Pre-allocate buffers.
@@ -204,7 +246,6 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
         d.imgData.order(ByteOrder.nativeOrder());
         d.intValues = new int[d.inputSize * d.inputSize];
 
-        d.tfLite.setNumThreads(NUM_THREADS);
         d.outputLocations = new float[1][NUM_DETECTIONS][4];
         d.outputClasses = new float[1][NUM_DETECTIONS];
         d.outputScores = new float[1][NUM_DETECTIONS];
@@ -217,7 +258,7 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
 
         // Preprocess the image data from 0-255 int to normalized float based
         // on the provided parameters.
-        bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getWidth());
+        bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
 
         imgData.rewind();
         for (int i = 0; i < inputSize; ++i) {
@@ -254,8 +295,18 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
 
         // Show the best detections.
         // after scaling them back to the input size.
-        final ArrayList<Recognition> recognitions = new ArrayList<>(NUM_DETECTIONS);
-        for (int i = 0; i < NUM_DETECTIONS; ++i) {
+        // You need to use the number of detections from the output and not the NUM_DETECTONS variable
+        // declared on top
+        // because on some models, they don't always output the same total number of detections
+        // For example, your model's NUM_DETECTIONS = 20, but sometimes it only outputs 16 predictions
+        // If you don't use the output's numDetections, you'll get nonsensical data
+        int numDetectionsOutput =
+                Math.min(
+                        NUM_DETECTIONS,
+                        (int) numDetections[0]); // cast from float to integer, use min for safety
+
+        final ArrayList<Recognition> recognitions = new ArrayList<>(numDetectionsOutput);
+        for (int i = 0; i < numDetectionsOutput; ++i) {
             final RectF detection =
                     new RectF(
                             outputLocations[0][i][1] * inputSize,
@@ -287,14 +338,30 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
 
     @Override
     public void close() {
+        if (tfLite != null) {
+            tfLite.close();
+            tfLite = null;
+        }
     }
 
-    public void setNumThreads(int num_threads) {
-        if (tfLite != null) tfLite.setNumThreads(num_threads);
+    @Override
+    public void setNumThreads(int numThreads) {
+        if (tfLite != null) {
+            tfLiteOptions.setNumThreads(numThreads);
+            recreateInterpreter();
+        }
     }
 
     @Override
     public void setUseNNAPI(boolean isChecked) {
-        if (tfLite != null) tfLite.setUseNNAPI(isChecked);
+        if (tfLite != null) {
+            tfLiteOptions.setUseNNAPI(isChecked);
+            recreateInterpreter();
+        }
+    }
+
+    private void recreateInterpreter() {
+        tfLite.close();
+        tfLite = new Interpreter(tfLiteModel, tfLiteOptions);
     }
 }
