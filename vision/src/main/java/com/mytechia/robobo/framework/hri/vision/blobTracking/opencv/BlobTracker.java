@@ -41,6 +41,7 @@ import org.opencv.video.Video;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static com.mytechia.robobo.framework.hri.vision.blobTracking.opencv.BlobTracker.DETECTION_STATE.DETECTED;
@@ -99,11 +100,19 @@ public class BlobTracker {
         return processing;
     }
 
-    public void setLostBlobThreshold(int lostBlobThreshold) {
+    public void setLostBlobThreshold(int lostBlobThreshold, int minArea) {
         this.lostBlobThreshold = lostBlobThreshold;
+        this.min_area = minArea;
     }
 
     public void process(Mat mat) {
+        //Getting the current date
+        Date date = new Date();
+        //This method returns the time in millis
+        long timeMilli = date.getTime();
+
+
+
         double area = 0;
         // Frame mats
         Mat hsvFrame = new Mat();
@@ -134,7 +143,7 @@ public class BlobTracker {
                 //Imgproc.threshold(input, input, (double) 2, (double) 255, Imgproc.THRESH_BINARY);
                 area = Math.round(trackBox.size.area()*Math.PI/4);
 
-                this.blob = new Blob(blobcolor, trackBox.center, (int) area, false, false);
+                this.blob = new Blob(blobcolor, trackBox.center, (int) area, false, false,timeMilli);
 
             }
             else
