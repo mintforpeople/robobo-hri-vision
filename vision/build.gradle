@@ -6,8 +6,8 @@ android {
     defaultConfig {
         minSdkVersion 22
         targetSdkVersion 26
-        versionCode 53
-        versionName "1.1.7.11-SNAPSHOT"
+        versionCode 54
+        versionName "1.1.7.12-SNAPSHOT"
     }
     buildTypes {
         release {
@@ -48,7 +48,8 @@ dependencies {
         changing true
     }
 
-    implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
+    //implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
+    implementation 'org.tensorflow:tensorflow-lite:2.3.0'
     //implementation files('../libs/opencv4_1_0_contrib-release.aar')
 
 
