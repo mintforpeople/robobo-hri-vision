@@ -7,7 +7,7 @@ android {
         minSdkVersion 22
         targetSdkVersion 26
         versionCode 54
-        versionName "1.1.7.12-SNAPSHOT"
+        versionName "1.1.8"
     }
     buildTypes {
         release {
