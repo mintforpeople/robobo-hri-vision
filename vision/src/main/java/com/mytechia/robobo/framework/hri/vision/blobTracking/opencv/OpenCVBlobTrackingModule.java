@@ -109,7 +109,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 return null;
             }
 
-            BlobTrackerWorker blockTrackingWorker=workersPool.pop();
+            BlobTrackerWorker blockTrackingWorker = workersPool.pop();
 
             return blockTrackingWorker;
         }
@@ -199,6 +199,17 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                             Boolean.parseBoolean(c.getParameters().get("blue")),
                             Boolean.parseBoolean(c.getParameters().get("custom")));
                 }
+        });
+
+        rcmodule.registerCommand("CONFIGURE-LOSTBLOB", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                setThreshold(Integer.parseInt(c.getParameters().get("frames"))
+                        ,Integer.parseInt(c.getParameters().get("minarea")));
+
+
+
+            }
         });
     }
 
@@ -306,12 +317,14 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     }
 
     @Override
-    public void setThreshold(int threshold) {
+    public void setThreshold(int threshold, int minArea) {
 
         synchronized (lockBlockTrackings) {
             for (BlobTracker blockTracking : this.blobTrackings) {
-                blockTracking.setLostBlobThreshold(threshold);
+                blockTracking.setLostBlobThreshold(threshold,minArea);
             }
         }
     }
+
+
 }

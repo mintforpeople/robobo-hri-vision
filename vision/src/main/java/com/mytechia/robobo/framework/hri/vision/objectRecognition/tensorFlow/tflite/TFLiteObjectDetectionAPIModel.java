@@ -354,6 +354,7 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
 
     @Override
     public void setUseNNAPI(boolean isChecked) {
+
         if (tfLite != null) {
             tfLiteOptions.setUseNNAPI(isChecked);
             recreateInterpreter();
@@ -363,5 +364,6 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
     private void recreateInterpreter() {
         tfLite.close();
         tfLite = new Interpreter(tfLiteModel, tfLiteOptions);
+
     }
 }

@@ -51,8 +51,10 @@ dependencies {
         changing true
     }
 
+
     implementation 'org.tensorflow:tensorflow-lite:2.3.0'
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+
     //implementation files('../libs/opencv4_1_0_contrib-release.aar')
 
 

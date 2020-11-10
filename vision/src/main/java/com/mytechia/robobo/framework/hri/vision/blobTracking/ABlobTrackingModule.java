@@ -27,6 +27,7 @@ import com.mytechia.robobo.framework.hri.vision.util.IFilter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Status;
 
+import java.util.Date;
 import java.util.HashSet;
 
 
@@ -68,6 +69,7 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
             status.putContents("posy",Math.round(((float)blob.getY()/resolutionY)*100)+"");
             status.putContents("size",blob.getSize()+"");
             status.putContents("color",colorToString(blob.getColor()));
+            status.putContents("frame_timestamp",blob.getFrameTimestamp()+"");
             rcmodule.postStatus(status);
         }
     }
@@ -87,6 +89,11 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
             status.putContents("posy","0");
             status.putContents("size","0");
             status.putContents("color",c.name().toLowerCase());
+            //Getting the current date
+            Date date = new Date();
+            //This method returns the time in millis
+            long timeMilli = date.getTime();
+            status.putContents("frame_timestamp", timeMilli+"");
             rcmodule.postStatus(status);
         }
     }
