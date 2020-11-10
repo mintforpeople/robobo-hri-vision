@@ -35,6 +35,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule implements ICameraListener {
 
@@ -66,11 +68,14 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
     private Float minConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
     private Integer maxDetections = 10;
     private Boolean paused = false;
+//    int totalFrameCount = 0;
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
 
         try {
+
+
             File detectFile = new File (Environment.getExternalStorageDirectory() + "/properties/detect.tflite");
             File labelFile = new File (Environment.getExternalStorageDirectory() + "/properties/labelmap.txt");
 
@@ -124,6 +129,16 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
             }
         });
+//
+//        TimerTask updateFPS = new TimerTask() {
+//            public void run() {
+//                Log.i("Tensorflow Recognizer", Integer.toString(totalFrameCount));
+//                totalFrameCount = 0;
+//            }
+//        };
+//
+//        Timer t = new Timer();
+//        t.scheduleAtFixedRate(updateFPS, 1000, 1000);
 
         resumeDetection();
     }
@@ -149,6 +164,8 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
         if (!isProcessing && !paused) {
             //todo:add executor
+//            totalFrameCount++;
+
             int cropSize = TF_OD_API_INPUT_SIZE;
 
             croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888);
