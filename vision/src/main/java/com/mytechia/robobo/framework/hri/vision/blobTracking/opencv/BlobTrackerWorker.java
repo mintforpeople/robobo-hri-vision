@@ -44,7 +44,7 @@ public class BlobTrackerWorker implements Runnable {
 
     public BlobTrackerWorker(OpenCVBlobTrackingModule openCVBlobTrackingModule) {
 
-        Objects.requireNonNull(openCVBlobTrackingModule, "The parameter openCVBlobTrackingModule is requiered");
+        Objects.requireNonNull(openCVBlobTrackingModule, "The parameter openCVBlobTrackingModule is required");
 
         this.openCVBlobTrackingModule = openCVBlobTrackingModule;
     }

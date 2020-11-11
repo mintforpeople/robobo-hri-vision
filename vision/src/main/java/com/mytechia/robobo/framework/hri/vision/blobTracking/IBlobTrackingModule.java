@@ -53,8 +53,10 @@ public interface IBlobTrackingModule extends IModule{
      * Sets the minimum number of pixels to fire a detection
      * @param th number of frames without detection to be considered lost
      * @param min_area minimum area to be considered a detection
+     * @param maxCount camshift tracking parameter
+     * @param epsilon camshift tracking parameter
      */
-    void setThreshold(int th, int min_area);
+    void setThreshold(int th, int min_area, int maxCount, int epsilon);
 
 
 }

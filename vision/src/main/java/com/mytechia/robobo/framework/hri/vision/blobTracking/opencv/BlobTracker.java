@@ -100,9 +100,10 @@ public class BlobTracker {
         return processing;
     }
 
-    public void setLostBlobThreshold(int lostBlobThreshold, int minArea) {
+    public void setLostBlobThreshold(int lostBlobThreshold, int minArea, int maxCount, int epsilon) {
         this.lostBlobThreshold = lostBlobThreshold;
         this.min_area = minArea;
+        termCriteria = new TermCriteria(TermCriteria.EPS | TermCriteria.COUNT, maxCount, epsilon);
     }
 
     public void process(Mat mat) {

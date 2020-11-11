@@ -204,11 +204,10 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
         rcmodule.registerCommand("CONFIGURE-LOSTBLOB", new ICommandExecutor() {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
-                setThreshold(Integer.parseInt(c.getParameters().get("frames"))
-                        ,Integer.parseInt(c.getParameters().get("minarea")));
-
-
-
+                setThreshold(Integer.parseInt(c.getParameters().get("frames")),
+                        Integer.parseInt(c.getParameters().get("minarea")),
+                        Integer.parseInt(c.getParameters().get("max_count")),
+                        Integer.parseInt(c.getParameters().get("epsilon")));
             }
         });
     }
@@ -317,11 +316,11 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     }
 
     @Override
-    public void setThreshold(int threshold, int minArea) {
+    public void setThreshold(int threshold, int minArea, int maxCount, int epsilon) {
 
         synchronized (lockBlockTrackings) {
             for (BlobTracker blockTracking : this.blobTrackings) {
-                blockTracking.setLostBlobThreshold(threshold,minArea);
+                blockTracking.setLostBlobThreshold(threshold,minArea,maxCount,epsilon);
             }
         }
     }
