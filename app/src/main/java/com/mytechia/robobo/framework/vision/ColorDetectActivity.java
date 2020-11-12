@@ -1,15 +1,9 @@
 package com.mytechia.robobo.framework.vision;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PointF;
-import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.TextureView;
@@ -26,7 +20,6 @@ import com.mytechia.robobo.framework.hri.vision.colorDetection.IColorDetectionMo
 import com.mytechia.robobo.framework.hri.vision.colorDetection.IColorListener;
 
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
-import com.mytechia.robobo.framework.vision.R;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Mat;

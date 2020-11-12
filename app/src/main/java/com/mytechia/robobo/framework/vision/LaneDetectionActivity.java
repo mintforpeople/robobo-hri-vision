@@ -20,13 +20,12 @@
 package com.mytechia.robobo.framework.vision;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GestureDetectorCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GestureDetectorCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -45,10 +44,7 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.ILaneDetectionListener;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.ILaneDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.Line;
-import com.mytechia.robobo.framework.hri.vision.laneDetection.opencv.OpencvLaneDetectionModule;
-import com.mytechia.robobo.framework.hri.vision.lineDetection.ILineDetectionListener;
 import com.mytechia.robobo.framework.hri.vision.lineDetection.ILineDetectionModule;
-import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 //import com.mytechia.robobo.rob.BluetoothRobInterfaceModule;
 
@@ -58,8 +54,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-
-import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class LaneDetectionActivity extends AppCompatActivity implements ICameraListener, ILaneDetectionListener, GestureDetector.OnGestureListener {
     private static final String TAG = "LaneDetectionActivity";

@@ -1,12 +1,9 @@
 package com.mytechia.robobo.framework.hri.vision.util;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class CameraDistortionCalibrationData {
 

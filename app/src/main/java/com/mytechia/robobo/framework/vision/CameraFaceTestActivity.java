@@ -26,8 +26,8 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.support.v4.view.GestureDetectorCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.core.view.GestureDetectorCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -42,7 +42,6 @@ import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
-import com.mytechia.robobo.framework.hri.vision.colorDetection.IColorDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.faceDetection.IFaceDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.faceDetection.IFaceListener;
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
@@ -50,7 +49,6 @@ import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Mat;
 
-import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_BACK;
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class CameraFaceTestActivity extends AppCompatActivity implements ICameraListener, IFaceListener, GestureDetector.OnGestureListener{

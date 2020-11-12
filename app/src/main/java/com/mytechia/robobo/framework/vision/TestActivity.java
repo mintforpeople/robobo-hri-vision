@@ -1,6 +1,6 @@
 package com.mytechia.robobo.framework.vision;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
 public class TestActivity extends AppCompatActivity {
