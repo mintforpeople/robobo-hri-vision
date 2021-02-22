@@ -25,22 +25,21 @@ The default detected markers are Aruco tags from the 4x4_1000 dictionary, with 1
 To import the module in your Robobo application you must declare the module in the modules.properties file:
 
 `robobo.module.#MODULE_NUMBER#=com.mytechia.robobo.framework.hri.vision.tag.opencv.OpencvTagModule`
-## Acknowledgement
-<!--
-    ROSIN acknowledgement from the ROSIN press kit
-    @ https://github.com/rosin-project/press_kit
--->
 
-<a href="http://rosin-project.eu">
-  <img src="http://rosin-project.eu/wp-content/uploads/rosin_ack_logo_wide.png"
-       alt="rosin_logo" height="60" >
+## Acknowledgement
+
+<a href="https://aiplus.udc.es/">
+  <img src="https://aiplus.udc.es/wp-content/uploads/2019/12/logo-naranja-100x100.png"
+       alt="rosin_logo" height="80"align="left" >
 </a>
 
-Supported by ROSIN - ROS-Industrial Quality-Assured Robot Software Components.
-More information: <a href="http://rosin-project.eu">rosin-project.eu</a>
+Developing an artificial intelligence curriculum adapted to european high schools
+<br>2019-1-ES01-KA201-065742<br>
+More information: <a href="https://aiplus.udc.es/">aiplus.udc.es</a>
 
-<img src="http://rosin-project.eu/wp-content/uploads/rosin_eu_flag.jpg"
-     alt="eu_flag" height="45" align="left" >
+<br>
 
-This project has received funding from the European Union’s Horizon 2020
-research and innovation programme under grant agreement no. 732287.
+<img src="http://aiplus.udc.es/wp-content/uploads/2021/02/cofinanciadoEN.png"
+     alt="eu_flag" height="50" />
+ <br>    
+This project has been funded with support from the European Commission. This web reflects the views only of the author, and the Commission cannot be held responsible for any use which may be made of the information contained therein.
