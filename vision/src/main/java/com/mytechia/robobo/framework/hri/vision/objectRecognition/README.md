@@ -25,7 +25,7 @@ To import the module in your Robobo application you must declare the module in t
 </a>
 
 Developing an artificial intelligence curriculum adapted to european high schools
-2019-1-ES01-KA201-065742.<br>
+<br>2019-1-ES01-KA201-065742<br>
 More information: <a href="https://aiplus.udc.es/">aiplus.udc.es</a>
 
 <br><br>
