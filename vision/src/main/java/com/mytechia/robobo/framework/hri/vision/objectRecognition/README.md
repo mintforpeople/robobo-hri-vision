@@ -28,7 +28,7 @@ Developing an artificial intelligence curriculum adapted to european high school
 2019-1-ES01-KA201-065742. 
 More information: <a href="https://aiplus.udc.es/">aiplus.udc.es</a>
 
+
 <img src="http://rosin-project.eu/wp-content/uploads/rosin_eu_flag.jpg"
      alt="eu_flag" height="45">
-
 This project has been funded with support from the European Commission. This web reflects the views only of the author, and the Commission cannot be held responsible for any use which may be made of the information contained therein.
