@@ -28,7 +28,6 @@ Developing an artificial intelligence curriculum adapted to european high school
 2019-1-ES01-KA201-065742.<br>
 More information: <a href="https://aiplus.udc.es/">aiplus.udc.es</a>
 
-## 
 <br>
 <img src="http://aiplus.udc.es/wp-content/uploads/2021/02/cofinanciadoEN.png"
      alt="eu_flag" height="45">
