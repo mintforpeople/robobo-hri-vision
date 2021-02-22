@@ -7,6 +7,7 @@ import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
+import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListenerV2;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.cameraStream.ACameraStreamModule;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
@@ -19,12 +20,15 @@ import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class OpencvCameraStreamModule extends ACameraStreamModule implements ICameraListener {
+public class OpencvCameraStreamModule extends ACameraStreamModule implements ICameraListenerV2 {
     private static final String TAG = "OpenCVCameraStreamModule";
     static final int QUEUE_LENGTH = 60;
 
@@ -36,6 +40,8 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
     // FPS control variables
     private long lastFrameTime = 0;
     private long deltaTimeThreshold = 17;
+
+    private int sync_id = -1;
 
     private boolean processing = false;
 
@@ -84,12 +90,25 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
             }
         });
 
+        rcmodule.registerCommand("SYNC", new ICommandExecutor() {
+            @Override
+            public void executeCommand(Command c, IRemoteControlModule rcmodule) {
+                if (c.getParameters().containsKey("id")) {
+                    setSyncId(Integer.parseInt(c.getParameters().get("id")));
+                }
+            }
+        });
+
         server = new Server(QUEUE_LENGTH);
         server.start();
     }
 
     public void setFps(int fps) {
         deltaTimeThreshold = 1000 / fps;
+    }
+
+    public void setSyncId(int id) {
+        sync_id = id;
     }
 
     @Override
@@ -108,14 +127,10 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
         return null;
     }
 
-    @Override
-    public void onNewFrame(Frame frame) {
-
-    }
 
     @Override
-    public void onNewMat(final Mat mat) {
-        long millis = System.currentTimeMillis();
+    public void onNewMatV2(final Mat mat, final int frame_id, final long timestamp) {
+        final long millis = System.currentTimeMillis();
 
         if (!processing && millis - lastFrameTime >= deltaTimeThreshold) {
 
@@ -125,7 +140,7 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-
+                    ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES*3);
                     Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2RGB);
                     MatOfByte bytemat = new MatOfByte();
 
@@ -135,9 +150,43 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
                     //MatOfInt props = new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 30);
                     //Imgcodecs.imencode(".jpg", mat, bytemat, props);
 
-                    byte[] bytes = bytemat.toArray();
+                    byte[] imageBytes = bytemat.toArray();
+                    buffer.putLong(0, millis);
+                    buffer.putLong(8,sync_id);
+                    sync_id = -1;
+                    buffer.putLong(16,frame_id);
 
-                    server.addData(bytes);
+                    byte[] metadataBytes = buffer.array();
+
+
+
+
+                    //Log.d("BYTES",""+tsBytes);
+                    Log.d("Millis",""+millis);
+
+
+
+                    ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+                    try {
+                        output.write(imageBytes);
+                        output.write(metadataBytes);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    byte[] out = output.toByteArray();
+                   // // create a destination array that is the size of the two arrays
+                   // byte[] destination = new byte[bytes.length + tsBytes.length];
+//
+                   // // copy ciphertext into start of destination (from pos 0, copy ciphertext.length bytes)
+                   // System.arraycopy(bytes, 0, destination, 0, bytes.length);
+//
+                   // // copy mac into end of destination (from pos ciphertext.length, copy mac.length bytes)
+                   // System.arraycopy(tsBytes, 0, destination, tsBytes.length, tsBytes.length);
+//
+                    server.addData(out);
 //                        if (frameQueue.size() == 30)
 //                            frameQueue.take();
 //
@@ -152,14 +201,13 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
 
     }
 
-    @Override
-    public void onDebugFrame(Frame frame, String frameId) {
 
-    }
 
     @Override
     public void onOpenCVStartup() {
 
     }
+
+
 
 }

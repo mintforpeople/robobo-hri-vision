@@ -137,7 +137,7 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
     }
 
     @Override
-    public void onNewMatV2(final Mat mat, final int frame_id) {
+    public void onNewMatV2(final Mat mat, final int frame_id, final long timestamp) {
         if (!processing) {
             executor.execute(new Runnable() {
                 @Override

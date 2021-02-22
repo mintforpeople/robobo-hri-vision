@@ -106,7 +106,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     }
 
     @Override
-    public void onNewMatV2(final Mat mat, final int frameId) {
+    public void onNewMatV2(final Mat mat, final int frameId, long timestamp) {
 
         if (!processing && mat.cols() > 0 && mat.rows() > 0) {
             // Execute on its own thread to avoid locking the camera callback

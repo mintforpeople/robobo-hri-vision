@@ -24,6 +24,8 @@ package com.mytechia.robobo.framework.hri.vision.basicCamera;
 
 import org.opencv.core.Mat;
 
+import java.util.Date;
+
 /**
  * Listener for the frame notifications
  */
@@ -33,8 +35,9 @@ public interface ICameraListenerV2 {
      * Called when a new frame (in OpenCV Mat format) arrives
      * @param mat The frame
      * @param frameId identifier of the frame
+     * @param  timestamp time of the frame adquisition
      */
-    void onNewMatV2(Mat mat, int frameId);
+    void onNewMatV2(Mat mat, int frameId, long timestamp);
 
     /**
      * Called when the opencv library is loaded

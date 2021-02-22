@@ -25,6 +25,7 @@ import com.mytechia.robobo.framework.RoboboManager;
 
 import org.opencv.core.Mat;
 
+import java.util.Date;
 import java.util.HashSet;
 
 /**
@@ -83,11 +84,11 @@ public abstract class ACameraModule implements ICameraModule{
      * @param mat the captured frame in opencv mat
      * @param seqnum sequence number
      */
-    protected void notifyMat(Mat mat, int seqnum) {
+    protected void notifyMat(Mat mat, int seqnum, long timestamp) {
         synchronized (listenersV2){
             for (ICameraListenerV2 listener :
                     listenersV2) {
-                listener.onNewMatV2(mat.clone(), seqnum);
+                listener.onNewMatV2(mat.clone(), seqnum,timestamp);
             }
         }
     }

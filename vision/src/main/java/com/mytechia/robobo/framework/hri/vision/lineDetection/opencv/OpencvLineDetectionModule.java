@@ -121,7 +121,7 @@ public class OpencvLineDetectionModule extends ALineDetectionModule implements I
     }
 
     @Override
-    public void onNewMatV2(final Mat mat, final int frame_id) {
+    public void onNewMatV2(final Mat mat, final int frame_id, long timestamp) {
 
         if (!processing && mat.cols() > 0 && mat.rows() > 0) {
             // Execute on its own thread to avoid locking the camera callback

@@ -348,7 +348,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
             if (notifyMat) {
                 notifyMat(mat);
-                notifyMat(mat,seqnum);
+                notifyMat(mat,seqnum,millis);
             }
 
             // Update frame counter
