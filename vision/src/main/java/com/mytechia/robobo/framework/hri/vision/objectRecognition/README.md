@@ -21,7 +21,7 @@ To import the module in your Robobo application you must declare the module in t
 
 <a href="https://aiplus.udc.es/">
   <img src="https://aiplus.udc.es/wp-content/uploads/2019/12/logo-naranja-100x100.png"
-       alt="rosin_logo" height="60" align="left" >
+       alt="rosin_logo" align="left" >
 </a>
 
 Developing an artificial intelligence curriculum adapted to european high schools
