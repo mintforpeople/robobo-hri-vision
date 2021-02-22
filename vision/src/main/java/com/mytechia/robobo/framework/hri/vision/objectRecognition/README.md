@@ -30,6 +30,6 @@ More information: <a href="https://aiplus.udc.es/">aiplus.udc.es</a>
 
 <br>
 <img src="http://aiplus.udc.es/wp-content/uploads/2021/02/cofinanciadoEN.png"
-     alt="eu_flag" height="45" align="left">
+     alt="eu_flag" height="55" align="left">
      
 This project has been funded with support from the European Commission. This web reflects the views only of the author, and the Commission cannot be held responsible for any use which may be made of the information contained therein.
