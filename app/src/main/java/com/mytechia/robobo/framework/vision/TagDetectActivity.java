@@ -221,7 +221,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
                 Mat tvecs = new Mat(1,1,CvType.CV_64FC3);
                 rvecs.put(0,0,tag.getRvecs());
                 tvecs.put(0,0,tag.getTvecs());
-                Aruco.drawAxis(image, calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs, tvecs, 100 );
+                //Aruco.drawAxis(image, calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs, tvecs, 100 );
             }
         }
 

@@ -114,6 +114,9 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                 @Override
                 public void run() {
                     processing = true;
+
+                    Mat clonedMat = mat.clone();
+
                     if (cameraModule.getCameraCode() != calibrationData.cameraCode)
                         loadCalibrationData();
 
@@ -122,7 +125,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
                         // If the camera is the frontal the image is mirrored
                         if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
-                            Core.flip(mat, mat, 1);
+                            Core.flip(clonedMat, clonedMat, 1);
 
                         }
 
@@ -130,14 +133,14 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                         ArrayList<Mat> rejectedCandidates = new ArrayList<>();
 
                         // Colorspace conversion
-                        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
+                        Imgproc.cvtColor(clonedMat, clonedMat, Imgproc.COLOR_BGRA2BGR);
                         // Detection parameters
                         DetectorParameters parameters = DetectorParameters.create();
                         parameters.set_minDistanceToBorder(0);
 //                        parameters.set_adaptiveThreshWinSizeMax(100);
 
                         // Marker detection
-                        Aruco.detectMarkers(mat, Aruco.getPredefinedDictionary(currentTagDict), markerCorners, markerIds, parameters, rejectedCandidates, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat());
+                        Aruco.detectMarkers(clonedMat, Aruco.getPredefinedDictionary(currentTagDict), markerCorners, markerIds, parameters, rejectedCandidates, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat());
 
                         // Rotation vector
                         Mat rvecs = new Mat();
@@ -184,9 +187,11 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
                             // Notify to the remote control module
                             notifyMarkersDetected(tags, frameId);
+                            clonedMat.release();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
+                        clonedMat.release();
                     }
 
                     processing = false;
