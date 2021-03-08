@@ -140,8 +140,8 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 //        Timer t = new Timer();
 //        t.scheduleAtFixedRate(updateFPS, 1000, 1000);
 
-        //Uncomment to start application with module running
-        //resumeDetection();
+
+        resumeDetection();
     }
 
     @Override
@@ -236,6 +236,7 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
     public void onOpenCVStartup() {
         imgWidth=cameraModule.getResY();
         imgHeight=cameraModule.getResX();
+        pauseDetection();
     }
 
     @Override

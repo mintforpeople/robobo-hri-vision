@@ -39,6 +39,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     private CameraDistortionCalibrationData calibrationData;
     private AuxPropertyWriter propertyWriter;
     private boolean processing = false;
+    private boolean stopped = false;
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
@@ -61,6 +62,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
                 startDetection();
+                stopped = false;
             }
         });
 
@@ -68,6 +70,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
                 stopDetection();
+                stopped = true;
 
             }
         });
@@ -78,7 +81,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
             }
         });
         // Uncomment to start with the module active
-        //startDetection();
+        startDetection();
 
     }
 
@@ -88,6 +91,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     private void startDetection() {
         cameraModule.suscribe(this);
+
     }
 
     @Override
@@ -97,18 +101,18 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     @Override
     public String getModuleInfo() {
-        return null;
+        return "Aruco Tag Module";
     }
 
     @Override
     public String getModuleVersion() {
-        return null;
+        return "null";
     }
 
     @Override
     public void onNewMatV2(final Mat mat, final int frameId, long timestamp) {
 
-        if (!processing && mat.cols() > 0 && mat.rows() > 0) {
+        if (!stopped && !processing && mat.cols() > 0 && mat.rows() > 0) {
             // Execute on its own thread to avoid locking the camera callback
             executor.execute(new Runnable() {
                 @Override
@@ -206,6 +210,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     public void onOpenCVStartup() {
         propertyWriter = new AuxPropertyWriter("camera.properties", m);
         loadCalibrationData();
+        stopDetection();
     }
 
     private void loadCalibrationData() {
