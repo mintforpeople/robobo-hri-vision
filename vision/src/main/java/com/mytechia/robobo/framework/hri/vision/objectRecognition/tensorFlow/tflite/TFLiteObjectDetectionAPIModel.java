@@ -131,17 +131,19 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
         try {
             // Initialize interpreter with GPU delegate
             Interpreter.Options options = new Interpreter.Options();
-            CompatibilityList compatList = new CompatibilityList();
+            //CompatibilityList compatList = new CompatibilityList();
 
-            if(compatList.isDelegateSupportedOnThisDevice()){
-                // if the device has a supported GPU, add the GPU delegate
-                GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
-                GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
-                options.addDelegate(gpuDelegate);
-            } else {
-                // if the GPU is not supported, run on threads
-                options.setNumThreads(NUM_THREADS);
-            }
+            //if(compatList.isDelegateSupportedOnThisDevice()){
+            //    // if the device has a supported GPU, add the GPU delegate
+            //    GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
+            //    GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
+            //    options.addDelegate(gpuDelegate);
+            //} else {
+            //    // if the GPU is not supported, run on threads
+            //    options.setNumThreads(NUM_THREADS);
+            //}
+            options.setNumThreads(NUM_THREADS);
+
             d.tfLiteOptions = options;
             d.tfLiteModel = loadModelFile(assetManager, modelFilename);
             d.tfLite = new Interpreter(d.tfLiteModel, options);
