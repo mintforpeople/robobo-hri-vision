@@ -77,8 +77,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                 markerLength = Integer.parseInt(c.getParameters().get("size"));
             }
         });
-
-        startDetection();
+        // Uncomment to start with the module active
+        //startDetection();
 
     }
 

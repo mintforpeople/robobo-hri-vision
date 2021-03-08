@@ -92,8 +92,8 @@ public class OpencvLineDetectionModule extends ALineDetectionModule implements I
 
             }
         });
-
-        startDetection();
+        // Uncomment to start with the module active
+        //startDetection();
 
     }
 

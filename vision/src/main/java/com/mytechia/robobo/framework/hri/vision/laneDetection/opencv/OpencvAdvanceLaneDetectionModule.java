@@ -117,8 +117,8 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
 
             }
         });
-
-        resumeDetection();
+        //Uncomment to start with the module active
+        //resumeDetection();
     }
 
     @Override

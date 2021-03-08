@@ -65,7 +65,6 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
             e.printStackTrace();
         }
 
-        cameraModule.suscribe(this);
 
         rcmodule.registerCommand("START-STREAM", new ICommandExecutor() {
             @Override
@@ -101,6 +100,9 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
 
         server = new Server(QUEUE_LENGTH);
         server.start();
+        // Uncomment to start with the module active
+        //cameraModule.suscribe(this);
+
     }
 
     public void setFps(int fps) {
@@ -162,7 +164,7 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
 
 
                     //Log.d("BYTES",""+tsBytes);
-                    Log.d("Millis",""+millis);
+                    //Log.d("Millis",""+millis);
 
 
 

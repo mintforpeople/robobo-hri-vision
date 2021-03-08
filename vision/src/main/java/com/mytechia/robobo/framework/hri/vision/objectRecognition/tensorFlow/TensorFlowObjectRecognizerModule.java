@@ -67,7 +67,7 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
     private Float minConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
     private Integer maxDetections = 10;
-    private Boolean paused = false;
+    private Boolean paused = true;
 //    int totalFrameCount = 0;
 
     @Override
@@ -140,7 +140,8 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 //        Timer t = new Timer();
 //        t.scheduleAtFixedRate(updateFPS, 1000, 1000);
 
-        resumeDetection();
+        //Uncomment to start application with module running
+        //resumeDetection();
     }
 
     @Override
