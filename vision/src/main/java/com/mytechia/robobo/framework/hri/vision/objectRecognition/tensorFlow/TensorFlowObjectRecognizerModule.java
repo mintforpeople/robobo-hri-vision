@@ -37,6 +37,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule implements ICameraListener {
 
@@ -68,6 +70,9 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
     private Float minConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
     private Integer maxDetections = 10;
     private Boolean paused = true;
+
+    ExecutorService executor;
+
 //    int totalFrameCount = 0;
 
     @Override
@@ -102,6 +107,8 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
             manager.log(LogLvl.ERROR, "ObjectDetectionModule","Exception initializing classifier!");
 
         }
+        executor = Executors.newFixedThreadPool(1);
+
         sensorOrientation = 0;
 
 
@@ -161,59 +168,64 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
 
     @Override
-    public void onNewFrame(Frame frame) {
+    public void onNewFrame(final Frame frame) {
+
 
         if (!isProcessing && !paused) {
             //todo:add executor
 //            totalFrameCount++;
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    int cropSize = TF_OD_API_INPUT_SIZE;
 
-            int cropSize = TF_OD_API_INPUT_SIZE;
+                    croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888);
 
-            croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888);
-
-            frameToCropTransform =
-                    ImageUtils.getTransformationMatrix(
-                            frame.getWidth(), frame.getHeight(),
-                            cropSize, cropSize,
-                            sensorOrientation, MAINTAIN_ASPECT);
-
-
-            Matrix cropToFrameTransform = new Matrix();
-            frameToCropTransform.invert(cropToFrameTransform);
-
-            final Canvas canvas = new Canvas(croppedBitmap);
-            canvas.drawBitmap(frame.getBitmap(), frameToCropTransform, null);
-
-            isProcessing = true;
-
-            final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
+                    frameToCropTransform =
+                            ImageUtils.getTransformationMatrix(
+                                    frame.getWidth(), frame.getHeight(),
+                                    cropSize, cropSize,
+                                    sensorOrientation, MAINTAIN_ASPECT);
 
 
-            final List<Classifier.Recognition> mappedRecognitions =
-                    new LinkedList<Classifier.Recognition>();
+                    Matrix cropToFrameTransform = new Matrix();
+                    frameToCropTransform.invert(cropToFrameTransform);
 
-            final List<RecognizedObject> objectsRecognized =
-                    new LinkedList<RecognizedObject>();
+                    final Canvas canvas = new Canvas(croppedBitmap);
+                    canvas.drawBitmap(frame.getBitmap(), frameToCropTransform, null);
 
-            for (final Classifier.Recognition result : results) {
-                if (objectsRecognized.size() <= maxDetections) {
-                    final RectF location = result.getLocation();
-                    if (location != null && result.getConfidence() >= minConfidence) {
-                        cropToFrameTransform.mapRect(location);
-                        ((LinkedList<RecognizedObject>) objectsRecognized).addFirst(new RecognizedObject(Integer.parseInt(result.getId()), result.getTitle(), result.getConfidence(), location));
+                    isProcessing = true;
 
-                        result.setLocation(location);
-                        mappedRecognitions.add(result);
+                    final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
+
+
+                    final List<Classifier.Recognition> mappedRecognitions =
+                            new LinkedList<Classifier.Recognition>();
+
+                    final List<RecognizedObject> objectsRecognized =
+                            new LinkedList<RecognizedObject>();
+
+                    for (final Classifier.Recognition result : results) {
+                        if (objectsRecognized.size() <= maxDetections) {
+                            final RectF location = result.getLocation();
+                            if (location != null && result.getConfidence() >= minConfidence) {
+                                cropToFrameTransform.mapRect(location);
+                                ((LinkedList<RecognizedObject>) objectsRecognized).addFirst(new RecognizedObject(Integer.parseInt(result.getId()), result.getTitle(), result.getConfidence(), location));
+
+                                result.setLocation(location);
+                                mappedRecognitions.add(result);
+                            }
+                        }
                     }
+
+                    //Log.d("RECOGNIZER", mappedRecognitions.toString());
+                    if (objectsRecognized.size() > 0) {
+                        notifyObjectDetected(objectsRecognized, String.valueOf(frame.getSeqNum()));
+
+                    }
+                    isProcessing = false;
                 }
-            }
-
-            //Log.d("RECOGNIZER", mappedRecognitions.toString());
-            if (objectsRecognized.size() > 0){
-                notifyObjectDetected(objectsRecognized, String.valueOf(frame.getSeqNum()));
-
-            }
-            isProcessing = false;
+            });
         }
 
 
@@ -236,7 +248,12 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
     public void onOpenCVStartup() {
         imgWidth=cameraModule.getResY();
         imgHeight=cameraModule.getResX();
-        pauseDetection();
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                pauseDetection();
+            }
+        });
     }
 
     @Override

@@ -33,8 +33,8 @@ import java.util.HashSet;
  */
 public abstract class ACameraModule implements ICameraModule{
 
-    private HashSet<ICameraListener> listeners ;
-    private HashSet<ICameraListenerV2> listenersV2;
+    private final HashSet<ICameraListener> listeners ;
+    private final HashSet<ICameraListenerV2> listenersV2;
 
     protected RoboboManager roboboManager;
 
@@ -85,6 +85,7 @@ public abstract class ACameraModule implements ICameraModule{
      * @param seqnum sequence number
      */
     protected void notifyMat(Mat mat, int seqnum, long timestamp) {
+
         synchronized (listenersV2){
             for (ICameraListenerV2 listener :
                     listenersV2) {

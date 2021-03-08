@@ -62,7 +62,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
                 startDetection();
-                stopped = false;
             }
         });
 
@@ -70,7 +69,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
             @Override
             public void executeCommand(Command c, IRemoteControlModule rcmodule) {
                 stopDetection();
-                stopped = true;
 
             }
         });
@@ -86,10 +84,12 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     }
 
     private void stopDetection() {
+        stopped = true;
         cameraModule.unsuscribe(this);
     }
 
     private void startDetection() {
+        stopped = false;
         cameraModule.suscribe(this);
 
     }
@@ -115,8 +115,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
         if (!stopped && !processing && mat.cols() > 0 && mat.rows() > 0) {
             // Execute on its own thread to avoid locking the camera callback
             executor.execute(new Runnable() {
-                @Override
-                public void run() {
+                    @Override
+                    public void run() {
                     processing = true;
 
                     Mat clonedMat = mat.clone();
@@ -208,9 +208,17 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     @Override
     public void onOpenCVStartup() {
+
         propertyWriter = new AuxPropertyWriter("camera.properties", m);
         loadCalibrationData();
-        stopDetection();
+
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                stopDetection();
+            }
+        });
+
     }
 
     private void loadCalibrationData() {
