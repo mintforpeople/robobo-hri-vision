@@ -54,6 +54,9 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
@@ -148,6 +151,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         camModule.suscribe(this);
         arucoModule.suscribe(this);
 
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -213,9 +217,9 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
 
         for (Tag tag : tags) {
             for (int i = 0; i < 4; i++) {
-                Imgproc.line(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), new Point(tag.getCorner((i + 1) % 4).x, tag.getCorner((i + 1) % 4).y), new Scalar(255, 0, 0));
+                Imgproc.line(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), new Point(tag.getCorner((i + 1) % 4).x, tag.getCorner((i + 1) % 4).y), new Scalar(255, 0, 0),3);
 
-                Imgproc.circle(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), 3, new Scalar(0, 255, 0));
+                Imgproc.circle(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), 6, new Scalar(0, 255, 0));
 
                 Mat rvecs = new Mat(1,1,CvType.CV_64FC3);
                 Mat tvecs = new Mat(1,1,CvType.CV_64FC3);
@@ -272,6 +276,9 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
 
     @Override
     public void onLongPress(MotionEvent motionEvent) {
+
+                arucoModule.resumeDetection();
+
 
     }
 

@@ -130,6 +130,7 @@ public class CameraStreamActivity extends AppCompatActivity implements ICameraLi
             public void run() {
 
                 bridgeBase.setVisibility(SurfaceView.VISIBLE);
+                bridgeBase.setCameraPermissionGranted();
                 camModule.passOCVthings(bridgeBase);
                 camModule.signalInit();
 
@@ -147,7 +148,7 @@ public class CameraStreamActivity extends AppCompatActivity implements ICameraLi
 
     @Override
     public void onNewMat(final Mat mat) {
-
+        Log.d("OCV", "Frame");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

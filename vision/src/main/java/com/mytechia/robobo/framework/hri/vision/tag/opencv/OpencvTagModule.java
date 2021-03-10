@@ -35,7 +35,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     private ICameraModule cameraModule;
     //private List<String> rvecs;
     //private List<String> tvecs;
-    private int currentTagDict = Aruco.DICT_4X4_1000;
+    private int currentTagDict = Aruco.DICT_4X4_100;
     private CameraDistortionCalibrationData calibrationData;
     private AuxPropertyWriter propertyWriter;
     private boolean processing = false;
@@ -140,8 +140,10 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                         Imgproc.cvtColor(clonedMat, clonedMat, Imgproc.COLOR_BGRA2BGR);
                         // Detection parameters
                         DetectorParameters parameters = DetectorParameters.create();
-                        parameters.set_minDistanceToBorder(0);
-//                        parameters.set_adaptiveThreshWinSizeMax(100);
+                        parameters.set_minDistanceToBorder(3);
+                        parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_SUBPIX);
+                        //parameters.set_cornerRefinementWinSize(15);
+                        parameters.set_adaptiveThreshWinSizeMax(100);
 
                         // Marker detection
                         Aruco.detectMarkers(clonedMat, Aruco.getPredefinedDictionary(currentTagDict), markerCorners, markerIds, parameters, rejectedCandidates, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat());

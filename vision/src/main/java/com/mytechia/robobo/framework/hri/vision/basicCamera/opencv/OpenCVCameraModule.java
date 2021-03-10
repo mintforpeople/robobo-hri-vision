@@ -100,6 +100,9 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
                 {
                     roboboManager.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
                     mOpenCvCameraView.enableView();
+                    mOpenCvCameraView.setCameraPermissionGranted();
+
+
                 } break;
                 default:
                 {
@@ -235,10 +238,10 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         mOpenCvCameraView.disableFpsMeter();
 
         if (!OpenCVLoader.initDebug()) {
-            roboboManager.log(LogLvl.WARNING, TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            Log.w( TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, context, mLoaderCallback);
         } else {
-            roboboManager.log(TAG, "OpenCV library found inside package. Using it!");
+            Log.w( TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
         notifyOpenCVStartup();
@@ -320,7 +323,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         long millis = System.currentTimeMillis();
         // Check if we want to process a new frame
         if (millis-lastFrameTime>=deltaTimeThreshold) {
-           // roboboManager.log("CameraModule",millis-lastFrameTime+"");
+           roboboManager.log("CameraModule",millis-lastFrameTime+"");
 
             lastFrameTime = millis;
             Bitmap bmp;
