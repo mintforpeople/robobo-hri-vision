@@ -6,9 +6,9 @@ android {
     defaultConfig {
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 59
+        versionCode 61
 
-        versionName "1.1.10-SNAPSHOT"
+        versionName "1.2.1-SNAPSHOT"
     }
     buildTypes {
         release {

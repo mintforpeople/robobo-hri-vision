@@ -153,7 +153,7 @@ public class OpencvCameraStreamModule extends ACameraStreamModule implements ICa
                     //Imgcodecs.imencode(".jpg", mat, bytemat, props);
 
                     byte[] imageBytes = bytemat.toArray();
-                    buffer.putLong(0, millis);
+                    buffer.putLong(0, timestamp);
                     buffer.putLong(8,sync_id);
                     sync_id = -1;
                     buffer.putLong(16,frame_id);

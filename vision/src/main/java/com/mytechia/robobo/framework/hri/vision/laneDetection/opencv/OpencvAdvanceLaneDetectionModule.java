@@ -343,6 +343,12 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
 
     @Override
     public void onOpenCVStartup() {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                pauseDetection();
+            }
+        });
 
     }
 }
