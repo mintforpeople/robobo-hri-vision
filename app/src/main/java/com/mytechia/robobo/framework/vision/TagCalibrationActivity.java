@@ -212,8 +212,12 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             Aruco.calibrateCameraCharuco(corners, ids, board, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs);
             distortionData = new CameraDistortionCalibrationData(cameraMatrix, distCoeffs);
             propertyWriter.storeConf("cameraMatrix" + camModule.getCameraCode(), distortionData.getCameraMatrix());
-            propertyWriter.storeConf("distCoeffs" + camModule.getCameraCode(), distortionData.getDistCoeffs());
+            propertyWriter.storeConf("distCoeffs" + camModule.getCameraCode(),   distortionData.getDistCoeffs());
+            propertyWriter.storeConf("cameraMatrix_string" + camModule.getCameraCode(), distortionData.getCameraMatrixMat().dump());
+            propertyWriter.storeConf("distCoeffs_string" + camModule.getCameraCode(),   distortionData.getDistCoeffsMat().dump());
+
             propertyWriter.commitConf();
+
 
             Toast.makeText(getApplicationContext(), "Calibration successful!", Toast.LENGTH_SHORT).show();
 

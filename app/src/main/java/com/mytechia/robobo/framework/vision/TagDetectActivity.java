@@ -47,6 +47,7 @@ import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.aruco.Aruco;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -176,6 +177,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     public void onNewMat(Mat mat) {
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGRA2BGR);
         Mat newmat = mat.clone();
+        Core.flip(newmat,newmat,1);
 
         if (detected) {
             //Aruco.drawDetectedMarkers(newmat, corners, ids);
@@ -183,13 +185,16 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
             if (camModule.getCameraCode() != calibrationData.cameraCode)
                 loadCalibrationData();
             if (camModule.getCameraCode() == CAMERA_ID_FRONT) {
+
                 newmat = drawArucos(markers, newmat);
 
 
             } else {
+
                 newmat = drawArucos(markers, newmat);
 
             }
+
             detected = false;
 
         }
@@ -210,6 +215,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
                 propertyWriter.retrieveConf("cameraMatrix" + camModule.getCameraCode(), propertyWriter.retrieveConf("cameraMatrix")),
                 propertyWriter.retrieveConf("distCoeffs" + camModule.getCameraCode(), propertyWriter.retrieveConf("distCoeffs")));
         calibrationData.cameraCode = camModule.getCameraCode();
+
     }
 
 
@@ -217,15 +223,16 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
 
         for (Tag tag : tags) {
             for (int i = 0; i < 4; i++) {
-                Imgproc.line(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), new Point(tag.getCorner((i + 1) % 4).x, tag.getCorner((i + 1) % 4).y), new Scalar(255, 0, 0),3);
-
-                Imgproc.circle(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), 6, new Scalar(0, 255, 0));
+                //
+                //Imgproc.line(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), new Point(tag.getCorner((i + 1) % 4).x, tag.getCorner((i + 1) % 4).y), new Scalar(255, 0, 0),3);
+//
+                //Imgproc.circle(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), 6, new Scalar(0, 255, 0));
 
                 Mat rvecs = new Mat(1,1,CvType.CV_64FC3);
                 Mat tvecs = new Mat(1,1,CvType.CV_64FC3);
                 rvecs.put(0,0,tag.getRvecs());
                 tvecs.put(0,0,tag.getTvecs());
-                //Aruco.drawAxis(image, calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs, tvecs, 100 );
+                Aruco.drawAxis(image, calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs, tvecs, 100 );
             }
         }
 
@@ -250,6 +257,8 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
 //        ((ATagModule)arucoModule).useRosTypeStatus(true);
         propertyWriter = new AuxPropertyWriter("camera.properties", roboboManager);
         loadCalibrationData();
+        arucoModule.resumeDetection();
+
 
     }
 
