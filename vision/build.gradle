@@ -6,9 +6,9 @@ android {
     defaultConfig {
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 61
+        versionCode 62
 
-        versionName "1.2.1-SNAPSHOT"
+        versionName "1.2.2-SNAPSHOT"
     }
     buildTypes {
         release {
@@ -48,7 +48,7 @@ dependencies {
 
     implementation 'com.google.zxing:core:3.3.3'
 
-    implementation ('com.mytechia:opencv:4.3.0-my'){
+    implementation ('com.mytechia:opencv:4.3.0.2-my'){
         changing true
     }
 

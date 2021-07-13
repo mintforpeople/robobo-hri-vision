@@ -69,6 +69,11 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.Manifest.permission.CAMERA;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.RECORD_AUDIO;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class TagCalibrationActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, ITagListener {
@@ -88,7 +93,6 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     private Switch visualizeSwitch;
     private TextView imagesCounter;
 
-
     List<Tag> markers;
     boolean detected = false;
     boolean preview = false;
@@ -103,6 +107,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     private CameraDistortionCalibrationData distortionData;
 
     List<Mat> capturedList;
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -144,6 +149,8 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         this.visualizeSwitch = (Switch) findViewById(R.id.visualizeSwitch);
         this.imagesCounter = (TextView) findViewById(R.id.imagesCounter);
         this.changeCameraButton = (Button) findViewById(R.id.changeCameraButton);
+
+
 
         roboboHelper = new RoboboServiceHelper(this, new RoboboServiceHelper.Listener() {
             @Override
@@ -283,6 +290,10 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         camModule.suscribe(this);
         arucoModule.suscribe(this);
 
+
+    }
+
+    public void onGrantedPermissions(){
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -292,10 +303,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
             }
         });
-
-
     }
-
     @Override
     public void onNewFrame(final Frame frame) {
     }
@@ -531,9 +539,11 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     @Override
     public void onResume()
     {
+        Log.w("TEST","OnResume");
         super.onResume();
         if (bridgeBase != null)
             bridgeBase.enableView();
+            bridgeBase.setCameraPermissionGranted();
     }
 
 

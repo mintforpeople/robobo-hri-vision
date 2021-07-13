@@ -236,6 +236,8 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
         mOpenCvCameraView.setCvCameraViewListener(this);
         mOpenCvCameraView.disableFpsMeter();
+        //System.loadLibrary("opencv_java4");
+        //System.loadLibrary("c++_shared");
 
         if (!OpenCVLoader.initDebug()) {
             Log.w( TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
