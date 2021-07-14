@@ -193,7 +193,8 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
         objModule.setConfidence(0.5f);
         camModule.setFps(40);
 
-        ((AObjectRecognitionModule)objModule).useRosTypeStatus(true);
+        //((AObjectRecognitionModule)objModule).useRosTypeStatus(true);
+        objModule.resumeDetection();
 
 
 

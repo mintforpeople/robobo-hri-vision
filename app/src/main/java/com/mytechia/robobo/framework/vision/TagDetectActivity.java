@@ -301,6 +301,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     @Override
     public void onAruco(List<Tag> markers) {
         this.markers = markers;
+        Log.d("DETECTEDARUCO", markers.toString());
         detected = true;
     }
 

@@ -69,11 +69,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.Manifest.permission.CAMERA;
-import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static android.Manifest.permission.RECORD_AUDIO;
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class TagCalibrationActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, ITagListener {
@@ -291,9 +287,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         arucoModule.suscribe(this);
 
 
-    }
 
-    public void onGrantedPermissions(){
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

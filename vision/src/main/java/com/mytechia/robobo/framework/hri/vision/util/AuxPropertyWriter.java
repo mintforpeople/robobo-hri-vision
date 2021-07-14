@@ -26,9 +26,10 @@ public class AuxPropertyWriter {
         this.fileName = fileName;
         properties = new Properties();
         dir = new File(Environment.getExternalStorageDirectory() + "/properties");
+        dir.mkdirs();
         propFile = new File(dir, fileName);
 
-        dir.mkdirs();
+
 
         loadDefaults();
         loadCustoms();
