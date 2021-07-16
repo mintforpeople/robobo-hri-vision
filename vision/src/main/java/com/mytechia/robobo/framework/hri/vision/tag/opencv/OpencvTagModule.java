@@ -1,5 +1,7 @@
 package com.mytechia.robobo.framework.hri.vision.tag.opencv;
 
+import android.util.Log;
+
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
@@ -19,6 +21,7 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.ximgproc.FastLineDetector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,6 +117,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
         if (!stopped && !processing && mat.cols() > 0 && mat.rows() > 0) {
             // Execute on its own thread to avoid locking the camera callback
+//            Log.d("TAG","TAGFRAME");
             executor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -243,11 +247,13 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     @Override
     public void pauseDetection() {
+        stopped = true;
         cameraModule.unsuscribe(this);
     }
 
     @Override
     public void resumeDetection() {
+        stopped = false;
         cameraModule.suscribe(this);
     }
 }

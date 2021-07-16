@@ -54,7 +54,7 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
     private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.5f;
     private static final boolean MAINTAIN_ASPECT = false;
 
-
+    private static String TAG = "OBJECTDETECTION";
     private Integer sensorOrientation;
 
     private Classifier detector;
@@ -158,12 +158,12 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
     @Override
     public String getModuleInfo() {
-        return null;
+        return "TF-Object detection module";
     }
 
     @Override
     public String getModuleVersion() {
-        return null;
+        return "1.0";
     }
 
 
@@ -211,7 +211,7 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
                             if (location != null && result.getConfidence() >= minConfidence) {
                                 cropToFrameTransform.mapRect(location);
                                 ((LinkedList<RecognizedObject>) objectsRecognized).addFirst(new RecognizedObject(Integer.parseInt(result.getId()), result.getTitle(), result.getConfidence(), location));
-
+                                //Log.d(TAG, "Detected: "+result.toString());
                                 result.setLocation(location);
                                 mappedRecognitions.add(result);
                             }
@@ -268,12 +268,15 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
     @Override
     public void pauseDetection() {
+        Log.d(TAG,"Pause detection");
         paused = true;
         cameraModule.unsuscribe(this);
     }
 
     @Override
     public void resumeDetection() {
+        Log.d(TAG,"Resume detection");
+
         paused = false;
         cameraModule.suscribe(this);
     }

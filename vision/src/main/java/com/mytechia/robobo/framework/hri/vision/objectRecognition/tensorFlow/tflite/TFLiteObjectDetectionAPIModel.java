@@ -321,7 +321,7 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
             int labelOffset = 1;
             recognitions.add(
                     new Recognition(
-                            "" + i,
+                            "" +(int) outputClasses[0][i] + labelOffset,
                             labels.get((int) outputClasses[0][i] + labelOffset),
                             outputScores[0][i],
                             detection));

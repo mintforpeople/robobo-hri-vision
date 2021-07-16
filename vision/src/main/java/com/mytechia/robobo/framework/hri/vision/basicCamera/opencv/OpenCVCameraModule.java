@@ -325,7 +325,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         long millis = System.currentTimeMillis();
         // Check if we want to process a new frame
         if (millis-lastFrameTime>=deltaTimeThreshold) {
-           roboboManager.log("CameraModule",millis-lastFrameTime+"");
 
             lastFrameTime = millis;
             Bitmap bmp;
@@ -359,9 +358,9 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             // Update frame counter
             fps.newFrame();
 
-            if (fps.getElapsedTime() % 10 == 0) {
-                roboboManager.log(LogLvl.TRACE, "CAMERA", "FPS = " + fps.getFPS());
-            }
+            //if (fps.getElapsedTime() % 10 == 0) {
+            //    roboboManager.log(LogLvl.TRACE, "CAMERA", "FPS = " + fps.getFPS());
+            //}
 
         }
 
