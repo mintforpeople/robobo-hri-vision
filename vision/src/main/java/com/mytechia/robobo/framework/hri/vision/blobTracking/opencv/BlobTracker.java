@@ -106,7 +106,7 @@ public class BlobTracker {
         termCriteria = new TermCriteria(TermCriteria.EPS | TermCriteria.COUNT, maxCount, epsilon);
     }
 
-    public void process(Mat mat) {
+    public void process(Mat mat, int frameId) {
         //Getting the current date
         Date date = new Date();
         //This method returns the time in millis
@@ -144,7 +144,7 @@ public class BlobTracker {
                 //Imgproc.threshold(input, input, (double) 2, (double) 255, Imgproc.THRESH_BINARY);
                 area = Math.round(trackBox.size.area()*Math.PI/4);
 
-                this.blob = new Blob(blobcolor, trackBox.center, (int) area, false, false,timeMilli);
+                this.blob = new Blob(blobcolor, trackBox.center, (int) area, false, false,timeMilli, frameId );
 
             }
             else

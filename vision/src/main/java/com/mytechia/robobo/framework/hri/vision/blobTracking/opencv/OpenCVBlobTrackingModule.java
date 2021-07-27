@@ -30,6 +30,7 @@ import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListener;
+import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListenerV2;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.ABlobTrackingModule;
 import com.mytechia.robobo.framework.hri.vision.blobTracking.Blobcolor;
@@ -55,7 +56,7 @@ import static android.content.ContentValues.TAG;
 /**
  * Opencv implementation of the blob detector
  */
-public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICameraListener {
+public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICameraListenerV2 {
     //http://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
 //https://github.com/badlogic/opencv-fun/blob/master/src/pool/utils/BallDetector.java
     private static final int POOL_SIZE=4;
@@ -66,7 +67,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     private List<BlobTracker> blobTrackings = new ArrayList<>();
 
-    private final Object lockBlockTrackings= new Object();
+    private final Object lockblobTrackings= new Object();
 
     private ExecutorService threadPool = Executors.newFixedThreadPool(POOL_SIZE);
 
@@ -86,16 +87,16 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     }
 
 
-    void returnToWorkersPool(BlobTrackerWorker blockTrackingWorker){
+    void returnToWorkersPool(BlobTrackerWorker blobTrackingWorker){
 
-        if(blockTrackingWorker==null){
+        if(blobTrackingWorker==null){
             return;
         }
 
         synchronized (lockWorkers) {
 
-            if (!this.workersPool.contains(blockTrackingWorker)) {
-                this.workersPool.add(blockTrackingWorker);
+            if (!this.workersPool.contains(blobTrackingWorker)) {
+                this.workersPool.add(blobTrackingWorker);
             }
         }
     }
@@ -109,32 +110,29 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 return null;
             }
 
-            BlobTrackerWorker blockTrackingWorker = workersPool.pop();
+            BlobTrackerWorker blobTrackingWorker = workersPool.pop();
 
-            return blockTrackingWorker;
+            return blobTrackingWorker;
         }
 
     }
 
-    @Override
-    public void onNewFrame(Frame frame) {
-
-        // In the first frame get the resolution of the captured images
-        if (firstFrame) {
-            resolutionX = frame.getWidth();
-            resolutionY = frame.getHeight();
-        }
-
-    }
 
     @Override
-    public void onNewMat(Mat mat) {
+    public void onNewMatV2(Mat mat, int frameId, long timestamp) {
         //TODO: add a "processing" flag to discard new mats if processing one already
         if(mat.empty()){
             return;
         }
+        // In the first frame get the resolution of the captured images
+        if (firstFrame) {
 
-        synchronized (lockBlockTrackings) {
+            Size s = mat.size();
+            resolutionX = (float) s.height;
+            resolutionY = (float) s.width;
+        }
+
+        synchronized (lockblobTrackings) {
 
             // For each color being tracked
             for (BlobTracker blobTracking : blobTrackings) {
@@ -150,7 +148,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                 }
 
                 // Configure tracker with the new mat
-                blobTrackingWorker.configure(blobTracking, mat);
+                blobTrackingWorker.configure(blobTracking, mat, frameId);
                 //Execute workers
                 threadPool.execute(blobTrackingWorker);
 
@@ -161,8 +159,9 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     }
 
 
-    @Override
-    public void onDebugFrame(Frame frame, String frameId) {}
+
+
+
 
     @Override
     public void onOpenCVStartup() {
@@ -184,7 +183,7 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
             CUSTOM_CAL = new Blobcolor(col.getHistMat(),"CUSTOM");
 
         }catch (NullPointerException e){
-            m.log(TAG,"No calibration data found, using defaults");
+            m.log(TAG,"No blob color calibration data found, using defaults");
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -263,8 +262,10 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
                                    boolean detectBlue,
                                    boolean detectCustom) {
 
+        Log.d(TAG, "Configure blob, red="+detectRed+" green="+detectGreen+" blue="+detectBlue+" custom="+detectCustom);
 
-        synchronized (lockBlockTrackings) {
+
+        synchronized (lockblobTrackings) {
             if (detectRed) {
                 if((!existBlobTracking(RED_CAL))) {
                     this.blobTrackings.add(new BlobTracker(new Size(11, 11), RED_CAL));
@@ -300,17 +301,17 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
 
     }
 
-    private void removeBlobTracking(Blobcolor block){
+    private void removeBlobTracking(Blobcolor blob){
 
-        BlobTracker blockTrackingToRemove= null;
+        BlobTracker blobTrackingToRemove= null;
 
-        for (BlobTracker blockTracking :this.blobTrackings) {
-            if(blockTracking.getBlobcolor().equals(block)){
-                blockTrackingToRemove= blockTracking;
+        for (BlobTracker blobTracking :this.blobTrackings) {
+            if(blobTracking.getBlobcolor().equals(blob)){
+                blobTrackingToRemove = blobTracking;
             }
         }
 
-        this.blobTrackings.remove(blockTrackingToRemove);
+        this.blobTrackings.remove(blobTrackingToRemove);
 
 
     }
@@ -318,9 +319,9 @@ public class OpenCVBlobTrackingModule extends ABlobTrackingModule implements ICa
     @Override
     public void setThreshold(int threshold, int minArea, int maxCount, int epsilon) {
 
-        synchronized (lockBlockTrackings) {
-            for (BlobTracker blockTracking : this.blobTrackings) {
-                blockTracking.setLostBlobThreshold(threshold,minArea,maxCount,epsilon);
+        synchronized (lockblobTrackings) {
+            for (BlobTracker blobTracking : this.blobTrackings) {
+                blobTracking.setLostBlobThreshold(threshold,minArea,maxCount,epsilon);
             }
         }
     }

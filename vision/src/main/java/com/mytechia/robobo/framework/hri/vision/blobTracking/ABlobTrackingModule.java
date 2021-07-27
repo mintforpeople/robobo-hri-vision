@@ -21,6 +21,8 @@
  ******************************************************************************/
 package com.mytechia.robobo.framework.hri.vision.blobTracking;
 
+import android.util.Log;
+
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.util.AverageFilter;
 import com.mytechia.robobo.framework.hri.vision.util.IFilter;
@@ -63,12 +65,15 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
         }
         // Send status
         if (rcmodule!=null) {
+            Log.d("BLOB","Notify blob");
 
             Status status = new Status("BLOB");
             status.putContents("posx",Math.round(((float)blob.getX()/resolutionX)*100)+"");
             status.putContents("posy",Math.round(((float)blob.getY()/resolutionY)*100)+"");
             status.putContents("size",blob.getSize()+"");
             status.putContents("color",colorToString(blob.getColor()));
+            status.putContents("frame_id",blob.getFrameSequenceNumber()+"");
+
             status.putContents("frame_timestamp",blob.getFrameTimestamp()+"");
             rcmodule.postStatus(status);
         }
@@ -88,6 +93,7 @@ public abstract class ABlobTrackingModule implements IBlobTrackingModule {
             status.putContents("posx","0");
             status.putContents("posy","0");
             status.putContents("size","0");
+            status.putContents("frame_id","0");
             status.putContents("color",c.name().toLowerCase());
             //Getting the current date
             Date date = new Date();

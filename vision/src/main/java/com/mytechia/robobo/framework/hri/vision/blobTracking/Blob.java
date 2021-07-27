@@ -34,6 +34,7 @@ public class Blob {
     private boolean isBall;
     private boolean isSquare;
     private long frameTimestamp;
+    private int frameSequenceNumber;
 
     /**
      * Public constructor of the Blob object
@@ -43,7 +44,7 @@ public class Blob {
      * @param isBall Is a ball? flag
      * @param isSquare IS a square? flag
      */
-    public Blob(Blobcolor color, Point coords, int size, boolean isBall, boolean isSquare, long frameTimestamp) {
+    public Blob(Blobcolor color, Point coords, int size, boolean isBall, boolean isSquare, long frameTimestamp, int frameSequenceNumber) {
         this.color = color;
         this.isBall = isBall;
         this.isSquare = isSquare;
@@ -51,6 +52,7 @@ public class Blob {
         this.x = (int) coords.x;
         this.y = (int) coords.y;
         this.frameTimestamp = frameTimestamp;
+        this.frameSequenceNumber = frameSequenceNumber;
     }
 
     /**
@@ -120,6 +122,9 @@ public class Blob {
 
     public long getFrameTimestamp() {
         return frameTimestamp;
+    }
+    public long getFrameSequenceNumber() {
+        return frameSequenceNumber;
     }
 
     public void setFrameTimestamp(long frameTimestamp) {

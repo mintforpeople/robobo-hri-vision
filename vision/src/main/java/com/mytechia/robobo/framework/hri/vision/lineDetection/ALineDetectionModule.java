@@ -1,5 +1,7 @@
 package com.mytechia.robobo.framework.hri.vision.lineDetection;
 
+import android.util.Log;
+
 import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.hri.vision.util.GsonConverter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
@@ -34,6 +36,8 @@ public abstract class ALineDetectionModule implements ILineDetectionModule {
             listener.onLine(lines);
         }
         if (rcmodule != null && status) { // USE CAREFULLY, GENERATES A LOT OF LAN TRAFFIC!!!
+            Log.d("LINE","Notify lines");
+
             Status status = new Status("LINE");
 
             status.putContents("mat", formatLines(lines));

@@ -40,6 +40,7 @@ public class BlobTrackerWorker implements Runnable {
     private Mat mat;
     private BlobTracker blobTracking;
     private OpenCVBlobTrackingModule openCVBlobTrackingModule;
+    private int frameId;
 
 
     public BlobTrackerWorker(OpenCVBlobTrackingModule openCVBlobTrackingModule) {
@@ -50,12 +51,12 @@ public class BlobTrackerWorker implements Runnable {
     }
 
 
-    public void configure(BlobTracker blockTracking, Mat mat) {
+    public void configure(BlobTracker blobTracking, Mat mat, int frameId) {
 
-        this.blobTracking = blockTracking;
+        this.blobTracking = blobTracking;
 
         this.mat = mat;
-
+        this.frameId = frameId;
     }
 
 
@@ -64,7 +65,7 @@ public class BlobTrackerWorker implements Runnable {
         // Check tracker state and notify listeners
         try {
 
-            this.blobTracking.process(mat);
+            this.blobTracking.process(this.mat, this.frameId);
 
             if (blobTracking.blobDetectionState() == DISSAPEAR) {
 

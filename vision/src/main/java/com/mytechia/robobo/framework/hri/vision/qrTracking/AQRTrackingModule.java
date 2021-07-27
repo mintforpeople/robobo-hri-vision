@@ -46,6 +46,8 @@ public abstract class AQRTrackingModule implements IQRTrackingModule {
         }
         // Send remote status
         if (rcmodule!=null) {
+            Log.d("QR","Notify qr status");
+
             Status status = new Status("QRCODE");
             status.putContents("coordx",qr.getxPosition()+"");
             status.putContents("coordy",qr.getyPosition()+"");
