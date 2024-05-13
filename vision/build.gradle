@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion 34
@@ -12,6 +13,12 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
         }
     }
     packagingOptions {
@@ -62,16 +69,46 @@ dependencies {
 
 }
 
-
-
-//apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
-// apply plugin: "com.vanniktech.maven.publish"
-
 /*
-afterEvaluate { project ->
-    android.libraryVariants.all { variant ->
-        tasks.androidJavadocs.doFirst {
-            classpath += files(variant.javaCompile.classpath.files)
+New local publish module
+TODO: Make it able to release on OSS Sonatype to MavenCentral. Not needed by now, we can just upload to the local repo.
+
+Using maven-publish and standard methods to push to maven.
+To do the same on other modules, just replace the Chris Bane's script with this
+Use gradle publishing:publishLibraryPublicationToLocalNexusRepository to upload artifacts to the repo
+
+If the version ends in -SNAPSHOT, the snapshot repo will be selected.
+All of the release info is stored in gradle.properties
+
+Nexus auth should be done in the user's home gradle.properties file (uncommited for security reasons)
+ */
+
+afterEvaluate {
+    publishing {
+        repositories {
+            maven {
+                name 'LocalNexus'
+                allowInsecureProtocol = true
+                credentials {
+                    username NEXUS_USER
+                    password NEXUS_PASSWORD
+                }
+                if(VERSION_NAME.endsWith('-SNAPSHOT')) {
+                    url SNAPSHOT_REPOSITORY_URL
+                } else {
+                    url RELEASE_REPOSITORY_URL
+                }
+            }
+        }
+
+        publications {
+            library(MavenPublication) {
+                from components.release
+                groupId GROUP
+                artifactId POM_ARTIFACT_ID
+                version VERSION_NAME
+            }
         }
     }
-}*/
+}
+
