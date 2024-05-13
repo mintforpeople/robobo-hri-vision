@@ -42,7 +42,7 @@ public class OpencvLineDetectionModule extends ALineDetectionModule implements I
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
-        propertyWriter = new AuxPropertyWriter("camera.properties", manager);
+        propertyWriter = new AuxPropertyWriter(manager.getApplicationContext(), "camera", manager);
         tl[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_x"));
         tl[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_y"));
         tr[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_tr_x"));

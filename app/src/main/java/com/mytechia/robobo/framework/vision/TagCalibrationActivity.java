@@ -153,7 +153,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             public void onRoboboManagerStarted(RoboboManager robobo) {
                 //the robobo service and manager have been started up
                 roboboManager = robobo;
-                propertyWriter = new AuxPropertyWriter("camera.properties", robobo);
+                propertyWriter = new AuxPropertyWriter(getApplicationContext(), "camera", robobo);
 
                 //start the "custom" robobo application
                 startRoboboApplication();
@@ -409,6 +409,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
                 squaresX = data.getIntExtra("squaresX", squaresX);

@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 34
     defaultConfig {
         applicationId "com.mytechia.robobo.framework.vision"
         minSdkVersion 24
-        targetSdkVersion 29
+        targetSdkVersion 34
         versionCode 3
         versionName "1.2"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -17,17 +17,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    lintOptions {
-        disable 'LongLogTag'
-        disable 'InvalidPackage'
-    }
-    aaptOptions {
-        noCompress "tflite"
-        noCompress "lite"
-    }
     packagingOptions {
-        doNotStrip '*/armeabi-v7a/*.so'
-        doNotStrip '*/arm64-v8a/*.so'
+        jniLibs {
+            keepDebugSymbols += ['*/armeabi-v7a/*.so', '*/arm64-v8a/*.so']
+        }
+    }
+    namespace 'com.mytechia.robobo.framework.vision'
+    androidResources {
+        noCompress 'lite'
+    }
+    lint {
+        disable 'LongLogTag', 'InvalidPackage'
     }
 
 }
@@ -37,8 +37,9 @@ dependencies {
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    testImplementation 'junit:junit:4.12'
+    implementation "androidx.annotation:annotation:1.0.0"
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    testImplementation 'junit:junit:4.13.2'
     implementation 'com.mytechia:robobo-framework:1.3.4'
     implementation 'com.mytechia:robobo-remote-control:1.0.3-SNAPSHOT'
 
@@ -48,8 +49,8 @@ dependencies {
 
     implementation 'com.mytechia:robobo-util:0.1.0'
     implementation project(':vision')
-    implementation 'com.google.android.material:material:1.3.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     //implementation files('../libs/opencv4_1_0_contrib-release.aar')
 
 

@@ -215,7 +215,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     @Override
     public void onOpenCVStartup() {
 
-        propertyWriter = new AuxPropertyWriter("camera.properties", m);
+        propertyWriter = new AuxPropertyWriter(m.getApplicationContext(), "camera", m);
         loadCalibrationData();
 
         executor.execute(new Runnable() {
