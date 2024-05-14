@@ -6,8 +6,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.2'
-        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.8.0'
+        classpath 'com.android.tools.build:gradle:8.3.2'
+        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.12.0'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -20,7 +20,13 @@ allprojects {
     repositories {
         jcenter()
         maven {
-            url "http://bizancio:7080/nexus/content/repositories/snapshots/"
+            url "http://10.113.36.13:8083/nexus/repository/snapshots/"
+            allowInsecureProtocol=true
+        }
+
+        maven {
+            url "http://10.113.36.13:8083/nexus/repository/releases/"
+            allowInsecureProtocol=true
         }
         google()
     }

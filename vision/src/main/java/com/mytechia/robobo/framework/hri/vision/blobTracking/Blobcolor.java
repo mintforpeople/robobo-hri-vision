@@ -127,7 +127,6 @@ public class Blobcolor {
         }
         else {
             ColorCalibrationDataHistogram color = (ColorCalibrationDataHistogram) icolor;
-
             return new Blobcolor(color.getHistMat(),key);
         }
     }
