@@ -62,6 +62,12 @@ public class BlobTrackerWorker implements Runnable {
 
     @Override
     public void run() {
+        // Check if blob has been defined
+        if (this.blobTracking.getBlobcolor().getHistogramData() == null){
+            Log.w(TAG, "Blob color " + this.blobTracking.getBlobcolor().name() + " has not been defined and won't be tracked");
+            this.openCVBlobTrackingModule.returnToWorkersPool(this);
+            return;
+        }
         // Check tracker state and notify listeners
         try {
 
