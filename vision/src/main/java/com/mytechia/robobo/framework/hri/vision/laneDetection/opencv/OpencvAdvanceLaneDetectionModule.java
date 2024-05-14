@@ -10,6 +10,7 @@ import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraListenerV2;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ICameraModule;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.ALaneDetectionModule;
 import com.mytechia.robobo.framework.hri.vision.laneDetection.Line;
+import com.mytechia.robobo.framework.hri.vision.util.AuxPropertiesException;
 import com.mytechia.robobo.framework.hri.vision.util.AuxPropertyWriter;
 import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
@@ -66,7 +67,7 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
         Log.w("LANE","LANE START");
         m.log(LogLvl.INFO,"LANE","LANE START");
 
-        propertyWriter = new AuxPropertyWriter("camera.properties", manager);
+        propertyWriter = AuxPropertyWriter.getInstance(manager);
         tl[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_x"));
         tl[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_y"));
         tr[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_tr_x"));

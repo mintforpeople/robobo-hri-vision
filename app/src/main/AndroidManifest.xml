@@ -43,7 +43,7 @@
         </activity>
 
         <!-- Main settings -->
-       <activity android:name=".TestActivity"
+       <activity android:name=".CameraTestActivity"
            android:exported="true">
            <intent-filter>
                <action android:name="android.intent.action.MAIN" />
