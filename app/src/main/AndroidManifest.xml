@@ -43,7 +43,7 @@
         </activity>
 
         <!-- Main settings -->
-       <activity android:name=".CameraTestActivity"
+       <activity android:name=".TagCalibrationActivity"
            android:exported="true">
            <intent-filter>
                <action android:name="android.intent.action.MAIN" />
