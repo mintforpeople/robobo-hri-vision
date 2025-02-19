@@ -161,6 +161,10 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                         // Translation vector
                         Mat tvecs = new Mat();
 
+                        // List of detected tags
+                        lastTags = currentTags;
+                        currentTags = new ArrayList<Tag>();
+
                         if (markerIds.rows() > 0) {
                             // rvecs, tvecs, 3x1 CV_64FC3 matrix
                             // Marker pose detection
@@ -168,10 +172,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
                             // rvecs, tvecs, 3x1 CV_64FC1 matrix
                             //Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
-
-                            // List of detected tags
-                            lastTags = currentTags;
-                            currentTags = new ArrayList<Tag>();
 
                             // Individual vectors for the tags
                             double[] tagRvecs = new double[3];
@@ -199,28 +199,26 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 //                                Log.w("ARUCO", Arrays.toString(tag.getRMat()));
                                 currentTags.add(tag);
                             }
-
-                            // Check if the tags have changed
-                            List<Tag> lostTags = lastTags.stream()
-                                    .filter(tag1 -> currentTags.stream().noneMatch(tag2 -> tag2.getId() == tag1.getId()))
-                                    .collect(Collectors.toList());
-
-                            List<Tag> newTags = currentTags.stream()
-                                    .filter(tag1 -> lastTags.stream().noneMatch(tag2 -> tag2.getId() == tag1.getId()))
-                                    .collect(Collectors.toList());
-
-                            for (Tag lostTag : lostTags) {
-                                notifyMarkerDisappear(lostTag, frameId);
-                            }
-
-                            for (Tag newTag : newTags) {
-                                notifyMarkerAppear(newTag, frameId);
-                            }
-
-
                             // Notify to the remote control module
                             notifyMarkersDetected(currentTags, frameId);
                             clonedMat.release();
+                        }
+
+                        // Check if the tags have changed
+                        List<Tag> lostTags = lastTags.stream()
+                                .filter(tag1 -> currentTags.stream().noneMatch(tag2 -> tag2.getId() == tag1.getId()))
+                                .collect(Collectors.toList());
+
+                        List<Tag> newTags = currentTags.stream()
+                                .filter(tag1 -> lastTags.stream().noneMatch(tag2 -> tag2.getId() == tag1.getId()))
+                                .collect(Collectors.toList());
+
+                        for (Tag lostTag : lostTags) {
+                            notifyMarkerDisappear(lostTag, frameId);
+                        }
+
+                        for (Tag newTag : newTags) {
+                            notifyMarkerAppear(newTag, frameId);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

@@ -99,7 +99,7 @@ public abstract class ATagModule implements ITagModule {
             listener.onArucoAppears(tag);
         }
         if (rcmodule != null) {
-            Status status = new Status("TAG");
+            Status status = new Status("TAGAPPEAR");
             status.putContents("timestamp", String.valueOf(frame_id));
             status.putContents("id", tag.getId() + "");
             if (rosTypeStatus) {
