@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
@@ -43,6 +44,9 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     private AuxPropertyWriter propertyWriter;
     private boolean processing = false;
     private boolean stopped = false;
+
+    private List<Tag> lastTags = new ArrayList<Tag>();
+    private List<Tag> currentTags = new ArrayList<Tag>();
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
@@ -166,7 +170,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                             //Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
 
                             // List of detected tags
-                            List<Tag> tags = new ArrayList<>();
+                            lastTags = currentTags;
+                            currentTags = new ArrayList<Tag>();
 
                             // Individual vectors for the tags
                             double[] tagRvecs = new double[3];
@@ -192,11 +197,29 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                                     tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX(), tagRvecs, tagTvecs);
                                 }
 //                                Log.w("ARUCO", Arrays.toString(tag.getRMat()));
-                                tags.add(tag);
+                                currentTags.add(tag);
                             }
 
+                            // Check if the tags have changed
+                            List<Tag> lostTags = lastTags.stream()
+                                    .filter(tag1 -> currentTags.stream().noneMatch(tag2 -> tag2.getId() == tag1.getId()))
+                                    .collect(Collectors.toList());
+
+                            List<Tag> newTags = currentTags.stream()
+                                    .filter(tag1 -> lastTags.stream().noneMatch(tag2 -> tag2.getId() == tag1.getId()))
+                                    .collect(Collectors.toList());
+
+                            for (Tag lostTag : lostTags) {
+                                notifyMarkerDisappear(lostTag, frameId);
+                            }
+
+                            for (Tag newTag : newTags) {
+                                notifyMarkerAppear(newTag, frameId);
+                            }
+
+
                             // Notify to the remote control module
-                            notifyMarkersDetected(tags, frameId);
+                            notifyMarkersDetected(currentTags, frameId);
                             clonedMat.release();
                         }
                     } catch (Exception e) {

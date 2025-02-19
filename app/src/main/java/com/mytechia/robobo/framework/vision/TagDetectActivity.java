@@ -306,6 +306,16 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     }
 
     @Override
+    public void onArucoAppears(Tag tag) {
+
+    }
+
+    @Override
+    public void onArucoDisappears(Tag tag) {
+
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
         if (bridgeBase != null)

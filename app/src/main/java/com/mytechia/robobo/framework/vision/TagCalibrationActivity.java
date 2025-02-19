@@ -518,6 +518,16 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     }
 
     @Override
+    public void onArucoAppears(Tag tag) {
+
+    }
+
+    @Override
+    public void onArucoDisappears(Tag tag) {
+
+    }
+
+    @Override
     public void onPause()
     {
         super.onPause();
