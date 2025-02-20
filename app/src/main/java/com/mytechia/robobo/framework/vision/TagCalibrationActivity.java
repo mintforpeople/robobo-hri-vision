@@ -514,16 +514,18 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     @Override
     public void onAruco(List<Tag> markers) {
         this.markers = markers;
+        Log.d("ARUCO_DETECT", markers.toString());
         detected = true;
     }
 
     @Override
     public void onArucoAppears(Tag tag) {
-
+        Log.d("ARUCO_DETECT", "Appeared: " + tag.toString());
     }
 
     @Override
     public void onArucoDisappears(Tag tag) {
+        Log.d("ARUCO_DETECT", "Disappeared: " + tag.toString());
 
     }
 
@@ -545,9 +547,11 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
     {
         Log.w("TEST","OnResume");
         super.onResume();
-        if (bridgeBase != null)
+        if (bridgeBase != null){
             bridgeBase.enableView();
             bridgeBase.setCameraPermissionGranted();
+        }
+
     }
 
 

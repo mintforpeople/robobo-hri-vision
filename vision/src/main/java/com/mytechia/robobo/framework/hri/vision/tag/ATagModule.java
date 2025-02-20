@@ -133,13 +133,13 @@ public abstract class ATagModule implements ITagModule {
     protected void notifyMarkerDisappear(Tag tag, int frame_id){
         for (ITagListener listener : listeners) {
             listener.onArucoDisappears(tag);
-            if (rcmodule != null)
-            {
-                Status status = new Status("TAGLOST");
-                status.putContents("id", tag.getId() + "");
-                status.putContents("timestamp", frame_id + "");
-                rcmodule.postStatus(status);
-            }
+        }
+        if (rcmodule != null)
+        {
+            Status status = new Status("TAGLOST");
+            status.putContents("id", tag.getId() + "");
+            status.putContents("timestamp", frame_id + "");
+            rcmodule.postStatus(status);
         }
     }
 
