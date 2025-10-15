@@ -43,7 +43,9 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlM
 
 
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.core.Mat;
 
 import java.io.IOException;
@@ -88,6 +90,29 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     private IRemoteControlModule remoteControlModule;
     private int seqnum = 0;
 
+
+
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                {
+                    roboboManager.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
+                    mOpenCvCameraView.enableView();
+                    mOpenCvCameraView.setCameraPermissionGranted();
+
+
+                } break;
+                default:
+                {
+                    super.onManagerConnected(status);
+                } break;
+            }
+        }
+    };
+
+    //endregion
 
 
     @Override
@@ -214,7 +239,13 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         //System.loadLibrary("opencv_java4");
         //System.loadLibrary("c++_shared");
 
-        OpenCVLoader.initLocal();
+        if (!OpenCVLoader.initDebug()) {
+            Log.w( TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, context, mLoaderCallback);
+        } else {
+            Log.w( TAG, "OpenCV library found inside package. Using it!");
+            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+        }
         notifyOpenCVStartup();
     }
 

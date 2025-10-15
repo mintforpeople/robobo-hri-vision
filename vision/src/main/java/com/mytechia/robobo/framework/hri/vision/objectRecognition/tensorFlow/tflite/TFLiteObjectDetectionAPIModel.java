@@ -213,7 +213,7 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
             if(compatList.isDelegateSupportedOnThisDevice()){
                 // if the device has a supported GPU, add the GPU delegate
                 GpuDelegate.Options delegateOptions = compatList.getBestOptionsForThisDevice();
-                GpuDelegate gpuDelegate = new GpuDelegate();
+                GpuDelegate gpuDelegate = new GpuDelegate(delegateOptions);
                 options.addDelegate(gpuDelegate);
             } else {
                 // if the GPU is not supported, run on threads

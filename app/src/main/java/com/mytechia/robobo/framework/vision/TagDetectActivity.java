@@ -53,7 +53,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.Objdetect;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -233,7 +232,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
                 Mat tvecs = new Mat(1,1,CvType.CV_64FC3);
                 rvecs.put(0,0,tag.getRvecs());
                 tvecs.put(0,0,tag.getTvecs());
-                //Objdetect.drawAxis(image, calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs, tvecs, 100 );
+                Aruco.drawAxis(image, calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs, tvecs, 100 );
             }
         }
 

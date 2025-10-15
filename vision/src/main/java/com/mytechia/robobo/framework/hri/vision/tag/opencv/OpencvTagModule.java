@@ -16,10 +16,7 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecuto
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 import org.opencv.aruco.Aruco;
-import org.opencv.objdetect.Dictionary;
-import org.opencv.objdetect.Objdetect;
-import org.opencv.objdetect.ArucoDetector;
-import org.opencv.objdetect.DetectorParameters;
+import org.opencv.aruco.DetectorParameters;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -42,6 +39,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     private ICameraModule cameraModule;
     //private List<String> rvecs;
     //private List<String> tvecs;
+    private int currentTagDict = Aruco.DICT_4X4_100;
     private CameraDistortionCalibrationData calibrationData;
     private AuxPropertyWriter propertyWriter;
     private boolean processing = false;
@@ -49,10 +47,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     private List<Tag> lastTags = new ArrayList<Tag>();
     private List<Tag> currentTags = new ArrayList<Tag>();
-
-    private int currentTagDict = Objdetect.DICT_4X4_1000;
-
-    private  ArucoDetector arucoDetector;
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
@@ -68,6 +62,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
+
         executor = Executors.newFixedThreadPool(1);
 
         rcmodule.registerCommand("START-TAG", new ICommandExecutor() {
@@ -152,16 +147,14 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                         // Colorspace conversion
                         Imgproc.cvtColor(clonedMat, clonedMat, Imgproc.COLOR_BGRA2BGR);
                         // Detection parameters
-                        DetectorParameters parameters = new DetectorParameters();
+                        DetectorParameters parameters = DetectorParameters.create();
                         parameters.set_minDistanceToBorder(3);
-                        parameters.set_cornerRefinementMethod(Objdetect.CORNER_REFINE_SUBPIX);
+                        parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_SUBPIX);
                         //parameters.set_cornerRefinementWinSize(15);
                         parameters.set_adaptiveThreshWinSizeMax(100);
 
-                        arucoDetector = new ArucoDetector(Objdetect.getPredefinedDictionary(currentTagDict), parameters);
-
                         // Marker detection
-                        arucoDetector.detectMarkers(clonedMat, markerCorners, markerIds, rejectedCandidates);
+                        Aruco.detectMarkers(clonedMat, Aruco.getPredefinedDictionary(currentTagDict), markerCorners, markerIds, parameters, rejectedCandidates, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat());
 
                         // Rotation vector
                         Mat rvecs = new Mat();
@@ -175,7 +168,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                         if (markerIds.rows() > 0) {
                             // rvecs, tvecs, 3x1 CV_64FC3 matrix
                             // Marker pose detection
-                            //Aruco.estimatePoseSingleMarkers(markerCorners, markerLength, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), rvecs, tvecs);
+                            Aruco.estimatePoseSingleMarkers(markerCorners, markerLength, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), rvecs, tvecs);
 
                             // rvecs, tvecs, 3x1 CV_64FC1 matrix
                             //Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
@@ -265,12 +258,12 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     @Override
     public void useAruco() {
-        currentTagDict = Objdetect.DICT_4X4_1000;
+        currentTagDict = Aruco.DICT_4X4_1000;
     }
 
     @Override
     public void useAprilTags() {
-        currentTagDict = Objdetect.DICT_APRILTAG_16h5;
+        currentTagDict = Aruco.DICT_APRILTAG_16h5;
     }
 
     @Override
