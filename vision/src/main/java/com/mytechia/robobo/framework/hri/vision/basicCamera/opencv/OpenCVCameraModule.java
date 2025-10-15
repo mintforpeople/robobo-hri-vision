@@ -27,6 +27,7 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.LogLvl;
@@ -43,9 +44,7 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlM
 
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.core.Mat;
 
 import java.io.IOException;
@@ -91,30 +90,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     private int seqnum = 0;
 
 
-
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                {
-                    roboboManager.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
-                    mOpenCvCameraView.enableView();
-                    mOpenCvCameraView.setCameraPermissionGranted();
-
-
-                } break;
-                default:
-                {
-                    super.onManagerConnected(status);
-                } break;
-            }
-        }
-    };
-
-    //endregion
-
-
     @Override
     public void onPowerModeChange(PowerMode newMode) {
 
@@ -141,6 +116,10 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         }
 
         context = manager.getApplicationContext();
+
+        roboboManager.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
+        mOpenCvCameraView.enableView();
+        mOpenCvCameraView.setCameraPermissionGranted();
 
         // Load properties form resources file
         Properties properties = new Properties();
@@ -194,6 +173,8 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         });
         manager.subscribeToPowerModeChanges(this);
 
+
+
     }
 
 
@@ -216,22 +197,11 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         return "v0.1";
     }
 
-
-
-
-
-
-    //endregion
-
-
-
-
     //region ICamera methods
     @Override
     public void signalInit() {
 
         //mOpenCvCameraView = (CameraBridgeViewBase) new JavaCameraView(context,1);
-
         //mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
 
         mOpenCvCameraView.setCvCameraViewListener(this);
@@ -239,12 +209,13 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         //System.loadLibrary("opencv_java4");
         //System.loadLibrary("c++_shared");
 
-        if (!OpenCVLoader.initDebug()) {
-            Log.w( TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, context, mLoaderCallback);
+        if (OpenCVLoader.initLocal()) {
+            Log.i(TAG, "OpenCV loaded successfully");
+            mOpenCvCameraView.enableView();
+            mOpenCvCameraView.setCameraPermissionGranted();
         } else {
-            Log.w( TAG, "OpenCV library found inside package. Using it!");
-            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+            Log.e(TAG, "OpenCV initialization failed!");
+            return;
         }
         notifyOpenCVStartup();
     }

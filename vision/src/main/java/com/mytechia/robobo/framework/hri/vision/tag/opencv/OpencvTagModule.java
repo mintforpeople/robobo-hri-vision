@@ -15,8 +15,8 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
-import org.opencv.aruco.Aruco;
-import org.opencv.aruco.DetectorParameters;
+
+import org.opencv.objdetect.*;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -39,7 +39,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     private ICameraModule cameraModule;
     //private List<String> rvecs;
     //private List<String> tvecs;
-    private int currentTagDict = Aruco.DICT_4X4_100;
+    private int currentTagDict = Objdetect.DICT_4X4_100;
     private CameraDistortionCalibrationData calibrationData;
     private AuxPropertyWriter propertyWriter;
     private boolean processing = false;
@@ -47,6 +47,9 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     private List<Tag> lastTags = new ArrayList<Tag>();
     private List<Tag> currentTags = new ArrayList<Tag>();
+
+    private ArucoDetector arucoDetector;
+    private DetectorParameters detectorParameters;
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
@@ -85,8 +88,16 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                 markerLength = Integer.parseInt(c.getParameters().get("size"));
             }
         });
+        // Detection parameters
+        detectorParameters = new DetectorParameters();
+        detectorParameters.set_minDistanceToBorder(3);
+        detectorParameters.set_cornerRefinementMethod(Objdetect.CORNER_REFINE_SUBPIX);
+        //parameters.set_cornerRefinementWinSize(15);
+        detectorParameters.set_adaptiveThreshWinSizeMax(100);
+        arucoDetector = new ArucoDetector(Objdetect.getPredefinedDictionary(currentTagDict), detectorParameters);
+
         // Uncomment to start with the module active
-        startDetection();
+        //startDetection();
 
     }
 
@@ -146,15 +157,9 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
                         // Colorspace conversion
                         Imgproc.cvtColor(clonedMat, clonedMat, Imgproc.COLOR_BGRA2BGR);
-                        // Detection parameters
-                        DetectorParameters parameters = DetectorParameters.create();
-                        parameters.set_minDistanceToBorder(3);
-                        parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_SUBPIX);
-                        //parameters.set_cornerRefinementWinSize(15);
-                        parameters.set_adaptiveThreshWinSizeMax(100);
 
                         // Marker detection
-                        Aruco.detectMarkers(clonedMat, Aruco.getPredefinedDictionary(currentTagDict), markerCorners, markerIds, parameters, rejectedCandidates, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat());
+                        arucoDetector.detectMarkers(clonedMat, markerCorners, markerIds, rejectedCandidates);
 
                         // Rotation vector
                         Mat rvecs = new Mat();
@@ -258,12 +263,14 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     @Override
     public void useAruco() {
-        currentTagDict = Aruco.DICT_4X4_1000;
+        currentTagDict = Objdetect.DICT_4X4_1000;
+        arucoDetector.setDictionary(Objdetect.getPredefinedDictionary(currentTagDict));
     }
 
     @Override
     public void useAprilTags() {
-        currentTagDict = Aruco.DICT_APRILTAG_16h5;
+        currentTagDict = Objdetect.DICT_APRILTAG_16h5;
+        arucoDetector.setDictionary(Objdetect.getPredefinedDictionary(currentTagDict));
     }
 
     @Override
