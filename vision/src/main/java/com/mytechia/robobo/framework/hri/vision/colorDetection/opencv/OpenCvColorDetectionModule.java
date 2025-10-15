@@ -40,8 +40,6 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -75,34 +73,12 @@ public class OpenCvColorDetectionModule extends AColorDetectionModule implements
     private boolean rcpresent = false;
     private boolean processing = false;
 
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                    m.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
-
-                }
-                break;
-                default: {
-                    super.onManagerConnected(status);
-                }
-                break;
-            }
-        }
-    };
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
         context = manager.getApplicationContext();
         m = manager;
-        if (!OpenCVLoader.initDebug()) {
-            m.log(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, context, mLoaderCallback);
-        } else {
-            m.log(TAG, "OpenCV library found inside package. Using it!");
-            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-        }
+        OpenCVLoader.initLocal();
 
         cameraModule = manager.getModuleInstance(ICameraModule.class);
         rcmodule = manager.getModuleInstance(IRemoteControlModule.class);

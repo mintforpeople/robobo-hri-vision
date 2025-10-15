@@ -56,12 +56,12 @@ dependencies {
 
     implementation 'com.google.zxing:core:3.3.3'
 
-    implementation ('com.mytechia:opencv:4.3.0.3-my-SNAPSHOT'){
+    implementation ('com.theroboboproject:opencv:4.12.0.2-my'){
         changing true
     }
 
-    implementation 'org.tensorflow:tensorflow-lite:2.3.0'
-    implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+    implementation 'org.tensorflow:tensorflow-lite:2.17.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.17.0'
 
     //implementation files('../libs/opencv4_1_0_contrib-release.aar')
 
