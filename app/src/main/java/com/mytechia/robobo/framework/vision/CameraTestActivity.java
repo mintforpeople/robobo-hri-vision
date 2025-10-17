@@ -132,26 +132,18 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
             e.printStackTrace();
         }
 
+        Log.i(TAG, "Subscribing Camera module to this");
         camModule.suscribe(this);
 
         //camModule.passSurfaceView(surfaceView);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
                 bridgeBase.setVisibility(SurfaceView.VISIBLE);
                 camModule.passOCVthings(bridgeBase);
                 camModule.signalInit();
-
-
-
-
-
             }
         });
-
-
-
 
     }
 
@@ -176,7 +168,7 @@ public class CameraTestActivity extends AppCompatActivity implements ICameraList
 
     @Override
     public void onNewMat(Mat mat) {
-
+        Log.d(TAG, "Mat");
     }
 
     @Override

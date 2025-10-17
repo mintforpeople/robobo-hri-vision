@@ -43,6 +43,7 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecuto
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 
+import org.opencv.android.JavaCameraView;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Mat;
@@ -92,7 +93,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
     @Override
     public void onPowerModeChange(PowerMode newMode) {
-
         // On low power mode disable the view to stop the camera capture
         if (newMode == PowerMode.LOWPOWER) {
             mOpenCvCameraView.disableView();
@@ -117,10 +117,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
 
         context = manager.getApplicationContext();
 
-        roboboManager.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
-        mOpenCvCameraView.enableView();
-        mOpenCvCameraView.setCameraPermissionGranted();
-
         // Load properties form resources file
         Properties properties = new Properties();
         AssetManager assetManager = manager.getApplicationContext().getAssets();
@@ -137,6 +133,15 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         }
         catch (NumberFormatException e){
             roboboManager.log(LogLvl.WARNING,TAG,"Properties not defined, using defaults");
+        }
+
+        //System.loadLibrary("opencv_java4");
+        //System.loadLibrary("c++_shared");
+        if (OpenCVLoader.initLocal()) {
+            Log.i(TAG, "OpenCV loaded successfully");
+        } else {
+            Log.e(TAG, "OpenCV initialization failed!");
+            return;
         }
 
         // Register the command to change de camera in use
@@ -173,8 +178,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         });
         manager.subscribeToPowerModeChanges(this);
 
-
-
     }
 
 
@@ -200,23 +203,17 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     //region ICamera methods
     @Override
     public void signalInit() {
+        Log.i(TAG, "signaled init");
 
-        //mOpenCvCameraView = (CameraBridgeViewBase) new JavaCameraView(context,1);
-        //mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+        mOpenCvCameraView.enableView();
+        mOpenCvCameraView.setCameraPermissionGranted();
 
+        mOpenCvCameraView = (CameraBridgeViewBase) new JavaCameraView(context,1);
+        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
         mOpenCvCameraView.disableFpsMeter();
-        //System.loadLibrary("opencv_java4");
-        //System.loadLibrary("c++_shared");
 
-        if (OpenCVLoader.initLocal()) {
-            Log.i(TAG, "OpenCV loaded successfully");
-            mOpenCvCameraView.enableView();
-            mOpenCvCameraView.setCameraPermissionGranted();
-        } else {
-            Log.e(TAG, "OpenCV initialization failed!");
-            return;
-        }
+        Log.i(TAG, "Notify OpenCVStartup");
         notifyOpenCVStartup();
     }
 

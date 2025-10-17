@@ -47,6 +47,8 @@ import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.aruco.Aruco;
+import org.opencv.calib3d.Calib3d;
+import org.opencv.objdetect.ArucoDetector;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -232,7 +234,14 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
                 Mat tvecs = new Mat(1,1,CvType.CV_64FC3);
                 rvecs.put(0,0,tag.getRvecs());
                 tvecs.put(0,0,tag.getTvecs());
-                Aruco.drawAxis(image, calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs, tvecs, 100 );
+
+                //Replacement Aruco draw Axis???
+                //Aruco.drawAxis(image, calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs, tvecs, 100 );
+                Calib3d.drawFrameAxes(image,
+                        calibrationData.getCameraMatrixMat(),
+                        calibrationData.getDistCoeffsMat(),
+                        rvecs, tvecs,
+                        100);
             }
         }
 

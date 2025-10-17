@@ -15,9 +15,9 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
-
+import org.opencv.*;
 import org.opencv.objdetect.*;
-import org.opencv.calib3d.Calib3d;
+import org.opencv.aruco.Aruco;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
@@ -176,7 +176,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                             Aruco.estimatePoseSingleMarkers(markerCorners, markerLength, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), rvecs, tvecs);
 
                             // rvecs, tvecs, 3x1 CV_64FC1 matrix
-                            //Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
+                            // Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
 
                             // Individual vectors for the tags
                             double[] tagRvecs = new double[3];

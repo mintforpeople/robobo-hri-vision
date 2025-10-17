@@ -37,10 +37,10 @@
         android:layout_height="match_parent"
         android:rotation="0">
 
-        <org.opencv.android.MyPortraitCameraView
+        <org.opencv.android.JavaCameraView
             android:visibility="invisible"
             android:id="@+id/HelloOpenCvView"
-            opencv:show_fps="true"
+            opencv:show_fps="false"
             app:camera_id="front"
             android:layout_alignParentTop="true"
             android:layout_height="720dp"
