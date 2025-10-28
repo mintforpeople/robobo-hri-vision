@@ -27,7 +27,7 @@
         android:layout_height="match_parent"
         android:rotation="0">
 
-        <org.opencv.android.JavaCamera2View
+        <com.mytechia.robobo.framework.hri.vision.basicCamera.MyPortraitCameraView
             android:visibility="invisible"
             android:id="@+id/HelloOpenCvView"
             opencv:show_fps="true"

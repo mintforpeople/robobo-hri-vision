@@ -38,7 +38,7 @@
         app:srcCompat="@drawable/robobo_logo" />
 
 
-    <org.opencv.android.JavaCamera2View
+    <com.mytechia.robobo.framework.hri.vision.basicCamera.MyPortraitCameraView
         android:id="@+id/HelloOpenCvView"
         android:layout_width="0dp"
 
