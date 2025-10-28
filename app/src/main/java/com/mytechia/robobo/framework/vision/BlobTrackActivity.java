@@ -172,13 +172,9 @@ public class BlobTrackActivity extends AppCompatActivity implements ICameraListe
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
                 bridgeBase.setVisibility(SurfaceView.VISIBLE);
                 camModule.passOCVthings(bridgeBase);
-
-
                 camModule.signalInit();
-
 
             }
         });

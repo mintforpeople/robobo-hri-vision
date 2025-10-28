@@ -43,7 +43,7 @@
         </activity>
 
         <!-- Main settings -->
-       <activity android:name=".TagCalibrationActivity"
+       <activity android:name=".BlobTrackActivity"
            android:exported="true">
            <intent-filter>
                <action android:name="android.intent.action.MAIN" />

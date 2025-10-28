@@ -38,7 +38,7 @@
         app:srcCompat="@drawable/robobo_logo" />
 
 
-    <org.opencv.android.JavaCameraView
+    <org.opencv.android.JavaCamera2View
         android:id="@+id/HelloOpenCvView"
         android:layout_width="0dp"
 

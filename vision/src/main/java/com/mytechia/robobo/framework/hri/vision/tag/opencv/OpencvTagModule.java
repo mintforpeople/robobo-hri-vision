@@ -51,6 +51,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     private ArucoDetector arucoDetector;
     private DetectorParameters detectorParameters;
 
+
+
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
 
