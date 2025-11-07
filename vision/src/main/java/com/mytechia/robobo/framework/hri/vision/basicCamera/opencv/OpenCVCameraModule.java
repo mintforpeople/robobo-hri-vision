@@ -35,6 +35,7 @@ import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ACameraModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
+import com.mytechia.robobo.framework.hri.vision.basicCamera.MyPortraitCameraView;
 import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
 import com.mytechia.robobo.framework.power.IPowerModeListener;
 import com.mytechia.robobo.framework.power.PowerMode;
@@ -208,7 +209,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         mOpenCvCameraView.enableView();
         mOpenCvCameraView.setCameraPermissionGranted();
 
-        mOpenCvCameraView = (CameraBridgeViewBase) new JavaCameraView(context,1);
+        mOpenCvCameraView = (CameraBridgeViewBase) new MyPortraitCameraView(context,1);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
         mOpenCvCameraView.disableFpsMeter();
@@ -290,6 +291,7 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     //region ICameraListener methods
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        Log.d(TAG, "FRAME");
         long millis = System.currentTimeMillis();
         // Check if we want to process a new frame
         if (millis-lastFrameTime>=deltaTimeThreshold) {

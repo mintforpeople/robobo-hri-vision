@@ -41,7 +41,7 @@
         </activity>
 
         <!-- Main settings -->
-       <activity android:name=".BlobTrackActivity"
+       <activity android:name=".CameraQRTestActivity"
            android:exported="true">
            <intent-filter>
                <action android:name="android.intent.action.MAIN" />

@@ -264,7 +264,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     public void onOpenCVStartup() {
         camModule.setFps(40);
 //        ((ATagModule)arucoModule).useRosTypeStatus(true);
-        propertyWriter = AuxPropertyWriter.getInstance(roboboManager);
+        propertyWriter = new AuxPropertyWriter(roboboManager.getApplicationContext(), "camera", roboboManager);
         loadCalibrationData();
         arucoModule.resumeDetection();
 

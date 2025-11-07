@@ -108,6 +108,7 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
 
             }
         });
+        Log.d(TAG, "Starting Detection");
         startDetection();
 
     }

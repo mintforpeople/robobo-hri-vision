@@ -157,7 +157,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             public void onRoboboManagerStarted(RoboboManager robobo) {
                 //the robobo service and manager have been started up
                 roboboManager = robobo;
-                propertyWriter = AuxPropertyWriter.getInstance(robobo);
+                propertyWriter = new AuxPropertyWriter(robobo.getApplicationContext(), "camera", robobo);
 
                 //start the "custom" robobo application
                 startRoboboApplication();
