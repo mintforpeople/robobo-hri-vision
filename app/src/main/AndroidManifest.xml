@@ -4,11 +4,9 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
+        android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_LOGS"
-        tools:ignore="ProtectedPermissions" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -43,7 +41,7 @@
         </activity>
 
         <!-- Main settings -->
-       <activity android:name=".CameraTestActivity"
+       <activity android:name=".BlobTrackActivity"
            android:exported="true">
            <intent-filter>
                <action android:name="android.intent.action.MAIN" />

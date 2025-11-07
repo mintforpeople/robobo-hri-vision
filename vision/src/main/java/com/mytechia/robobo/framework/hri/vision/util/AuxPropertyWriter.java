@@ -26,26 +26,17 @@ public class AuxPropertyWriter {
     private static final String TAG = "AuxPropertyWriter";
     private RoboboManager manager;
     private Properties properties;
-    private File dir;
-    private String fileName = "camera";
-    private File propFile;
-
     private Context appContext;
-
     private Uri propFileUri;
     private String propFilePath;
 
-    private static AuxPropertyWriter instance = null;
+    public AuxPropertyWriter(Context context, String fileName, RoboboManager manager) {
+        this.manager = manager;
+        this.appContext = context;
+        properties = new Properties();
 
-    public static AuxPropertyWriter getInstance(RoboboManager manager) {
-        if (instance== null)
-            instance = new AuxPropertyWriter(manager);
-        return instance;
-    }
-
-    private AuxPropertyWriter(RoboboManager manager) {
-        this.appContext = manager.getApplicationContext();
         ContentResolver resolver = appContext.getContentResolver();
+        InputStream inputStream;
 
         // FIXME: We are not using URIs for lower than Q. Just use regular file opening to get to the file
         try{
@@ -58,33 +49,20 @@ public class AuxPropertyWriter {
             ex.printStackTrace();
         }
         properties = new Properties();
-        // Load defaults from camera.properties asset
         try {
-            InputStream assetInputStream = manager.getApplicationContext().getAssets().open(fileName + ".properties");
-            properties.load(assetInputStream);
-        } catch (IOException e) {
-            Log.e(TAG, "Error loading default values of " + fileName);
-            e.printStackTrace();
-        }
-        // Load customs from camera.properties
-        try {
-            InputStream propInputStream;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                propInputStream = resolver.openInputStream(propFileUri);
+                inputStream = resolver.openInputStream(propFileUri);
             } else {
-                propInputStream = new FileInputStream(propFilePath);
+                inputStream = new FileInputStream(propFilePath);
             }
-            properties.load(propInputStream);
+            properties.load(inputStream);
         } catch (IOException e) {
-            Log.e(TAG, "Error loading default values of " + propFilePath);
             e.printStackTrace();
         }
     }
 
     public void storeConf(String key, String value) {
-
         properties.setProperty(key, value);
-
     }
 
     public String retrieveConf(String key, String defValue) {
