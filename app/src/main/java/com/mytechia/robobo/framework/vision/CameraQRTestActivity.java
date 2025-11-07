@@ -175,7 +175,6 @@ public class CameraQRTestActivity extends AppCompatActivity implements ICameraLi
 
     @Override
     public void onNewFrame(final Frame frame) {
-        Log.d("QR TRACK", "Frame!!");
 
         lastFrame = frame;
         runOnUiThread(new Runnable() {
@@ -195,12 +194,10 @@ public class CameraQRTestActivity extends AppCompatActivity implements ICameraLi
 
     @Override
     public void onNewMat(Mat mat) {
-        Log.d("QR TRACK", "Mat!!");
     }
 
     @Override
     public void onDebugFrame(Frame frame, String frameId) {
-        Log.d("QR TRACK", "Debug Frame!!");
     }
 
     @Override

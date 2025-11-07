@@ -27,7 +27,6 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.mytechia.commons.framework.exception.InternalErrorException;
 import com.mytechia.robobo.framework.LogLvl;
@@ -35,7 +34,6 @@ import com.mytechia.robobo.framework.RoboboManager;
 import com.mytechia.robobo.framework.exception.ModuleNotFoundException;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.ACameraModule;
 import com.mytechia.robobo.framework.hri.vision.basicCamera.Frame;
-import com.mytechia.robobo.framework.hri.vision.basicCamera.MyPortraitCameraView;
 import com.mytechia.robobo.framework.hri.vision.util.FrameCounter;
 import com.mytechia.robobo.framework.power.IPowerModeListener;
 import com.mytechia.robobo.framework.power.PowerMode;
@@ -44,7 +42,6 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecuto
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
 
-import org.opencv.android.JavaCameraView;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Mat;
@@ -92,8 +89,12 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     private int seqnum = 0;
 
 
+    //endregion
+
+
     @Override
     public void onPowerModeChange(PowerMode newMode) {
+
         // On low power mode disable the view to stop the camera capture
         if (newMode == PowerMode.LOWPOWER) {
             mOpenCvCameraView.disableView();
@@ -136,15 +137,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
             roboboManager.log(LogLvl.WARNING,TAG,"Properties not defined, using defaults");
         }
 
-        //System.loadLibrary("opencv_java4");
-        //System.loadLibrary("c++_shared");
-        if (OpenCVLoader.initLocal()) {
-            Log.i(TAG, "OpenCV loaded successfully");
-        } else {
-            Log.e(TAG, "OpenCV initialization failed!");
-            return;
-        }
-
         // Register the command to change de camera in use
         remoteControlModule.registerCommand("SET-CAMERA", new ICommandExecutor() {
             @Override
@@ -177,6 +169,10 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
                 }
             }
         });
+        if(OpenCVLoader.initDebug()){
+            roboboManager.log(LogLvl.INFO, TAG, "OpenCV loaded successfully");
+        }
+
         manager.subscribeToPowerModeChanges(this);
 
     }
@@ -201,20 +197,28 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
         return "v0.1";
     }
 
+
+    //endregion
+
+
+
+
     //region ICamera methods
     @Override
     public void signalInit() {
-        Log.i(TAG, "signaled init");
 
+        //mOpenCvCameraView = (CameraBridgeViewBase) new JavaCameraView(context,1);
+
+        //mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.enableView();
         mOpenCvCameraView.setCameraPermissionGranted();
 
-        mOpenCvCameraView = (CameraBridgeViewBase) new MyPortraitCameraView(context,1);
-        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
         mOpenCvCameraView.disableFpsMeter();
+        //System.loadLibrary("opencv_java4");
+        //System.loadLibrary("c++_shared");
 
-        Log.i(TAG, "Notify OpenCVStartup");
+
         notifyOpenCVStartup();
     }
 
@@ -291,7 +295,6 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
     //region ICameraListener methods
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        Log.d(TAG, "FRAME");
         long millis = System.currentTimeMillis();
         // Check if we want to process a new frame
         if (millis-lastFrameTime>=deltaTimeThreshold) {
