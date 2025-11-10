@@ -416,6 +416,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
                 squaresX = data.getIntExtra("squaresX", squaresX);

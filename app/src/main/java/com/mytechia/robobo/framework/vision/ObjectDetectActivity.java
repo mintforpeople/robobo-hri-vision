@@ -203,7 +203,7 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
     @Override
     public void onNewFrame(final Frame frame) {
 
-
+        Log.d(TAG, "FRAME");
         lastFrame = frame;
         Canvas canvas = new Canvas(frame.getBitmap());
         Paint paint = new Paint();

@@ -211,14 +211,14 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
                             if (location != null && result.getConfidence() >= minConfidence) {
                                 cropToFrameTransform.mapRect(location);
                                 ((LinkedList<RecognizedObject>) objectsRecognized).addFirst(new RecognizedObject(Integer.parseInt(result.getId()), result.getTitle(), result.getConfidence(), location));
-                                //Log.d(TAG, "Detected: "+result.toString());
+                                Log.d(TAG, "Detected: "+result.toString());
                                 result.setLocation(location);
                                 mappedRecognitions.add(result);
                             }
                         }
                     }
 
-                    //Log.d("RECOGNIZER", mappedRecognitions.toString());
+                    Log.d(TAG, mappedRecognitions.toString());
                     if (objectsRecognized.size() > 0) {
                         notifyObjectDetected(objectsRecognized, String.valueOf(frame.getSeqNum()));
 
