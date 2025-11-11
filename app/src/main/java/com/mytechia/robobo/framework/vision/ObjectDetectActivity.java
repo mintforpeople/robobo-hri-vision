@@ -58,7 +58,7 @@ import java.util.List;
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class ObjectDetectActivity extends AppCompatActivity implements ICameraListener, IObjectRecognizerListener,  GestureDetector.OnGestureListener{
-    private static final String TAG="CameraFaceTestActivity";
+    private static final String TAG="ObjectDetectActivity";
 
 
     private GestureDetectorCompat mDetector;
@@ -202,8 +202,6 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
 
     @Override
     public void onNewFrame(final Frame frame) {
-
-        Log.d(TAG, "FRAME");
         lastFrame = frame;
         Canvas canvas = new Canvas(frame.getBitmap());
         Paint paint = new Paint();
@@ -267,7 +265,7 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
 
     @Override
     public void onLongPress(MotionEvent motionEvent) {
-
+        objModule.resumeDetection();
     }
 
     @Override
@@ -281,7 +279,6 @@ public class ObjectDetectActivity extends AppCompatActivity implements ICameraLi
 
     @Override
     public void onObjectsRecognized(final List<RecognizedObject> objectList) {
-
         final TextView tv = this.textView;
 
         this.objectList = objectList;

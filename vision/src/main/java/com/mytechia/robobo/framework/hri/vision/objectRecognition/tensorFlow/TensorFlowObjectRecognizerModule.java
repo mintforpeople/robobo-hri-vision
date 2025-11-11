@@ -169,8 +169,6 @@ public class TensorFlowObjectRecognizerModule extends AObjectRecognitionModule i
 
     @Override
     public void onNewFrame(final Frame frame) {
-
-
         if (!isProcessing && !paused) {
             //todo:add executor
 //            totalFrameCount++;

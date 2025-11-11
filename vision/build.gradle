@@ -68,8 +68,6 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.17.0'
 
     //implementation files('../libs/opencv4_1_0_contrib-release.aar')
-
-
 }
 
 /*
