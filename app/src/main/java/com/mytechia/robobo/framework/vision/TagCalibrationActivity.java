@@ -480,9 +480,14 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         camModule.changeCamera();
         camModule.setFps(40);
 
+        Log.d(TAG, "cameraMatrix" + camModule.getCameraCode());
+        Log.d(TAG, "distCoeffs" + camModule.getCameraCode());
+
+
         distortionData = new CameraDistortionCalibrationData(
                 propertyWriter.retrieveConf("cameraMatrix" + camModule.getCameraCode(), propertyWriter.retrieveConf("cameraMatrix")),
-                propertyWriter.retrieveConf("distCoeffs" + camModule.getCameraCode(), propertyWriter.retrieveConf("distCoeffs")));
+                propertyWriter.retrieveConf("distCoeffs" + camModule.getCameraCode(), propertyWriter.retrieveConf("distCoeffs"))
+        );
 
     }
 

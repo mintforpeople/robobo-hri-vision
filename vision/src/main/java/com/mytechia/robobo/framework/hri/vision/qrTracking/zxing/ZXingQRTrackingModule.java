@@ -148,7 +148,7 @@ public class ZXingQRTrackingModule extends AQRTrackingModule implements ICameraL
                     fps.newFrame();
 
                     if (fps.getElapsedTime() % 10 == 0) {
-                        Log.v("QR", "FPS = " + fps.getFPS() + "  " + fps.getElapsedTime() % 10);
+                        //Log.v("QR", "FPS = " + fps.getFPS() + "  " + fps.getElapsedTime() % 10);
                     }
                     Bitmap bMap = frame.getBitmap();
 

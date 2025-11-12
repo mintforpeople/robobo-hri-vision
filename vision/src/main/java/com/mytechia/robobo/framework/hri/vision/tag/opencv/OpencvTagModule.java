@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
+    private static final String TAG = "OpencvTagModule";
 
     ExecutorService executor;
     private float markerLength = 100;
@@ -62,8 +63,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
             rcmodule = m.getModuleInstance(IRemoteControlModule.class);
-
-
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
@@ -98,8 +97,10 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
         detectorParameters.set_adaptiveThreshWinSizeMax(100);
         arucoDetector = new ArucoDetector(Objdetect.getPredefinedDictionary(currentTagDict), detectorParameters);
 
+        Log.d(TAG, "Starting up Tag Module");
+
         // Uncomment to start with the module active
-        //startDetection();
+        startDetection();
 
     }
 
@@ -131,10 +132,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     @Override
     public void onNewMatV2(final Mat mat, final int frameId, long timestamp) {
-
         if (!stopped && !processing && mat.cols() > 0 && mat.rows() > 0) {
             // Execute on its own thread to avoid locking the camera callback
-//            Log.d("TAG","TAGFRAME");
             executor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -242,10 +241,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     @Override
     public void onOpenCVStartup() {
-
         propertyWriter = new AuxPropertyWriter(m.getApplicationContext(), "camera", m);
         loadCalibrationData();
-
         executor.execute(new Runnable() {
             @Override
             public void run() {

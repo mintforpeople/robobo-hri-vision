@@ -41,7 +41,7 @@
         </activity>
 
         <!-- Main settings -->
-       <activity android:name=".ObjectDetectActivity"
+       <activity android:name=".TagDetectActivity"
            android:exported="true">
            <intent-filter>
                <action android:name="android.intent.action.MAIN" />

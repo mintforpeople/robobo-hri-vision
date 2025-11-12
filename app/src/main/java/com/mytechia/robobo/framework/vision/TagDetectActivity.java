@@ -64,7 +64,7 @@ import java.util.concurrent.Executors;
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class TagDetectActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, ITagListener {
-    private static final String TAG = "CameraFaceTestActivity";
+    private static final String TAG = "TagDetectActivity";
     List<Tag> markers;
     boolean detected = false;
     private GestureDetectorCompat mDetector;
@@ -111,9 +111,9 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         }
 
         //this.surfaceView = (SurfaceView) findViewById(R.id.testSurfaceView);
-        this.imageView = findViewById(R.id.testImageView);
-        this.bridgeBase = findViewById(R.id.HelloOpenCvView);
-        this.textView = findViewById(R.id.textView2);
+        this.imageView = (ImageView) findViewById(R.id.testImageView) ;
+        this.bridgeBase = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
+        this.textView = (TextView) findViewById(R.id.textView2);
 
 //        this.textureView = (TextureView) findViewById(R.id.textureView);
         roboboHelper = new RoboboServiceHelper(this, new RoboboServiceHelper.Listener() {
@@ -294,10 +294,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
 
     @Override
     public void onLongPress(MotionEvent motionEvent) {
-
-                arucoModule.resumeDetection();
-
-
+        arucoModule.resumeDetection();
     }
 
     @Override

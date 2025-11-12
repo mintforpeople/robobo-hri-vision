@@ -253,6 +253,8 @@ public class OpenCVCameraModule extends ACameraModule implements CameraBridgeVie
                 break;
         }
         roboboManager.log(TAG,"New camera index: "+index);
+        Log.d(TAG, "cameraMatrix" + getCameraCode());
+        Log.d(TAG, "distCoeffs" + getCameraCode());
         mOpenCvCameraView.disableView();
         mOpenCvCameraView.setCameraIndex(index);
         mOpenCvCameraView.enableView();

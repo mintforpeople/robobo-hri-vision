@@ -14,9 +14,8 @@ public class CameraDistortionCalibrationData {
     //private List<String> rvecs;
     //private List<String> tvecs;
     public CameraDistortionCalibrationData(@NonNull String cameraMatrix,@NonNull String distCoeffs) {//}, List<Mat> rvecs, List<Mat> tvecs){
-
-        this.cameraMatrix = cameraMatrix.isEmpty() ? Mat.eye(3,3, CvType.CV_64F) : GsonConverter.matFromJson(cameraMatrix);
-        this.distCoeffs = distCoeffs.isEmpty()? new Mat() : GsonConverter.matFromJson(distCoeffs);
+        this.cameraMatrix = (cameraMatrix == null || cameraMatrix.isEmpty()) ? Mat.eye(3,3, CvType.CV_64F) : GsonConverter.matFromJson(cameraMatrix);
+        this.distCoeffs = (distCoeffs == null || distCoeffs.isEmpty()) ? new Mat() : GsonConverter.matFromJson(distCoeffs);
         /*this.rvecs = new ArrayList<>();
         this.tvecs = new ArrayList<>();
 
@@ -24,8 +23,6 @@ public class CameraDistortionCalibrationData {
             this.rvecs.add(i,GsonConverter.matToJson(rvecs.get(i)));
             this.tvecs.add(i,GsonConverter.matToJson(tvecs.get(i)));
         }*/
-
-
     }
 
 
