@@ -209,7 +209,7 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                                         new Point(data[6], data[7])
                                 );
 
-                                Calib3d.solvePnP(
+                                boolean pnpSuccess = Calib3d.solvePnP(
                                         markerPoints,
                                         imageCorners,
                                         cameraMatrix,
@@ -219,6 +219,10 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                                         false,
                                         Calib3d.SOLVEPNP_IPPE_SQUARE
                                 );
+
+                                if (!pnpSuccess) {
+                                    continue;
+                                }
 
                                 double[] rvecArray = new double[3];
                                 tagRvecs.get(0, 0, rvecArray);
