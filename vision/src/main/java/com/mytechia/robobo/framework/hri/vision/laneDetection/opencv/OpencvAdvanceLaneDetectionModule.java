@@ -67,7 +67,7 @@ public class OpencvAdvanceLaneDetectionModule extends ALaneDetectionModule imple
         Log.w("LANE","LANE START");
         m.log(LogLvl.INFO,"LANE","LANE START");
 
-        propertyWriter = new AuxPropertyWriter(m.getApplicationContext(), "camera", m);
+        propertyWriter = AuxPropertyWriter.getInstance(m);
         tl[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_x"));
         tl[1] = Float.parseFloat(propertyWriter.retrieveConf("lt_tl_y"));
         tr[0] = Float.parseFloat(propertyWriter.retrieveConf("lt_tr_x"));

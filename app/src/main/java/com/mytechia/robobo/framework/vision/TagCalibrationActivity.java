@@ -57,17 +57,17 @@ import com.mytechia.robobo.framework.hri.vision.util.CameraDistortionCalibration
 import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 
 import org.opencv.android.CameraBridgeViewBase;
-//import org.opencv.aruco.Aruco;
-//import org.opencv.aruco.CharucoBoard;
-//import org.opencv.aruco.Aruco;
-import org.opencv.objdetect.ArucoDetector;
-import org.opencv.objdetect.CharucoBoard;
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.ArucoDetector;
+import org.opencv.objdetect.CharucoDetector;
+import org.opencv.objdetect.CharucoBoard;
+import org.opencv.objdetect.CharucoParameters;
 import org.opencv.objdetect.Objdetect;
 
 import java.util.ArrayList;
@@ -105,8 +105,6 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
     private AuxPropertyWriter propertyWriter;
     private CameraDistortionCalibrationData distortionData;
-
-    private ArucoDetector arucoDetector;
 
     List<Mat> capturedList;
 
@@ -152,12 +150,14 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         this.imagesCounter = (TextView) findViewById(R.id.imagesCounter);
         this.changeCameraButton = (Button) findViewById(R.id.changeCameraButton);
 
+
+
         roboboHelper = new RoboboServiceHelper(this, new RoboboServiceHelper.Listener() {
             @Override
             public void onRoboboManagerStarted(RoboboManager robobo) {
                 //the robobo service and manager have been started up
                 roboboManager = robobo;
-                propertyWriter = new AuxPropertyWriter(robobo.getApplicationContext(), "camera", robobo);
+                propertyWriter = AuxPropertyWriter.getInstance(robobo);
 
                 //start the "custom" robobo application
                 startRoboboApplication();
@@ -190,11 +190,8 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         List<Mat> corners = new ArrayList<Mat>();
         int corners_count = 0;
 
-        //CharucoBoard board = CharucoBoard.create(squaresX, squaresY, squareLength, markerLength, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000));
         CharucoBoard board = new CharucoBoard(new Size(squaresX, squaresY), squareLength, markerLength, Objdetect.getPredefinedDictionary(Objdetect.DICT_4X4_1000));
         boolean first = true;
-
-        arucoDetector = new ArucoDetector(Objdetect.getPredefinedDictionary(Objdetect.DICT_4X4_1000));
 
         Size imageSize = new Size(camModule.getResX(),camModule.getResY());
         for (Mat image : capturedList) {
@@ -203,11 +200,13 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             Mat charucoCorners = new Mat();
             Mat charucoIds = new Mat();
 
-            //Aruco.detectMarkers(image, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000), tagCorners, tagIds);
-            arucoDetector.detectMarkers(image, tagCorners, tagIds);
+            ArucoDetector detector = new ArucoDetector();
+            detector.detectMarkers(image, tagCorners, tagIds);
+
+            CharucoDetector chDetector = new CharucoDetector(board);
             //Aruco.refineDetectedMarkers(image,board,tagCorners,tagIds);
             if (tagCorners.size() > 0)
-                //Aruco.interpolateCornersCharuco(tagCorners, tagIds, image, board, charucoCorners, charucoIds);
+                chDetector.detectBoard(image, charucoCorners, charucoIds);
             if(charucoIds.total()>0){
                 corners.add(charucoCorners);
                 ids.add(charucoIds);
@@ -220,7 +219,7 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
             Log.i(TAG,"Image size: "+imageSize.height+", "+imageSize.width);
             Log.i(TAG,"Marker length: "+markerLength);
             Log.i(TAG,"Square length: "+squareLength);
-            //Aruco.calibrateCameraCharuco(corners, ids, board, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs);
+            //Calib3d.calibrateCamera(corners, ids, board, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs);
             distortionData = new CameraDistortionCalibrationData(cameraMatrix, distCoeffs);
             propertyWriter.storeConf("cameraMatrix" + camModule.getCameraCode(), distortionData.getCameraMatrix());
             propertyWriter.storeConf("distCoeffs" + camModule.getCameraCode(),   distortionData.getDistCoeffs());
@@ -282,8 +281,10 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
 
         try {
+
             this.camModule = this.roboboManager.getModuleInstance(ICameraModule.class);
             this.arucoModule = this.roboboManager.getModuleInstance(ITagModule.class);
+
 
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
@@ -291,6 +292,8 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
         camModule.suscribe(this);
         arucoModule.suscribe(this);
+
+
 
         runOnUiThread(new Runnable() {
             @Override
@@ -330,11 +333,11 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
                 //capturedImage = new Mat();
                 mat.copyTo(mat_aux);
 
+                ArucoDetector detector = new ArucoDetector();
 
                 ArrayList<Mat> tagCorners = new ArrayList<Mat>();
                 Mat tagIds = new Mat();
-                //Aruco.detectMarkers(mat, Objdetect.getPredefinedDictionary(Objdetect.DICT_4X4_1000), tagCorners, tagIds);
-
+                detector.detectMarkers(mat, tagCorners, tagIds);
 
                 final String msg;
                 if (tagCorners.size() > 0) {
@@ -380,7 +383,6 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         for (Tag tag : tags) {
             for (int i = 0; i < 4; i++) {
                 Imgproc.line(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), new Point(tag.getCorner((i + 1) % 4).x, tag.getCorner((i + 1) % 4).y), new Scalar(255, 0, 0));
-
                 Imgproc.circle(image, new Point(tag.getCorner(i).x, tag.getCorner(i).y), 3, new Scalar(0, 255, 0));
             }
         }
@@ -395,20 +397,22 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         Mat charucoCorners = new Mat();
         Mat charucoIds = new Mat();
         //Todo: add a dropdown to select the type of aruco
-        //CharucoBoard board = CharucoBoard.create(squaresX, squaresY, squareLength, markerLength, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000));
-        //Aruco.detectMarkers(image, Aruco.getPredefinedDictionary(Aruco.DICT_4X4_1000), tagCorners, tagIds);
-        CharucoBoard board = new CharucoBoard(new Size(squaresX, squaresY), squareLength, markerLength, Objdetect.getPredefinedDictionary(Objdetect.DICT_4X4_1000));
 
+        ArucoDetector detector = new ArucoDetector();
+
+        CharucoBoard board = new CharucoBoard(new Size(squaresX, squaresY), squareLength, markerLength, Objdetect.getPredefinedDictionary(Objdetect.DICT_4X4_1000));
+        CharucoDetector chDetector = new CharucoDetector(board);
+
+        detector.detectMarkers(image, tagCorners, tagIds);
         Mat rvecs = new Mat();
         Mat tvecs = new Mat();
         //Aruco.estimatePoseSingleMarkers(markerCorners,14.5f,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(), tvecs, rvecs);
-        //Aruco.estimatePoseBoard(tagCorners, tagIds, board, distortionData.getCameraMatrixMat(), distortionData.getDistCoeffsMat(), rvecs, tvecs);
+        //-- Aruco.estimatePoseBoard(tagCorners, tagIds, board, distortionData.getCameraMatrixMat(), distortionData.getDistCoeffsMat(), rvecs, tvecs);
         if ((tagCorners.size() > 0) && (tagIds.size().height > 0) && (tagIds.size().width > 0)) {
             Log.w("TAG", "Corners" + tagCorners.size() + " Ids" + tagIds.size());
-            //Aruco.interpolateCornersCharuco(tagCorners, tagIds, image, board, charucoCorners, charucoIds);
-            if (charucoIds.total() > 0)
-                Objdetect.drawDetectedCornersCharuco(image, charucoCorners);
-                //Aruco.drawDetectedCornersCharuco(image, charucoCorners);
+            chDetector.detectBoard(image, charucoCorners, charucoIds);
+            //if (charucoIds.total() > 0)
+            //     Aruco.drawDetectedCornersCharuco(image, charucoCorners);
             //Aruco.drawAxis(image,distortionData.getCameraMatrixMat(), distortionData.getDistCoeffsMat(),rvecs,tvecs,25);
         }
         return image;
@@ -416,7 +420,6 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
                 squaresX = data.getIntExtra("squaresX", squaresX);
@@ -480,14 +483,9 @@ public class TagCalibrationActivity extends AppCompatActivity implements ICamera
         camModule.changeCamera();
         camModule.setFps(40);
 
-        Log.d(TAG, "cameraMatrix" + camModule.getCameraCode());
-        Log.d(TAG, "distCoeffs" + camModule.getCameraCode());
-
-
         distortionData = new CameraDistortionCalibrationData(
                 propertyWriter.retrieveConf("cameraMatrix" + camModule.getCameraCode(), propertyWriter.retrieveConf("cameraMatrix")),
-                propertyWriter.retrieveConf("distCoeffs" + camModule.getCameraCode(), propertyWriter.retrieveConf("distCoeffs"))
-        );
+                propertyWriter.retrieveConf("distCoeffs" + camModule.getCameraCode(), propertyWriter.retrieveConf("distCoeffs")));
 
     }
 

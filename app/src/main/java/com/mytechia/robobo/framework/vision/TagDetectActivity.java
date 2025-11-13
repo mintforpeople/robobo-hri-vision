@@ -48,7 +48,6 @@ import com.mytechia.robobo.framework.service.RoboboServiceHelper;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.aruco.Aruco;
 import org.opencv.calib3d.Calib3d;
-import org.opencv.objdetect.ArucoDetector;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -64,7 +63,7 @@ import java.util.concurrent.Executors;
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class TagDetectActivity extends AppCompatActivity implements ICameraListener, GestureDetector.OnGestureListener, ITagListener {
-    private static final String TAG = "TagDetectActivity";
+    private static final String TAG = "CameraFaceTestActivity";
     List<Tag> markers;
     boolean detected = false;
     private GestureDetectorCompat mDetector;
@@ -111,9 +110,9 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
         }
 
         //this.surfaceView = (SurfaceView) findViewById(R.id.testSurfaceView);
-        this.imageView = (ImageView) findViewById(R.id.testImageView) ;
-        this.bridgeBase = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
-        this.textView = (TextView) findViewById(R.id.textView2);
+        this.imageView = findViewById(R.id.testImageView);
+        this.bridgeBase = findViewById(R.id.HelloOpenCvView);
+        this.textView = findViewById(R.id.textView2);
 
 //        this.textureView = (TextureView) findViewById(R.id.textureView);
         roboboHelper = new RoboboServiceHelper(this, new RoboboServiceHelper.Listener() {
@@ -234,14 +233,8 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
                 Mat tvecs = new Mat(1,1,CvType.CV_64FC3);
                 rvecs.put(0,0,tag.getRvecs());
                 tvecs.put(0,0,tag.getTvecs());
-
-                //Replacement Aruco draw Axis???
                 //Aruco.drawAxis(image, calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs, tvecs, 100 );
-                Calib3d.drawFrameAxes(image,
-                        calibrationData.getCameraMatrixMat(),
-                        calibrationData.getDistCoeffsMat(),
-                        rvecs, tvecs,
-                        100);
+                //Calib3d.drawFrameAxes(image,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(), rvecs, tvecs, 100);
             }
         }
 
@@ -264,7 +257,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     public void onOpenCVStartup() {
         camModule.setFps(40);
 //        ((ATagModule)arucoModule).useRosTypeStatus(true);
-        propertyWriter = new AuxPropertyWriter(roboboManager.getApplicationContext(), "camera", roboboManager);
+        propertyWriter = AuxPropertyWriter.getInstance(roboboManager);
         loadCalibrationData();
         arucoModule.resumeDetection();
 
@@ -294,7 +287,7 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
 
     @Override
     public void onLongPress(MotionEvent motionEvent) {
-        arucoModule.resumeDetection();
+                arucoModule.resumeDetection();
     }
 
     @Override
@@ -307,7 +300,6 @@ public class TagDetectActivity extends AppCompatActivity implements ICameraListe
     @Override
     public void onAruco(List<Tag> markers) {
         this.markers = markers;
-        Log.d("DETECTEDARUCO", markers.toString());
         detected = true;
     }
 

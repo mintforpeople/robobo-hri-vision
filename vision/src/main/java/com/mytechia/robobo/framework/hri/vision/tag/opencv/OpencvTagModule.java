@@ -15,12 +15,21 @@ import com.mytechia.robobo.framework.remote_control.remotemodule.Command;
 import com.mytechia.robobo.framework.remote_control.remotemodule.ICommandExecutor;
 import com.mytechia.robobo.framework.remote_control.remotemodule.IRemoteControlModule;
 
-import org.opencv.*;
-import org.opencv.objdetect.*;
-import org.opencv.aruco.Aruco;
+import org.opencv.core.CvType;
+import org.opencv.core.MatOfDouble;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.MatOfPoint3f;
+import org.opencv.core.Point;
+import org.opencv.core.Point3;
+import org.opencv.objdetect.ArucoDetector;
+import org.opencv.objdetect.DetectorParameters;
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.Dictionary;
+import org.opencv.objdetect.Objdetect;
+import org.opencv.objdetect.RefineParameters;
 import org.opencv.ximgproc.FastLineDetector;
 
 import java.util.ArrayList;
@@ -32,7 +41,6 @@ import java.util.stream.Collectors;
 import static org.opencv.android.CameraBridgeViewBase.CAMERA_ID_FRONT;
 
 public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
-    private static final String TAG = "OpencvTagModule";
 
     ExecutorService executor;
     private float markerLength = 100;
@@ -41,18 +49,16 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     //private List<String> rvecs;
     //private List<String> tvecs;
     private int currentTagDict = Objdetect.DICT_4X4_100;
+    private Dictionary dictionary;
     private CameraDistortionCalibrationData calibrationData;
     private AuxPropertyWriter propertyWriter;
+
+    private ArucoDetector detector;
     private boolean processing = false;
     private boolean stopped = false;
 
     private List<Tag> lastTags = new ArrayList<Tag>();
     private List<Tag> currentTags = new ArrayList<Tag>();
-
-    private ArucoDetector arucoDetector;
-    private DetectorParameters detectorParameters;
-
-
 
     @Override
     public void startup(RoboboManager manager) throws InternalErrorException {
@@ -63,6 +69,8 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
         try {
             cameraModule = m.getModuleInstance(ICameraModule.class);
             rcmodule = m.getModuleInstance(IRemoteControlModule.class);
+
+
         } catch (ModuleNotFoundException e) {
             e.printStackTrace();
         }
@@ -89,16 +97,6 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                 markerLength = Integer.parseInt(c.getParameters().get("size"));
             }
         });
-        // Detection parameters
-        detectorParameters = new DetectorParameters();
-        detectorParameters.set_minDistanceToBorder(3);
-        detectorParameters.set_cornerRefinementMethod(Objdetect.CORNER_REFINE_SUBPIX);
-        //parameters.set_cornerRefinementWinSize(15);
-        detectorParameters.set_adaptiveThreshWinSizeMax(100);
-        arucoDetector = new ArucoDetector(Objdetect.getPredefinedDictionary(currentTagDict), detectorParameters);
-
-        Log.d(TAG, "Starting up Tag Module");
-
         // Uncomment to start with the module active
         startDetection();
 
@@ -132,8 +130,10 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     @Override
     public void onNewMatV2(final Mat mat, final int frameId, long timestamp) {
+
         if (!stopped && !processing && mat.cols() > 0 && mat.rows() > 0) {
             // Execute on its own thread to avoid locking the camera callback
+//            Log.d("TAG","TAGFRAME");
             executor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -156,58 +156,91 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
                         ArrayList<Mat> markerCorners = new ArrayList<>();
                         ArrayList<Mat> rejectedCandidates = new ArrayList<>();
 
+                        dictionary = Objdetect.getPredefinedDictionary(currentTagDict);
                         // Colorspace conversion
                         Imgproc.cvtColor(clonedMat, clonedMat, Imgproc.COLOR_BGRA2BGR);
+                        // Detection parameters
+                        DetectorParameters parameters = new DetectorParameters();
+                        parameters.set_minDistanceToBorder(3);
+                        parameters.set_cornerRefinementMethod(Objdetect.CORNER_REFINE_SUBPIX);
+                        //parameters.set_cornerRefinementWinSize(15);
+                        parameters.set_adaptiveThreshWinSizeMax(100);
+
+                        detector = new ArucoDetector(dictionary, parameters);
 
                         // Marker detection
-                        arucoDetector.detectMarkers(clonedMat, markerCorners, markerIds, rejectedCandidates);
-
-                        // Rotation vector
-                        Mat rvecs = new Mat();
-                        // Translation vector
-                        Mat tvecs = new Mat();
+                        //detector.detectMarkers(clonedMat, Aruco.getPredefinedDictionary(currentTagDict), markerCorners, markerIds, parameters, rejectedCandidates, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat());
+                        // We don't use the calibration data here? Only in refine detectedMarkers ???
+                        detector.detectMarkers(clonedMat, markerCorners, markerIds, rejectedCandidates);
 
                         // List of detected tags
                         lastTags = currentTags;
                         currentTags = new ArrayList<Tag>();
 
+                        //Log.d("ARUCODETECT", markerIds.rows() + "");
                         if (markerIds.rows() > 0) {
                             // rvecs, tvecs, 3x1 CV_64FC3 matrix
                             // Marker pose detection
-                            Aruco.estimatePoseSingleMarkers(markerCorners, markerLength, calibrationData.getCameraMatrixMat(), calibrationData.getDistCoeffsMat(), rvecs, tvecs);
+                            Mat cameraMatrix = new Mat();
+                            MatOfDouble distCoeffs = new MatOfDouble();
 
-                            // rvecs, tvecs, 3x1 CV_64FC1 matrix
-                            // Aruco.estimatePoseBoard(markerCorners,markerIds,board,calibrationData.getCameraMatrixMat(),calibrationData.getDistCoeffsMat(),rvecs,tvecs);
+                            calibrationData.getCameraMatrixMat().convertTo(cameraMatrix, CvType.CV_32F);
+                            calibrationData.getDistCoeffsMat().convertTo(distCoeffs, CvType.CV_32F);
 
-                            // Individual vectors for the tags
-                            double[] tagRvecs = new double[3];
-                            double[] tagTvecs = new double[3];
+                            MatOfPoint3f markerPoints = new MatOfPoint3f(
+                                    new Point3(-markerLength / 2,  markerLength / 2, 0),
+                                    new Point3( markerLength / 2,  markerLength / 2, 0),
+                                    new Point3( markerLength / 2, -markerLength / 2, 0),
+                                    new Point3(-markerLength / 2, -markerLength / 2, 0)
+                            );
 
                             for (int i = 0; i < markerIds.rows(); i++) {
                                 Tag tag;
 
-                                tagRvecs[0] = rvecs.get(i, 0)[0];
-                                tagRvecs[1] = rvecs.get(i, 0)[1];
-                                tagRvecs[2] = rvecs.get(i, 0)[2];
-                                tagTvecs[0] = tvecs.get(i, 0)[0];
-                                tagTvecs[1] = tvecs.get(i, 0)[1];
-                                tagTvecs[2] = tvecs.get(i, 0)[2];
+                                Mat tagRvecs = Mat.zeros(3, 1, CvType.CV_64F);
+                                Mat tagTvecs = Mat.zeros(3, 1, CvType.CV_64F);
+
+                                float[] data = new float[8]; // 4 points * 2 channels
+                                markerCorners.get(i).get(0, 0, data);
+                                MatOfPoint2f imageCorners = new MatOfPoint2f(
+                                        new Point(data[0], data[1]),
+                                        new Point(data[2], data[3]),
+                                        new Point(data[4], data[5]),
+                                        new Point(data[6], data[7])
+                                );
+
+                                Calib3d.solvePnP(
+                                        markerPoints,
+                                        imageCorners,
+                                        cameraMatrix,
+                                        distCoeffs,
+                                        tagRvecs,
+                                        tagTvecs,
+                                        false,
+                                        Calib3d.SOLVEPNP_IPPE_SQUARE
+                                );
+
+                                double[] rvecArray = new double[3];
+                                tagRvecs.get(0, 0, rvecArray);
+
+                                double[] tvecArray = new double[3];
+                                tagRvecs.get(0, 0, tvecArray);
 
                                 // Check the camera before creating the tags
                                 if (cameraModule.getCameraCode() == CAMERA_ID_FRONT) {
                                     //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX());
                                     // TODO: Revisar si se van a espejar las coordenadas o así está bien
-                                    tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX(), tagRvecs, tagTvecs);
+                                    tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], true, cameraModule.getResX(), rvecArray, tvecArray);
                                 } else {
                                     //tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX());
-                                    tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX(), tagRvecs, tagTvecs);
+                                    tag = new Tag(markerCorners.get(i), markerIds.get(i, 0)[0], false, cameraModule.getResX(), rvecArray, tvecArray);
                                 }
-//                                Log.w("ARUCO", Arrays.toString(tag.getRMat()));
                                 currentTags.add(tag);
                             }
                             // Notify to the remote control module
                             notifyMarkersDetected(currentTags, frameId);
                             clonedMat.release();
+
                         }
 
                         // Check if the tags have changed
@@ -241,8 +274,10 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
 
     @Override
     public void onOpenCVStartup() {
-        propertyWriter = new AuxPropertyWriter(m.getApplicationContext(), "camera", m);
+
+        propertyWriter = AuxPropertyWriter.getInstance(m);
         loadCalibrationData();
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -263,13 +298,11 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     @Override
     public void useAruco() {
         currentTagDict = Objdetect.DICT_4X4_1000;
-        arucoDetector.setDictionary(Objdetect.getPredefinedDictionary(currentTagDict));
     }
 
     @Override
     public void useAprilTags() {
         currentTagDict = Objdetect.DICT_APRILTAG_16h5;
-        arucoDetector.setDictionary(Objdetect.getPredefinedDictionary(currentTagDict));
     }
 
     @Override
@@ -282,5 +315,52 @@ public class OpencvTagModule extends ATagModule implements ICameraListenerV2 {
     public void resumeDetection() {
         stopped = false;
         cameraModule.suscribe(this);
+    }
+
+    public static void estimatePoseSingleMarkers(
+            List<Mat> corners,
+            double markerSize,
+            Mat cameraMatrix,
+            MatOfDouble distortionCoeffs,
+            List<Mat> rvecs,
+            List<Mat> tvecs) {
+
+        // Define marker 3D corner points (same order as OpenCV's ArUco)
+        MatOfPoint3f markerPoints = new MatOfPoint3f(
+                new Point3(-markerSize / 2,  markerSize / 2, 0),
+                new Point3( markerSize / 2,  markerSize / 2, 0),
+                new Point3( markerSize / 2, -markerSize / 2, 0),
+                new Point3(-markerSize / 2, -markerSize / 2, 0)
+        );
+
+        // Clear previous values if lists are reused
+        rvecs.clear();
+        tvecs.clear();
+
+        // Estimate pose for each detected marker
+        for (Mat c : corners) {
+            Mat rvec = new Mat();
+            Mat tvec = new Mat();
+
+            boolean success = Calib3d.solvePnP(
+                    markerPoints,
+                    new MatOfPoint2f(c),
+                    cameraMatrix,
+                    distortionCoeffs,
+                    rvec,
+                    tvec,
+                    false,
+                    Calib3d.SOLVEPNP_IPPE_SQUARE
+            );
+
+            if (!success) {
+                // Fallback to zero vectors if pose estimation fails
+                rvec = Mat.zeros(3, 1, CvType.CV_64F);
+                tvec = Mat.zeros(3, 1, CvType.CV_64F);
+            }
+
+            rvecs.add(rvec);
+            tvecs.add(tvec);
+        }
     }
 }
