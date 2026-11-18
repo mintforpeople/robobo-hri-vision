@@ -57,6 +57,7 @@ public abstract class AObjectRecognitionModule implements IObjectRecognitionModu
                     status.putContents("width", (int) obj.getBoundingBox().width() + "");
                     status.putContents("height", (int) obj.getBoundingBox().height() + "");
                     status.putContents("confidence", obj.getConfidence() + "");
+                    status.putContents("frame_id", frame_id);
                     rcmodule.postStatus(status);
 
                 }
